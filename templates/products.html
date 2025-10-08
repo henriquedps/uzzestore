@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}{% if categoria_selecionada %}{{ categoria_selecionada }} - {% endif %}Produtos - UzzerStore{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/products.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="produtos-layout">
+    <!-- Sidebar de Filtros -->
+    <aside class="filtros-sidebar">
+        <div class="filtros-container">
+            <!-- Categorias -->
+            <div class="filtro-section">
+                <h3>Categorias</h3>
+                <div class="categorias-list">
+                    <label class="categoria-item">
+                        <input type="radio" name="categoria" value="" 
+                               {% if not categoria_selecionada %}checked{% endif %}
+                               onchange="filtrarPorCategoria('')">
+                        <span class="categoria-label">Todos os produtos</span>
+                    </label>
+                    
+                    {% for categoria in categorias %}
+                        <label class="categoria-item">
+                            <input type="radio" name="categoria" value="{{ categoria.categoria }}"
+                                   {% if categoria_selecionada == categoria.categoria %}checked{% endif %}
+                                   onchange="filtrarPorCategoria('{{ categoria.categoria }}')">
+                            <span class="categoria-label">{{ categoria.categoria }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Promoções -->
+            <div class="filtro-section">
+                <h3>Promoções</h3>
+                <div class="promocoes-list">
+                    <label class="promocao-item">
+                        <input type="checkbox" checked>
+                        <span class="promocao-label">Todos</span>
+                    </label>
+                    <label class="promocao-item">
+                        <input type="checkbox">
+                        <span class="promocao-label">Somente promoção</span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Faixa de Preço -->
+            <div class="filtro-section">
+                <h3>Faixa de Preço</h3>
+                <div class="preco-range">
+                    <input type="range" id="precoMin" min="0" max="200" value="0" class="slider">
+                    <input type="range" id="precoMax" min="0" max="200" value="200" class="slider">
+                    <div class="preco-values">
+                        <span>R$ 0</span> - <span>R$ 200</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+    
+    <!-- Área Principal -->
+    <main class="produtos-main">
+        <div class="produtos-header">
+            <div class="titulo-resultado">
+                <h1>{% if categoria_selecionada %}{{ categoria_selecionada }}{% else %}Produtos{% endif %}</h1>
+                <p class="resultado-count">Resultado: {{ produtos|length }} produtos encontrados</p>
+            </div>
+            
+            <div class="ordenacao">
+                <label for="ordenar">Ordenar por:</label>
+                <select id="ordenar" onchange="ordenarProdutos(this.value)">
+                    <option value="padrao">Padrão</option>
+                    <option value="menor-preco">Menor preço</option>
+                    <option value="maior-preco">Maior preço</option>
+                    <option value="nome">Nome A-Z</option>
+                    <option value="nome-desc">Nome Z-A</option>
+                </select>
+            </div>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        {% if produtos %}
+            <div class="produtos-grid" id="produtosGrid">
+                {% for produto in produtos %}
+                    <div class="produto-card" data-preco="{{ produto.preco }}" data-nome="{{ produto.nome }}">
+                        <div class="produto-imagem-container">
+                            <a href="{{ url_for('produto', id=produto.id) }}">
+                                {% if produto.imagem %}
+                                    <img src="{{ produto.imagem }}" alt="{{ produto.nome }}" class="produto-imagem">
+                                {% else %}
+                                    <div class="produto-sem-imagem">📷</div>
+                                {% endif %}
+                            </a>
+                            <button class="btn-favorito" onclick="toggleFavorito({{ produto.id }})">
+                                <span class="heart">🤍</span>
+                            </button>
+                        </div>
+                        
+                        <div class="produto-info">
+                            <a href="{{ url_for('produto', id=produto.id) }}" class="produto-link">
+                                <h3 class="produto-nome">{{ produto.nome }}</h3>
+                                <div class="produto-preco-container">
+                                    <span class="produto-preco">{{ produto.preco|currency }}</span>
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <div class="produto-acoes">
+                            <a href="{{ url_for('carrinho_adicionar', produto_id=produto.id) }}" 
+                               class="btn-carrinho">
+                                🛒 Adicionar
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="sem-produtos">
+                <h2>😔 Nenhum produto encontrado</h2>
+                {% if categoria_selecionada %}
+                    <p>Não há produtos na categoria "{{ categoria_selecionada }}" no momento.</p>
+                    <button onclick="filtrarPorCategoria('')" class="btn-voltar">Ver todos os produtos</button>
+                {% else %}
+                    <p>Em breve teremos novos produtos incríveis!</p>
+                    <a href="{{ url_for('index') }}" class="btn-voltar">← Voltar para início</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </main>
+</div>
+
+<script>
+function filtrarPorCategoria(categoria) {
+    if (categoria) {
+        window.location.href = "{{ url_for('produtos_categoria', categoria='CATEGORIA') }}".replace('CATEGORIA', categoria);
+    } else {
+        window.location.href = "{{ url_for('produtos') }}";
+    }
+}
+
+function ordenarProdutos(criterio) {
+    const grid = document.getElementById('produtosGrid');
+    const produtos = Array.from(grid.children);
+    
+    produtos.sort((a, b) => {
+        switch(criterio) {
+            case 'menor-preco':
+                return parseFloat(a.dataset.preco) - parseFloat(b.dataset.preco);
+            case 'maior-preco':
+                return parseFloat(b.dataset.preco) - parseFloat(a.dataset.preco);
+            case 'nome':
+                return a.dataset.nome.localeCompare(b.dataset.nome);
+            case 'nome-desc':
+                return b.dataset.nome.localeCompare(a.dataset.nome);
+            default:
+                return 0;
+        }
+    });
+    
+    produtos.forEach(produto => grid.appendChild(produto));
+}
+
+function toggleFavorito(produtoId) {
+    const heart = event.target.closest('.btn-favorito').querySelector('.heart');
+    heart.textContent = heart.textContent === '🤍' ? '❤️' : '🤍';
+}
+</script>
+{% endblock %}

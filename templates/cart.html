@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Carrinho - UzzerStore{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cart.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="carrinho-container">
+    <h1>🛒 Seu Carrinho</h1>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if items %}
+        <div class="carrinho-content">
+            <div class="itens-carrinho">
+                {% for item in items %}
+                    <div class="item-carrinho">
+                        {% if item.imagem %}
+                            <img src="{{ item.imagem }}" alt="{{ item.nome }}" class="item-imagem">
+                        {% else %}
+                            <div class="item-sem-imagem">📷</div>
+                        {% endif %}
+                        
+                        <div class="item-info">
+                            <h3>{{ item.nome }}</h3>
+                            <p class="item-preco">{{ item.preco|currency }}</p>
+                            <p class="item-quantidade">Quantidade: {{ item.quantidade }}</p>
+                        </div>
+                        
+                        <div class="item-subtotal">
+                            <p><strong>{{ (item.preco * item.quantidade)|currency }}</strong></p>
+                            <a href="{{ url_for('carrinho_remover', produto_id=item.produto_id) }}" 
+                               class="btn-remover"
+                               onclick="return confirm('Remover este item do carrinho?')">🗑️ Remover</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="carrinho-resumo">
+                <div class="resumo-card">
+                    <h3>📋 Resumo do Pedido</h3>
+                    <div class="resumo-linha">
+                        <span>Subtotal:</span>
+                        <span>{{ total|currency }}</span>
+                    </div>
+                    <div class="resumo-linha">
+                        <span>Frete:</span>
+                        <span>Grátis</span>
+                    </div>
+                    <div class="resumo-total">
+                        <span>Total:</span>
+                        <span><strong>{{ total|currency }}</strong></span>
+                    </div>
+                    
+                    {% if session.user_id %}
+                        <a href="{{ url_for('checkout') }}" class="btn-checkout">
+                            💳 Finalizar Compra
+                        </a>
+                    {% else %}
+                        <div class="login-necessario">
+                            <p>⚠️ Faça login para finalizar a compra</p>
+                            <a href="{{ url_for('login') }}" class="btn-login-checkout">
+                                🔐 Fazer Login
+                            </a>
+                            <p style="font-size: 0.9rem; margin-top: 8px;">
+                                Não tem conta? <a href="{{ url_for('cadastro') }}">Cadastre-se aqui</a>
+                            </p>
+                        </div>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('carrinho_limpar') }}" 
+                       class="btn-limpar"
+                       onclick="return confirm('Limpar todo o carrinho?')">
+                        🗑️ Limpar Carrinho
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="carrinho-vazio">
+            <h2>😔 Seu carrinho está vazio</h2>
+            <p>Que tal adicionar alguns produtos incríveis?</p>
+            <a href="{{ url_for('produtos') }}" class="btn-comprar">🛍️ Ver Produtos</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

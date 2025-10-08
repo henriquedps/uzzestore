@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Cadastro - UzzerStore{% endblock %}
+
+{% block head %}
+<style>
+.register-container {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.register-card {
+    background: var(--card);
+    padding: 40px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    width: 100%;
+    max-width: 400px;
+}
+
+.register-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.register-header h1 {
+    color: var(--primary);
+    margin-bottom: 8px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
+}
+
+.register-btn {
+    width: 100%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: var(--radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.register-btn:hover {
+    background: var(--primary-dark);
+}
+
+.login-link {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+.login-link a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <div class="register-card">
+        <div class="register-header">
+            <h1>📝 Criar Conta</h1>
+            <p>Cadastre-se na UzzerStore</p>
+        </div>
+        
+        <!-- Mensagens flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <form method="POST">
+            <div class="form-group">
+                <label for="nome">Nome Completo:</label>
+                <input type="text" id="nome" name="nome" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="senha">Senha:</label>
+                <input type="password" id="senha" name="senha" required>
+            </div>
+            
+            <button type="submit" class="register-btn">Criar Conta</button>
+        </form>
+        
+        <div class="login-link">
+            <p>Já tem uma conta? 
+                <a href="{{ url_for('login') }}">Fazer login</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+3

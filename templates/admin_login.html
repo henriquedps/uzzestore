@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Login Admin - UzzerStore{% endblock %}
+
+{% block head %}
+<style>
+.admin-login-container {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.admin-login-card {
+    background: var(--card);
+    padding: 40px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.admin-header {
+    margin-bottom: 30px;
+}
+
+.admin-icon {
+    font-size: 4rem;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.admin-header h1 {
+    color: var(--primary);
+    margin-bottom: 8px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
+}
+
+.admin-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: var(--radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: all 0.2s;
+}
+
+.admin-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(124,58,237,0.3);
+}
+
+.back-link {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+.back-link a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.back-link a:hover {
+    color: var(--primary);
+}
+
+.security-notice {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid var(--error);
+    color: #991b1b;
+    padding: 12px;
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-login-container">
+    <div class="admin-login-card">
+        <div class="admin-header">
+            <div class="admin-icon">⚙️</div>
+            <h1>Área Administrativa</h1>
+            <p>Acesso restrito a administradores</p>
+        </div>
+        
+        <div class="security-notice">
+            🔒 Esta é uma área restrita. Apenas administradores autorizados podem acessar.
+        </div>
+        
+        <form method="POST" action="{{ url_for('admin_auth') }}">
+            <div class="form-group">
+                <label for="username">Usuário:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Senha:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit" class="admin-btn">🔐 Entrar no Admin</button>
+        </form>
+        
+        <div class="back-link">
+            <p>
+                <a href="{{ url_for('index') }}">← Voltar para a loja</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

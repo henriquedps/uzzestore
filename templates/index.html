@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}UzzerStore - Moda com Estilo{% endblock %}
+
+{% block head %}
+<style>
+.hero-section {
+    position: relative;
+    height: 70vh;
+    background: linear-gradient(135deg, #00d4aa 0%, #00b89a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    overflow: hidden;
+}
+
+.hero-content {
+    text-align: center;
+    z-index: 2;
+    max-width: 600px;
+    padding: 0 20px;
+}
+
+.hero-title {
+    font-size: 4rem;
+    font-weight: 300;
+    margin-bottom: 20px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 40px;
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+.hero-cta {
+    background: white;
+    color: var(--accent);
+    padding: 18px 40px;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.hero-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.products-section {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 60px 20px;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: var(--primary);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.product-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border);
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.product-image {
+    position: relative;
+    height: 300px;
+    background: var(--bg-light);
+    overflow: hidden;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image img {
+    transform: scale(1.05);
+}
+
+.product-info {
+    padding: 20px;
+}
+
+.product-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.product-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 15px;
+}
+
+.btn-add-cart {
+    width: 100%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: var(--radius);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-add-cart:hover {
+    background: var(--primary-light);
+    color: white;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-light);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">UzzerStore</h1>
+        <p class="hero-subtitle">Moda com estilo e qualidade</p>
+        <a href="#produtos" class="hero-cta">Ver Produtos</a>
+    </div>
+</section>
+
+<!-- Products Section -->
+<section class="products-section" id="produtos">
+    <div class="section-header">
+        <h2 class="section-title">Nossa Coleção</h2>
+        {% if categoria_selecionada %}
+            <p>Categoria: <strong>{{ categoria_selecionada }}</strong></p>
+        {% endif %}
+    </div>
+    
+    {% if produtos %}
+        <div class="products-grid">
+            {% for produto in produtos %}
+                <div class="product-card">
+                    <div class="product-image">
+                        {% if produto.imagem %}
+                            <img src="{{ produto.imagem }}" alt="{{ produto.nome }}">
+                        {% else %}
+                            <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 3rem; color: var(--text-muted);">
+                                👗
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="product-info">
+                        <h3 class="product-name">{{ produto.nome }}</h3>
+                        <div class="product-price">{{ produto.preco|currency }}</div>
+                        
+                        {% if session.user_id %}
+                            <a href="/carrinho/adicionar/{{ produto.id }}" class="btn-add-cart">
+                                🛒 Adicionar ao Carrinho
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('login') }}" class="btn-add-cart">
+                                Fazer Login para Comprar
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <h3>Nenhum produto encontrado</h3>
+            <p>Em breve novos produtos!</p>
+            <br>
+            <a href="/criar-produtos" class="btn btn-primary">Criar Produtos de Exemplo</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

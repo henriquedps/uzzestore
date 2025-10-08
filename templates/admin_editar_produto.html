@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Produto - Admin{% endblock %}
+
+{% block head %}
+<style>
+.admin-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.admin-header {
+    background: var(--card);
+    padding: 30px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.admin-form {
+    background: var(--card);
+    padding: 40px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.form-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--text-muted);
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.8;
+    transform: translateY(-1px);
+}
+
+.preview-imagem {
+    max-width: 200px;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    margin-top: 12px;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .form-actions {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1>✏️ Editar Produto</h1>
+        <p>Altere as informações do produto</p>
+    </div>
+    
+    <form method="POST" class="admin-form">
+        <div class="form-group">
+            <label for="nome">Nome do Produto:</label>
+            <input type="text" id="nome" name="nome" value="{{ produto.nome }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="categoria">Categoria:</label>
+            <select id="categoria" name="categoria" required>
+                <option value="">Selecione uma categoria</option>
+                <option value="Camisetas" {{ 'selected' if produto.categoria == 'Camisetas' else '' }}>👕 Camisetas</option>
+                <option value="Calças" {{ 'selected' if produto.categoria == 'Calças' else '' }}>👖 Calças</option>
+                <option value="Blusas" {{ 'selected' if produto.categoria == 'Blusas' else '' }}>👚 Blusas</option>
+                <option value="Vestidos" {{ 'selected' if produto.categoria == 'Vestidos' else '' }}>👗 Vestidos</option>
+                <option value="Camisas" {{ 'selected' if produto.categoria == 'Camisas' else '' }}>👔 Camisas</option>
+                <option value="Saias" {{ 'selected' if produto.categoria == 'Saias' else '' }}>🩱 Saias</option>
+                <option value="Blazers" {{ 'selected' if produto.categoria == 'Blazers' else '' }}>🧥 Blazers</option>
+                <option value="Jaquetas" {{ 'selected' if produto.categoria == 'Jaquetas' else '' }}>🧥 Jaquetas</option>
+                <option value="Acessórios" {{ 'selected' if produto.categoria == 'Acessórios' else '' }}>👜 Acessórios</option>
+                <option value="Calçados" {{ 'selected' if produto.categoria == 'Calçados' else '' }}>👟 Calçados</option>
+                <option value="Infantil" {{ 'selected' if produto.categoria == 'Infantil' else '' }}>🧒 Infantil</option>
+                <option value="Plus Size" {{ 'selected' if produto.categoria == 'Plus Size' else '' }}>➕ Plus Size</option>
+                <option value="Moda Praia" {{ 'selected' if produto.categoria == 'Moda Praia' else '' }}>🏖️ Moda Praia</option>
+                <option value="Esporte" {{ 'selected' if produto.categoria == 'Esporte' else '' }}>🏃 Esporte</option>
+                <option value="Casual" {{ 'selected' if produto.categoria == 'Casual' else '' }}>👖 Casual</option>
+                <option value="Formal" {{ 'selected' if produto.categoria == 'Formal' else '' }}>🎩 Formal</option>
+                <option value="Moda Intima" {{ 'selected' if produto.categoria == 'Moda Intima' else '' }}>🛍️ Moda Intima</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="preco">Preço (R$):</label>
+            <input type="number" step="0.01" id="preco" name="preco" value="{{ produto.preco }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="imagem">URL da Imagem:</label>
+            <input type="url" id="imagem" name="imagem" value="{{ produto.imagem or '' }}" placeholder="https://exemplo.com/imagem.jpg">
+            {% if produto.imagem %}
+                <img src="{{ produto.imagem }}" alt="Preview" class="preview-imagem" id="preview">
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="descricao">Descrição:</label>
+            <textarea id="descricao" name="descricao" placeholder="Descrição detalhada do produto...">{{ produto.descricao or '' }}</textarea>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💾 Salvar Alterações</button>
+            <a href="{{ url_for('admin_produtos') }}" class="btn btn-secondary">❌ Cancelar</a>
+        </div>
+    </form>
+</div>
+
+<script>
+// Preview da imagem
+document.getElementById('imagem').addEventListener('input', function(e) {
+    const url = e.target.value;
+    const preview = document.getElementById('preview');
+    
+    if (url) {
+        if (!preview) {
+            const img = document.createElement('img');
+            img.id = 'preview';
+            img.className = 'preview-imagem';
+            e.target.parentNode.appendChild(img);
+        }
+        document.getElementById('preview').src = url;
+    } else if (preview) {
+        preview.remove();
+    }
+});
+</script>
+{% endblock %}

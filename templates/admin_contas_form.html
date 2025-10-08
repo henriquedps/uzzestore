@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}{% if conta %}Editar{% else %}Nova{% endif %} Conta - UzzerStore{% endblock %}
+
+{% block head %}
+<style>
+.form-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.form-header {
+    background: var(--card);
+    padding: 30px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.form-content {
+    background: var(--card);
+    padding: 40px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.form-section {
+    margin-bottom: 30px;
+}
+
+.form-section h3 {
+    margin-bottom: 20px;
+    color: var(--text);
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 10px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+}
+
+.form-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: flex-end;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+.btn {
+    padding: 12px 24px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--text-muted);
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.8;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <h1>🏦 {% if conta %}Editar{% else %}Nova{% endif %} Conta de Recebimento</h1>
+        <p>Configure os dados bancários para receber pagamentos</p>
+    </div>
+    
+    <div class="form-content">
+        <form method="POST">
+            <div class="form-section">
+                <h3>👤 Dados do Titular</h3>
+                
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="nome_titular">Nome do Titular *</label>
+                        <input type="text" id="nome_titular" name="nome_titular" 
+                               value="{{ conta.nome_titular if conta else '' }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cpf_cnpj">CPF/CNPJ *</label>
+                        <input type="text" id="cpf_cnpj" name="cpf_cnpj" 
+                               value="{{ conta.cpf_cnpj if conta else '' }}" required
+                               placeholder="000.000.000-00 ou 00.000.000/0000-00">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3>🏦 Dados Bancários</h3>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="banco">Banco *</label>
+                        <select id="banco" name="banco" required>
+                            <option value="">Selecione o banco</option>
+                            <option value="Banco do Brasil" {{ 'selected' if conta and conta.banco == 'Banco do Brasil' else '' }}>Banco do Brasil</option>
+                            <option value="Bradesco" {{ 'selected' if conta and conta.banco == 'Bradesco' else '' }}>Bradesco</option>
+                            <option value="Caixa Econômica Federal" {{ 'selected' if conta and conta.banco == 'Caixa Econômica Federal' else '' }}>Caixa Econômica Federal</option>
+                            <option value="Itaú" {{ 'selected' if conta and conta.banco == 'Itaú' else '' }}>Itaú</option>
+                            <option value="Santander" {{ 'selected' if conta and conta.banco == 'Santander' else '' }}>Santander</option>
+                            <option value="Nubank" {{ 'selected' if conta and conta.banco == 'Nubank' else '' }}>Nubank</option>
+                            <option value="Inter" {{ 'selected' if conta and conta.banco == 'Inter' else '' }}>Inter</option>
+                            <option value="C6 Bank" {{ 'selected' if conta and conta.banco == 'C6 Bank' else '' }}>C6 Bank</option>
+                            <option value="Outro" {{ 'selected' if conta and conta.banco == 'Outro' else '' }}>Outro</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tipo_conta">Tipo de Conta *</label>
+                        <select id="tipo_conta" name="tipo_conta" required>
+                            <option value="">Selecione</option>
+                            <option value="Conta Corrente" {{ 'selected' if conta and conta.tipo_conta == 'Conta Corrente' else '' }}>Conta Corrente</option>
+                            <option value="Conta Poupança" {{ 'selected' if conta and conta.tipo_conta == 'Conta Poupança' else '' }}>Conta Poupança</option>
+                            <option value="Conta Salário" {{ 'selected' if conta and conta.tipo_conta == 'Conta Salário' else '' }}>Conta Salário</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="agencia">Agência *</label>
+                        <input type="text" id="agencia" name="agencia" 
+                               value="{{ conta.agencia if conta else '' }}" required
+                               placeholder="0000-0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="conta">Número da Conta *</label>
+                        <input type="text" id="conta" name="conta" 
+                               value="{{ conta.conta if conta else '' }}" required
+                               placeholder="00000-0">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3>📱 Dados PIX</h3>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="tipo_chave_pix">Tipo de Chave PIX</label>
+                        <select id="tipo_chave_pix" name="tipo_chave_pix">
+                            <option value="">Nenhuma chave PIX</option>
+                            <option value="CPF" {{ 'selected' if conta and conta.tipo_chave_pix == 'CPF' else '' }}>CPF</option>
+                            <option value="CNPJ" {{ 'selected' if conta and conta.tipo_chave_pix == 'CNPJ' else '' }}>CNPJ</option>
+                            <option value="Email" {{ 'selected' if conta and conta.tipo_chave_pix == 'Email' else '' }}>Email</option>
+                            <option value="Telefone" {{ 'selected' if conta and conta.tipo_chave_pix == 'Telefone' else '' }}>Telefone</option>
+                            <option value="Chave Aleatória" {{ 'selected' if conta and conta.tipo_chave_pix == 'Chave Aleatória' else '' }}>Chave Aleatória</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="chave_pix">Chave PIX</label>
+                        <input type="text" id="chave_pix" name="chave_pix" 
+                               value="{{ conta.chave_pix if conta else '' }}"
+                               placeholder="Digite a chave PIX">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="ativa" name="ativa" 
+                       {{ 'checked' if not conta or conta.ativa else '' }}>
+                <label for="ativa">Conta ativa para recebimento</label>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{{ url_for('admin_contas') }}" class="btn btn-secondary">
+                    ← Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    💾 {% if conta %}Atualizar{% else %}Criar{% endif %} Conta
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Máscaras para os campos
+document.getElementById('cpf_cnpj').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    
+    if (value.length <= 11) {
+        // CPF
+        value = value.replace(/(\d{3})(\d)/, '$1.$2');
+        value = value.replace(/(\d{3})(\d)/, '$1.$2');
+        value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    } else {
+        // CNPJ
+        value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+        value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+        value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+        value = value.replace(/(\d{4})(\d)/, '$1-$2');
+    }
+    
+    e.target.value = value;
+});
+
+// Auto-preencher chave PIX baseado no tipo
+document.getElementById('tipo_chave_pix').addEventListener('change', function() {
+    const tipo = this.value;
+    const chavePix = document.getElementById('chave_pix');
+    const cpfCnpj = document.getElementById('cpf_cnpj').value;
+    
+    if (tipo === 'CPF' || tipo === 'CNPJ') {
+        chavePix.value = cpfCnpj.replace(/\D/g, '');
+    }
+});
+</script>
+{% endblock %}

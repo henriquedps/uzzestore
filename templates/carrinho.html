@@ -1,0 +1,477 @@
+{% extends "base.html" %}
+
+{% block title %}Carrinho de Compras - UzzerStore{% endblock %}
+
+{% block head %}
+<style>
+.carrinho-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.carrinho-header {
+    background: var(--card);
+    padding: 30px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.carrinho-content {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 30px;
+}
+
+.carrinho-items {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.items-header {
+    background: var(--bg);
+    padding: 20px 30px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+}
+
+.carrinho-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 24px 30px;
+    border-bottom: 1px solid var(--border);
+}
+
+.carrinho-item:last-child {
+    border-bottom: none;
+}
+
+.item-imagem {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.item-sem-imagem {
+    width: 80px;
+    height: 80px;
+    background: var(--bg);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--text-muted);
+}
+
+.item-detalhes {
+    flex: 1;
+}
+
+.item-nome {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.item-preco-unitario {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.item-quantidade {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-quantidade {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-quantidade:hover {
+    background: #6d28d9;
+}
+
+.quantidade-valor {
+    min-width: 40px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.item-preco-total {
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--primary);
+    min-width: 100px;
+    text-align: right;
+}
+
+.item-remover {
+    background: var(--error);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+
+.item-remover:hover {
+    background: #dc2626;
+}
+
+.carrinho-resumo {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 30px;
+    height: fit-content;
+}
+
+.resumo-linha {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.resumo-linha:last-child {
+    border-bottom: none;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--primary);
+}
+
+.checkout-btn {
+    width: 100%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: var(--radius);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+}
+
+.checkout-btn:hover {
+    background: #6d28d9;
+}
+
+.carrinho-vazio {
+    text-align: center;
+    padding: 80px 20px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+@media (max-width: 768px) {
+    .carrinho-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .carrinho-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="carrinho-container">
+    <div class="carrinho-header">
+        <h1>🛒 Seu Carrinho</h1>
+        <p>Revise seus itens antes de finalizar a compra</p>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    {% if items %}
+        <div class="carrinho-content">
+            <div class="carrinho-items">
+                <div class="items-header">
+                    📦 Itens no Carrinho ({{ items|length }})
+                </div>
+                
+                {% for item in items %}
+                    <div class="carrinho-item" data-produto="{{ item.id }}">
+                        {% if item.imagem %}
+                            <img src="{{ item.imagem }}" alt="{{ item.nome }}" class="item-imagem">
+                        {% else %}
+                            <div class="item-sem-imagem">📷</div>
+                        {% endif %}
+                        
+                        <div class="item-detalhes">
+                            <div class="item-nome">{{ item.nome }}</div>
+                            <div class="item-preco-unitario">
+                                Preço unitário: {{ item.preco|currency }}
+                            </div>
+                            {% if item.categoria %}
+                                <small style="color: var(--primary);">{{ item.categoria }}</small>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="item-quantidade">
+                            <button class="btn-quantidade btn-diminuir" data-produto="{{ item.id }}">-</button>
+                            <span class="quantidade-valor">{{ item.quantidade }}</span>
+                            <button class="btn-quantidade btn-aumentar" data-produto="{{ item.id }}">+</button>
+                        </div>
+                        
+                        <div class="item-preco-total">
+                            {{ (item.preco * item.quantidade)|currency }}
+                        </div>
+                        
+                        <button class="item-remover" data-produto="{{ item.id }}">
+                            🗑️ Remover
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="carrinho-resumo">
+                <h3>💰 Resumo do Pedido</h3>
+                
+                <div class="resumo-linha">
+                    <span>Subtotal:</span>
+                    <span>{{ total|currency }}</span>
+                </div>
+                
+                <div class="resumo-linha">
+                    <span>Frete:</span>
+                    <span style="color: var(--success);">Grátis</span>
+                </div>
+                
+                <div class="resumo-linha">
+                    <span>Total:</span>
+                    <span>{{ total|currency }}</span>
+                </div>
+                
+                <a href="{{ url_for('checkout') }}" class="checkout-btn">
+                    💳 Finalizar Compra
+                </a>
+                
+                <a href="{{ url_for('index') }}" class="checkout-btn" style="background: var(--text-muted); margin-top: 12px;">
+                    ← Continuar Comprando
+                </a>
+                
+                <button onclick="limparCarrinho()" class="checkout-btn" style="background: var(--error); margin-top: 8px;">
+                    🗑️ Limpar Carrinho
+                </button>
+            </div>
+        </div>
+        
+    {% else %}
+        <div class="carrinho-vazio">
+            <div style="font-size: 4rem; margin-bottom: 20px;">🛒</div>
+            <h2>Seu carrinho está vazio</h2>
+            <p>Que tal dar uma olhada em nossos produtos?</p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary" style="margin-top: 20px; padding: 16px 32px;">
+                🛍️ Explorar Produtos
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Carrinho carregado');
+    
+    // Event listeners para botões de quantidade
+    document.querySelectorAll('.btn-diminuir').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const produtoId = this.getAttribute('data-produto');
+            console.log('Diminuir produto:', produtoId);
+            alterarQuantidade(produtoId, -1);
+        });
+    });
+    
+    document.querySelectorAll('.btn-aumentar').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const produtoId = this.getAttribute('data-produto');
+            console.log('Aumentar produto:', produtoId);
+            alterarQuantidade(produtoId, 1);
+        });
+    });
+    
+    // Event listeners para botões de remoção
+    document.querySelectorAll('.item-remover').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const produtoId = this.getAttribute('data-produto');
+            console.log('Remover produto:', produtoId);
+            removerItem(produtoId);
+        });
+    });
+});
+
+function alterarQuantidade(produtoId, mudanca) {
+    console.log('Função alterarQuantidade chamada:', produtoId, mudanca);
+    
+    if (!produtoId || produtoId === 'undefined') {
+        console.error('Produto ID inválido:', produtoId);
+        alert('Erro: ID do produto inválido');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('produto_id', produtoId);
+    formData.append('mudanca', mudanca);
+    
+    fetch('/carrinho/alterar-quantidade', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Resposta alteração:', data);
+        if (data.success) {
+            showMessage('✅ Quantidade alterada!', 'success');
+            setTimeout(() => location.reload(), 500);
+        } else {
+            showMessage('❌ ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Erro na requisição:', error);
+        showMessage('❌ Erro de conexão', 'error');
+    });
+}
+
+function removerItem(produtoId) {
+    console.log('Função removerItem chamada:', produtoId);
+    
+    if (!produtoId || produtoId === 'undefined') {
+        console.error('Produto ID inválido:', produtoId);
+        alert('Erro: ID do produto inválido');
+        return;
+    }
+    
+    if (confirm('Tem certeza que deseja remover este item?')) {
+        const formData = new FormData();
+        formData.append('produto_id', produtoId);
+        
+        fetch('/carrinho/remover', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Resposta remoção:', data);
+            if (data.success) {
+                showMessage('✅ Item removido!', 'success');
+                
+                // Animação de remoção
+                const item = document.querySelector(`[data-produto="${produtoId}"]`);
+                if (item) {
+                    item.style.transition = 'all 0.3s ease';
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateX(-100%)';
+                }
+                
+                setTimeout(() => location.reload(), 300);
+            } else {
+                showMessage('❌ ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erro na requisição:', error);
+            showMessage('❌ Erro de conexão', 'error');
+        });
+    }
+}
+
+function limparCarrinho() {
+    if (confirm('Tem certeza que deseja limpar todo o carrinho?')) {
+        fetch('/carrinho/limpar', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage('✅ Carrinho limpo!', 'success');
+                setTimeout(() => location.reload(), 500);
+            } else {
+                showMessage('❌ ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            showMessage('❌ Erro de conexão', 'error');
+        });
+    }
+}
+
+function showMessage(message, type) {
+    // Remover mensagens anteriores
+    document.querySelectorAll('.toast-message').forEach(msg => msg.remove());
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.innerHTML = message;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#10b981' : '#ef4444'};
+        color: white;
+        padding: 16px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Adicionar CSS para animações
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}{{ produto.nome }} - UzzerStore{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/product.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="produto-detalhes">
+    <div class="produto-container">
+        <div class="produto-imagem-container">
+            {% if produto.imagem %}
+                <img src="{{ produto.imagem }}" alt="{{ produto.nome }}" class="produto-imagem-grande">
+            {% else %}
+                <div class="sem-imagem-grande">📷 Sem imagem disponível</div>
+            {% endif %}
+        </div>
+        
+        <div class="produto-info-container">
+            <h1 class="produto-titulo">{{ produto.nome }}</h1>
+            <p class="produto-preco-grande">{{ produto.preco|currency }}</p>
+            
+            {% if produto.descricao %}
+                <div class="produto-descricao">
+                    <h3>Descrição:</h3>
+                    <p>{{ produto.descricao }}</p>
+                </div>
+            {% endif %}
+            
+            <div class="produto-acoes">
+                <a href="{{ url_for('carrinho_adicionar', produto_id=produto.id) }}" 
+                   class="btn-carrinho">🛒 Adicionar ao Carrinho</a>
+            </div>
+            
+            <div class="produto-info-extra">
+                <p><strong>Código:</strong> #{{ produto.id }}</p>
+                <p><strong>Disponibilidade:</strong> ✅ Em estoque</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="navegacao-produtos">
+        <a href="{{ url_for('produtos') }}" class="btn-voltar">← Ver todos os produtos</a>
+    </div>
+</div>
+{% endblock %}

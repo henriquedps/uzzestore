@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Pedido Confirmado - UzzerStore{% endblock %}
+
+{% block head %}
+<style>
+.sucesso-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+}
+
+.sucesso-card {
+    background: var(--card);
+    padding: 40px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.sucesso-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.sucesso-titulo {
+    color: var(--success);
+    margin-bottom: 16px;
+}
+
+.pedido-info {
+    background: var(--bg);
+    padding: 20px;
+    border-radius: var(--radius);
+    margin: 20px 0;
+    text-align: left;
+}
+
+.acoes {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--text-muted);
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.8;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+    .acoes {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sucesso-container">
+    <div class="sucesso-card">
+        <div class="sucesso-icon">✅</div>
+        
+        <h1 class="sucesso-titulo">Pedido Confirmado!</h1>
+        
+        <p>Seu pedido foi realizado com sucesso e já está sendo processado.</p>
+        
+        <div class="pedido-info">
+            <h3>📋 Detalhes do Pedido</h3>
+            <p><strong>Número do Pedido:</strong> #{{ pedido.id }}</p>
+            <p><strong>Total:</strong> {{ pedido.total|currency }}</p>
+            <p><strong>Data:</strong> {{ pedido.data_pedido[:10] if pedido.data_pedido else 'Agora' }}</p>
+            <p><strong>Status:</strong> <span style="color: var(--success);">Confirmado</span></p>
+        </div>
+        
+        <p style="color: var(--text-muted); margin: 20px 0;">
+            Em breve você receberá um email com os detalhes do pedido e informações de entrega.
+        </p>
+        
+        <div class="acoes">
+            <a href="{{ url_for('pedidos_usuario') }}" class="btn btn-primary">
+                📦 Ver Meus Pedidos
+            </a>
+            
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                🛍️ Continuar Comprando
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

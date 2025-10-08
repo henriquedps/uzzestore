@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Gerenciar Produtos - Admin{% endblock %}
+
+{% block head %}
+<style>
+.admin-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.admin-header {
+    background: var(--card);
+    padding: 30px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.produtos-grid {
+    display: grid;
+    gap: 20px;
+}
+
+.produto-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.produto-imagem {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+.produto-info {
+    flex: 1;
+}
+
+.produto-nome {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+}
+
+.produto-categoria {
+    background: var(--primary);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 8px;
+}
+
+.produto-preco {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--success);
+}
+
+.produto-acoes {
+    display: flex;
+    gap: 12px;
+    flex-direction: column;
+}
+
+.btn {
+    padding: 8px 16px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-success {
+    background: var(--success);
+    color: white;
+}
+
+.btn-warning {
+    background: var(--warning);
+    color: white;
+}
+
+.btn-danger {
+    background: var(--error);
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.8;
+    transform: translateY(-1px);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+@media (max-width: 768px) {
+    .admin-header {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+    
+    .produto-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .produto-acoes {
+        flex-direction: row;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <div>
+            <h1>📦 Gerenciar Produtos</h1>
+            <p>Adicione, edite ou remova produtos da sua loja</p>
+        </div>
+        <a href="{{ url_for('admin_novo_produto') }}" class="btn btn-success">
+            ➕ Novo Produto
+        </a>
+    </div>
+    
+    {% if produtos %}
+        <div class="produtos-grid">
+            {% for produto in produtos %}
+                <div class="produto-card">
+                    {% if produto.imagem %}
+                        <img src="{{ produto.imagem }}" alt="{{ produto.nome }}" class="produto-imagem">
+                    {% else %}
+                        <div class="produto-imagem">📦</div>
+                    {% endif %}
+                    
+                    <div class="produto-info">
+                        <div class="produto-nome">{{ produto.nome }}</div>
+                        
+                        {% if produto.categoria %}
+                            <div class="produto-categoria">{{ produto.categoria }}</div>
+                        {% endif %}
+                        
+                        <div class="produto-preco">{{ produto.preco|currency }}</div>
+                        
+                        {% if produto.descricao %}
+                            <p style="color: var(--text-muted); margin-top: 8px; font-size: 0.9rem;">
+                                {{ produto.descricao[:100] }}{% if produto.descricao|length > 100 %}...{% endif %}
+                            </p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="produto-acoes">
+                        <a href="{{ url_for('produto', id=produto.id) }}" class="btn btn-primary" target="_blank">
+                            👁️ Ver
+                        </a>
+                        
+                        <a href="{{ url_for('admin_editar_produto', id=produto.id) }}" class="btn btn-warning">
+                            ✏️ Editar
+                        </a>
+                        
+                        <a href="{{ url_for('admin_excluir_produto', id=produto.id) }}" 
+                           class="btn btn-danger"
+                           onclick="return confirm('Tem certeza que deseja excluir este produto?')">
+                            🗑️ Excluir
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div style="font-size: 4rem; margin-bottom: 20px;">📦</div>
+            <h2>Nenhum produto cadastrado</h2>
+            <p>Comece adicionando o primeiro produto da sua loja</p>
+            <a href="{{ url_for('admin_novo_produto') }}" class="btn btn-success" style="margin-top: 20px;">
+                ➕ Adicionar Primeiro Produto
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
