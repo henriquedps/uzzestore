@@ -2,53 +2,10 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}UzzeStore{% endblock %}</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}UzzerStore{% endblock %}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Exemplo de responsividade para o container principal */
-@media (max-width: 768px) {
-  .container, .login-card, .products-section, .product-card {
-    width: 100% !important;
-    max-width: 100vw !important;
-    padding: 10px !important;
-    box-sizing: border-box;
-  }
-  .products-grid {
-    grid-template-columns: 1fr !important;
-    gap: 15px !important;
-  }
-  nav, .navbar {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-  }
-  .navbar-menu {
-    width: 100% !important;
-    display: block !important;
-  }
-}
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        :root {
-            --primary: #2c2c2c;
-            --primary-light: #4a4a4a;
-            --accent: #00d4aa;
-            --accent-dark: #00b89a;
-            --text: #2c2c2c;
-            --text-light: #666666;
-            --text-muted: #999999;
-            --bg: #ffffff;
-            --bg-light: #f8f9fa;
-            --card: #ffffff;
-            --border: #e9ecef;
-            --shadow: 0 2px 10px rgba(0,0,0,0.08);
-            --shadow-lg: 0 10px 40px rgba(0,0,0,0.12);
-            --radius: 4px;
-            --success: #28a745;
-            --error: #dc3545;
-            --warning: #ffc107;
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -56,28 +13,15 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-            font-size: 14px;
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
         }
 
-        /* HEADER SUPERIOR */
-        .top-bar {
-            background: var(--primary);
-            color: white;
-            text-align: center;
-            padding: 8px 0;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        /* NAVBAR PRINCIPAL */
-        .navbar {
-            background: var(--bg);
-            padding: 0;
-            border-bottom: 1px solid var(--border);
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -88,55 +32,44 @@
             margin: 0 auto;
             padding: 0 20px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
             height: 70px;
         }
 
         .logo {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--primary);
+            font-size: 2rem;
+            font-weight: bold;
+            color: #000;
             text-decoration: none;
-            letter-spacing: 2px;
-            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo::before {
+            content: "◆";
+            color: #666;
         }
 
         .nav-menu {
             display: flex;
-            align-items: center;
-            gap: 40px;
             list-style: none;
+            gap: 30px;
         }
 
-        .nav-menu > li > a {
+        .nav-item a {
             text-decoration: none;
-            color: var(--text);
+            color: #666;
             font-weight: 500;
-            font-size: 13px;
+            font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             transition: color 0.3s ease;
-            position: relative;
         }
 
-        .nav-menu > li > a:hover {
-            color: var(--accent);
-        }
-
-        .nav-menu > li > a::after {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--accent);
-            transition: width 0.3s ease;
-        }
-
-        .nav-menu > li > a:hover::after {
-            width: 100%;
+        .nav-item a:hover {
+            color: #000;
         }
 
         .nav-actions {
@@ -145,464 +78,321 @@
             gap: 20px;
         }
 
-        .nav-icon {
-            color: var(--text);
+        .search-icon, .user-icon, .cart-icon {
             font-size: 18px;
-            text-decoration: none;
+            color: #666;
+            cursor: pointer;
             transition: color 0.3s ease;
-            position: relative;
         }
 
-        .nav-icon:hover {
-            color: var(--accent);
+        .search-icon:hover, .user-icon:hover, .cart-icon:hover {
+            color: #000;
         }
 
-        .cart-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: var(--accent);
+        .cart-count {
+            background: #000;
             color: white;
             border-radius: 50%;
             width: 18px;
             height: 18px;
-            font-size: 10px;
+            font-size: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
+            position: absolute;
+            top: -8px;
+            right: -8px;
         }
 
-        .user-menu {
+        .cart-container {
             position: relative;
-            display: inline-block;
         }
 
-        .user-toggle {
-            background: none;
-            border: none;
-            color: var(--text);
-            font-size: 18px;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: var(--radius);
-            transition: all 0.3s ease;
+        /* Hero Section */
+        .hero-section {
+            background: #f5f5f5;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .filter-left {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 20px;
         }
 
-        .user-toggle:hover {
-            background: var(--bg-light);
-            color: var(--accent);
+        .filter-toggle {
+            background: none;
+            border: 1px solid #ddd;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
         }
 
-        .user-dropdown {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 100%;
-            background: var(--card);
-            min-width: 220px;
-            box-shadow: var(--shadow-lg);
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            z-index: 1001;
-            margin-top: 8px;
+        .product-count {
+            color: #666;
+            font-size: 14px;
         }
 
-        .user-dropdown.show {
-            display: block;
-        }
-
-        .user-dropdown a,
-        .user-dropdown button {
-            display: block;
-            width: 100%;
-            padding: 12px 16px;
-            text-decoration: none;
-            color: var(--text);
+        .sort-dropdown {
             border: none;
             background: none;
-            font-size: 13px;
-            text-align: left;
-            transition: background 0.2s ease;
+            font-size: 14px;
+            color: #666;
             cursor: pointer;
         }
 
-        .user-dropdown a:hover,
-        .user-dropdown button:hover {
-            background: var(--bg-light);
-            color: var(--accent);
+        /* Products Grid */
+        .products-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
         }
 
-        .user-dropdown .user-info {
-            padding: 12px 16px;
-            font-size: 11px;
-            color: var(--text-muted);
-            border-bottom: 1px solid var(--border);
-            background: var(--bg-light);
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
         }
 
-        .admin-badge {
-            background: var(--warning);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 9px;
-            font-weight: 600;
-            margin-left: 6px;
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .admin-indicator {
-            background: linear-gradient(135deg, var(--warning) 0%, #e0a800 100%);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
-        /* BOTÕES */
-        .btn {
-            padding: 10px 20px;
-            border-radius: var(--radius);
-            text-decoration: none;
+        .product-image {
+            height: 350px;
+            background: #f8f9fa;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover .product-image img {
+            transform: scale(1.05);
+        }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-name {
+            font-size: 16px;
             font-weight: 500;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .product-price {
+            font-size: 18px;
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 15px;
+        }
+
+        .btn-add-cart {
+            width: 100%;
+            background: #000;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .btn-add-cart:hover {
+            background: #333;
+        }
+
+        /* Auth Buttons */
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-auth {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            background: white;
+            color: #666;
+            text-decoration: none;
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            display: inline-block;
         }
 
-        .btn-primary {
-            background: var(--primary);
+        .btn-auth:hover {
+            background: #000;
             color: white;
+            border-color: #000;
         }
 
-        .btn-primary:hover {
-            background: var(--primary-light);
-            transform: translateY(-1px);
-        }
-
-        .btn-accent {
-            background: var(--accent);
+        .btn-auth.primary {
+            background: #000;
             color: white;
+            border-color: #000;
         }
 
-        .btn-accent:hover {
-            background: var(--accent-dark);
-            transform: translateY(-1px);
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: var(--primary);
-            border: 1px solid var(--primary);
-        }
-
-        .btn-outline:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        /* ALERTAS */
-        .alerts-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        .alert {
-            padding: 12px 16px;
-            border-radius: var(--radius);
-            margin-bottom: 20px;
-            font-weight: 500;
-            font-size: 13px;
-        }
-
-        .alert-success {
-            background: rgba(40,167,69,0.1);
-            border: 1px solid var(--success);
-            color: #155724;
-        }
-
-        .alert-error {
-            background: rgba(220,53,69,0.1);
-            border: 1px solid var(--error);
-            color: #721c24;
-        }
-
-        .alert-info {
-            background: rgba(0,212,170,0.1);
-            border: 1px solid var(--accent);
-            color: #004e40;
-        }
-
-        /* FOOTER */
-        .footer {
-            background: var(--primary);
-            color: white;
-            padding: 40px 0 20px;
-            margin-top: 60px;
-        }
-
-        .footer-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
-            text-align: center;
-        }
-
-        .footer-content h3 {
-            font-size: 18px;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-
-        .footer-content p {
-            color: #cccccc;
-            font-size: 13px;
-            margin-bottom: 10px;
-        }
-
-        /* WHATSAPP FLOAT */
-        .whatsapp-float {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: #25d366;
-            color: white;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            text-decoration: none;
-            box-shadow: var(--shadow-lg);
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-
-        .whatsapp-float:hover {
-            transform: scale(1.1);
-            background: #128c7e;
-        }
-
-        /* MOBILE RESPONSIVE */
+        /* Mobile Responsive */
         @media (max-width: 768px) {
-            .nav-container {
-                padding: 0 15px;
-                height: 60px;
-            }
-
-            .logo {
-                font-size: 20px;
-            }
-
             .nav-menu {
                 display: none;
             }
-
-            .nav-actions {
+            
+            .hero-title {
+                font-size: 1.8rem;
+            }
+            
+            .filter-section {
+                flex-direction: column;
+                gap: 20px;
+                align-items: flex-start;
+            }
+            
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
                 gap: 15px;
             }
-
-            .mobile-menu-toggle {
-                display: block;
-                background: none;
-                border: none;
-                color: var(--text);
-                font-size: 20px;
-                cursor: pointer;
-            }
-
-            .user-dropdown {
-                right: auto;
-                left: 0;
-                min-width: 180px;
-            }
         }
 
-        @media (max-width: 768px) {
-  .hero-title {
-    font-size: 2.2rem !important;
-    word-break: break-word;
-  }
-  .hero-section {
-    height: 40vh !important;
-    padding: 20px 0 !important;
-  }
-  .hero-content {
-    padding: 0 10px !important;
-  }
-  .navbar, nav, .navbar-menu {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    width: 100% !important;
-  }
-  .navbar-menu {
-    display: block !important;
-    margin-top: 10px !important;
-  }
-  .btn, .btn-primary, .btn-accent {
-    width: 100% !important;
-    margin-bottom: 10px !important;
-    font-size: 1rem !important;
-  }
-  .product-card, .login-card {
-    width: 100% !important;
-    max-width: 100vw !important;
-    padding: 10px !important;
-    box-sizing: border-box;
-  }
-}
-        .mobile-menu-toggle {
-            display: none;
+        /* Messages */
+        .flash-messages {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .flash-message {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .flash-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
         }
     </style>
-    
     {% block head %}{% endblock %}
 </head>
 <body>
-    <!-- Barra Superior -->
-    <div class="top-bar">
-        🚚 Frete grátis para todo o Brasil nas compras acima de R$ 299,00
-    </div>
-
-    <!-- Navbar Principal -->
-    <nav class="navbar">
+    <!-- Header -->
+    <header class="header">
         <div class="nav-container">
-            <a href="{{ url_for('index') }}" class="logo">UzzeStore</a>
+            <a href="{{ url_for('index') }}" class="logo">UZZERSTORE</a>
             
-            <ul class="nav-menu">
-                <li><a href="{{ url_for('index') }}">Lançamentos</a></li>
-                <li><a href="{{ url_for('index', categoria='Best Sellers') }}">Best Sellers</a></li>
-                <li><a href="{{ url_for('index', categoria='Camisetas') }}">Camisetas</a></li>
-                <li><a href="{{ url_for('index', categoria='Calças') }}">Calças</a></li>
-                <li><a href="{{ url_for('index', categoria='Vestidos') }}">Vestidos</a></li>
-                <li><a href="{{ url_for('index', categoria='Calçados') }}">Calçados</a></li>
-                <li><a href="{{ url_for('index', categoria='Acessórios') }}">Acessórios</a></li>
-            </ul>
+            <nav class="nav-menu">
+                <li class="nav-item"><a href="{{ url_for('index', categoria='Camisas') }}">Camisas</a></li>
+                <li class="nav-item"><a href="{{ url_for('index', categoria='Calças') }}">Calças</a></li>
+                <li class="nav-item"><a href="{{ url_for('index', categoria='Camisetas') }}">Camisetas</a></li>
+                <li class="nav-item"><a href="{{ url_for('index', categoria='Vestidos') }}">Vestidos</a></li>
+                <li class="nav-item"><a href="{{ url_for('index', categoria='Calçados') }}">Calçados</a></li>
+                <li class="nav-item"><a href="{{ url_for('index', categoria='Conjuntos') }}">Conjuntos</a></li>
+                <li class="nav-item"><a href="{{ url_for('index', categoria='Acessórios') }}">Acessórios</a></li>
+                <li class="nav-item"><a href="{{ url_for('index') }}">Lançamentos</a></li>
+                <li class="nav-item"><a href="{{ url_for('index') }}" style="color: #e74c3c;">SALE</a></li>
+            </nav>
             
             <div class="nav-actions">
-                <button class="mobile-menu-toggle">☰</button>
-                
-                <a href="#" class="nav-icon">🔍</a>
+                <i class="fas fa-search search-icon"></i>
                 
                 {% if session.user_id %}
-                    <a href="{{ url_for('carrinho') }}" class="nav-icon">
-                        🛒
-                        {% if session.carrinho and session.carrinho|length > 0 %}
-                            <span class="cart-badge">{{ session.carrinho|length }}</span>
+                    <div class="auth-buttons">
+                        <span style="font-size: 12px; color: #666;">Olá, {{ session.user_nome }}</span>
+                        <a href="{{ url_for('logout') }}" class="btn-auth">Sair</a>
+                        {% if session.is_admin %}
+                            <a href="{{ url_for('admin_dashboard') }}" class="btn-auth primary">Admin</a>
                         {% endif %}
-                    </a>
+                    </div>
                     
-                    <div class="user-menu">
-                        <button class="user-toggle" onclick="toggleUserMenu()">
-                            👤
-                            {% if session.is_admin %}
-                                <span class="admin-indicator">Admin</span>
-                            {% endif %}
-                        </button>
-                        <div class="user-dropdown" id="userDropdown">
-                            <div class="user-info">
-                                👋 {{ session.user_nome or 'Usuário' }}
-                                {% if session.is_admin %}
-                                    <span class="admin-badge">ADMIN</span>
-                                {% endif %}
-                            </div>
-                            <a href="{{ url_for('pedidos_usuario') }}">📦 Meus Pedidos</a>
-                            {% if session.is_admin %}
-                                <a href="{{ url_for('admin_dashboard') }}">
-                                    ⚙️ Painel Administrativo
-                                </a>
-                                <a href="{{ url_for('admin_produtos') }}">
-                                    📦 Gerenciar Produtos
-                                </a>
-                                <a href="{{ url_for('admin_pedidos') }}">
-                                    🛒 Gerenciar Pedidos
-                                </a>
-                            {% endif %}
-                            <button onclick="location.href='{{ url_for('logout') }}'">🚪 Sair</button>
-                        </div>
+                    <div class="cart-container">
+                        <a href="{{ url_for('carrinho') }}">
+                            <i class="fas fa-shopping-bag cart-icon"></i>
+                            <span class="cart-count">{{ session.carrinho|length if session.carrinho else 0 }}</span>
+                        </a>
                     </div>
                 {% else %}
-                    <a href="{{ url_for('login') }}" class="btn btn-outline">Entrar</a>
-                    <a href="{{ url_for('cadastro') }}" class="btn btn-primary">Cadastrar</a>
+                    <div class="auth-buttons">
+                        <a href="{{ url_for('login') }}" class="btn-auth">Entrar</a>
+                        <a href="{{ url_for('cadastro') }}" class="btn-auth primary">Cadastrar</a>
+                    </div>
+                    <i class="fas fa-user user-icon"></i>
                 {% endif %}
             </div>
         </div>
-    </nav>
+    </header>
 
-    <!-- Alertas -->
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
     <main>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="alerts-container" style="padding-top: 20px;">
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">{{ message }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-        
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <h3>UzzeStore</h3>
-            <p>Moda com estilo e qualidade</p>
-            <p>&copy; 2024 UzzeStore. Todos os direitos reservados.</p>
-            <p>📧 contato@uzzestore.com | 📱 (11) 9999-9999</p>
-        </div>
-    </footer>
-
-    <!-- WhatsApp Float -->
-    <a href="https://wa.me/5511999999999" class="whatsapp-float" target="_blank">
-        💬
-    </a>
-
     <script>
-        // Toggle user menu
-        function toggleUserMenu() {
-            const dropdown = document.getElementById('userDropdown');
-            dropdown.classList.toggle('show');
-        }
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            const userMenu = document.querySelector('.user-menu');
-            const dropdown = document.getElementById('userDropdown');
-            
-            if (userMenu && !userMenu.contains(event.target)) {
-                dropdown.classList.remove('show');
-            }
-        });
-
-        // Update cart count
+        // Contador do carrinho
         function updateCartCount() {
-            const cartItems = {{ session.carrinho|length if session.carrinho else 0 }};
-            const badge = document.querySelector('.cart-badge');
-            if (badge) {
-                badge.textContent = cartItems;
-                badge.style.display = cartItems > 0 ? 'flex' : 'none';
-            }
+            // Aqui você pode adicionar lógica para atualizar o contador via AJAX
         }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', updateCartCount);
     </script>
-    
-    {% block scripts %}{% endblock %}
 </body>
 </html>
