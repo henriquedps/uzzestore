@@ -38,24 +38,29 @@
         }
 
         .logo {
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: bold;
             color: #000;
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            flex-shrink: 0; /* Impede que a logo encolha */
         }
 
         .logo::before {
             content: "◆";
             color: #666;
+            font-size: 1.2rem;
         }
 
         .nav-menu {
             display: flex;
             list-style: none;
             gap: 30px;
+            flex: 1; /* Faz o menu ocupar o espaço disponível */
+            justify-content: center; /* Centraliza o menu */
+            margin: 0 40px; /* Dá espaço entre logo e ações */
         }
 
         .nav-item a {
@@ -76,6 +81,7 @@
             display: flex;
             align-items: center;
             gap: 20px;
+            flex-shrink: 0; /* Impede que as ações encolham */
         }
 
         .search-icon, .user-icon, .cart-icon {
