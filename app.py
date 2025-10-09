@@ -388,6 +388,22 @@ def admin_produtos():
     except Exception as e:
         return f"Erro: {e}"
 
+@app.route('/meus-pedidos')
+def pedidos_usuario():
+    if 'user_id' not in session:
+        flash('Você precisa estar logado!', 'error')
+        return redirect(url_for('login'))
+    
+    conn = get_db_connection()
+    pedidos = conn.execute('''
+        SELECT * FROM pedidos 
+        WHERE usuario_id = ? 
+        ORDER BY id DESC
+    ''', (session['user_id'],)).fetchall()
+    conn.close()
+    
+    return render_template('pedidos_usuario.html', pedidos=pedidos)
+
 # Para o Vercel, não usar if __name__ == '__main__'
 # O app será executado automaticamente
 print("🚀 UzzerStore inicializado para produção!")
