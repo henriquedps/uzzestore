@@ -388,6 +388,18 @@ def admin_produtos():
     except Exception as e:
         return f"Erro: {e}"
 
+@app.route('/admin/pedidos')
+def admin_pedidos():
+    if not is_admin():
+        flash('Acesso negado!', 'error')
+        return redirect(url_for('login'))
+    
+    conn = get_db_connection()
+    pedidos = conn.execute('SELECT * FROM pedidos ORDER BY id DESC').fetchall()
+    conn.close()
+    
+    return render_template('admin_pedidos.html', pedidos=pedidos)
+
 @app.route('/meus-pedidos')
 def pedidos_usuario():
     if 'user_id' not in session:
