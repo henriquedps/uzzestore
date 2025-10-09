@@ -84,8 +84,7 @@ def setup_production():
     else:
         print("ℹ️ Banco de dados já existe!")
     
-    print("\n🚀 Sistema pronto para produção!")
-    print("🌐 Para executar: python app.py")
+   
 
 if __name__ == '__main__':
     setup_production()
