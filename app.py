@@ -8,6 +8,25 @@ from datetime import datetime
 import uuid
 import click
 from werkzeug.security import generate_password_hash
+from dotenv import load_dotenv
+
+try:
+    load_dotenv()
+except Exception:
+    pass
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_DB = os.path.join(BASE_DIR, 'data', 'app.db')
+DB_PATH = os.getenv('DB_PATH', DEFAULT_DB)
+
+# NOVO: tornar absoluto se for relativo
+if not os.path.isabs(DB_PATH):
+    DB_PATH = os.path.join(BASE_DIR, DB_PATH)
+
+DB_DIR = os.path.dirname(DB_PATH)
+# NOVO: só cria se houver diretório definido
+if DB_DIR:
+    os.makedirs(DB_DIR, exist_ok=True)
 
 def _conn_rw():
     # usa sua função existente
@@ -61,7 +80,7 @@ def from_json_filter(value):
         return []
 
 def get_db_connection():
-    conn = sqlite3.connect(app.config['DATABASE_PATH'])
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -69,8 +88,8 @@ def init_db():
     """Inicializar banco de dados"""
     try:
         conn = get_db_connection()
-        
-        # Criar tabela usuarios
+
+        # Tabelas
         conn.execute('''
             CREATE TABLE IF NOT EXISTS usuarios (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -80,8 +99,6 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
-        
-        # Criar tabela produtos
         conn.execute('''
             CREATE TABLE IF NOT EXISTS produtos (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -93,23 +110,24 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
-        
-        
-        # Criar usuário admin se não existir
+
+        # Garante coluna is_admin (se faltar, cria)
+        ensure_is_admin_column(conn)
+
+        # Admin padrão (com is_admin=1)
         admin_exists = conn.execute('SELECT COUNT(*) FROM usuarios WHERE email = ?', ('admin@uzzerstore.com',)).fetchone()[0]
         if admin_exists == 0:
             conn.execute('''
-                INSERT INTO usuarios (nome, email, senha) 
-                VALUES (?, ?, ?)
+                INSERT INTO usuarios (nome, email, senha, is_admin) 
+                VALUES (?, ?, ?, 1)
             ''', (
                 'Administrador',
                 'admin@uzzerstore.com',
                 generate_password_hash('Admin@2024!')
             ))
-        
+
         conn.commit()
         conn.close()
-        
         print("✅ Banco de dados inicializado com sucesso!")
     except Exception as e:
         print(f"❌ Erro ao inicializar banco: {e}")
@@ -117,21 +135,30 @@ def init_db():
 def is_admin():
     if 'user_id' not in session:
         return False
-    
     try:
         conn = get_db_connection()
         user = conn.execute('SELECT * FROM usuarios WHERE id = ?', (session['user_id'],)).fetchone()
+
+        # verifica se a coluna existe
+        cols = [r['name'] for r in conn.execute("PRAGMA table_info(usuarios)").fetchall()]
         conn.close()
-        
+
+        db_admin = False
         if user:
+            if 'is_admin' in cols:
+                try:
+                    db_admin = bool(user['is_admin'])
+                except Exception:
+                    db_admin = False
+
+            # Fallbacks antigos
             is_first_user = user['id'] == 1
             is_admin_email = user['email'] in ['admin@uzzerstore.com', 'administrador@uzzerstore.com']
             is_session_admin = session.get('is_admin', False)
-            
-            return is_first_user or is_admin_email or is_session_admin
+
+            return db_admin or is_first_user or is_admin_email or is_session_admin
     except Exception as e:
         print(f"Erro ao verificar admin: {e}")
-    
     return False
 
 # ROTAS DO CARRINHO
@@ -321,28 +348,40 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         senha = request.form['senha']
-        
         try:
             conn = get_db_connection()
             user = conn.execute('SELECT * FROM usuarios WHERE email = ?', (email,)).fetchone()
+
+            # checa colunas
+            cols = [r['name'] for r in conn.execute("PRAGMA table_info(usuarios)").fetchall()]
             conn.close()
-            
+
             if user and check_password_hash(user['senha'], senha):
                 session['user_id'] = user['id']
                 session['user_nome'] = user['nome']
-                
-                if user['id'] == 1 or user['email'] in ['admin@uzzerstore.com', 'administrador@uzzerstore.com']:
-                    session['is_admin'] = True
+
+                db_admin = False
+                if 'is_admin' in cols:
+                    try:
+                        db_admin = bool(user['is_admin'])
+                    except Exception:
+                        db_admin = False
+
+                # Fallbacks
+                is_first_user = user['id'] == 1
+                is_admin_email = user['email'] in ['admin@uzzerstore.com', 'administrador@uzzerstore.com']
+
+                session['is_admin'] = bool(db_admin or is_first_user or is_admin_email)
+
+                if session['is_admin']:
                     flash(f'Bem-vindo(a) Admin, {user["nome"]}! 🔧', 'success')
                 else:
                     flash(f'Bem-vindo(a), {user["nome"]}!', 'success')
-                
                 return redirect(url_for('index'))
             else:
                 flash('Email ou senha incorretos!', 'error')
         except Exception as e:
             flash(f'Erro no login: {e}', 'error')
-    
     return render_template('login.html')
 
 @app.route('/logout')
@@ -508,13 +547,13 @@ def debug_produtos():
 
 @app.cli.command("db-info")
 def db_info():
-    """Mostra o arquivo do banco e colunas da tabela usuarios."""
-    conn = _conn_rw()
+    """Mostra o arquivo de banco em uso e as colunas de usuarios."""
+    conn = get_db_connection()
     try:
         dblist = [dict(r) for r in conn.execute("PRAGMA database_list").fetchall()]
-        print("SQLite databases:", dblist)  # veja o caminho absoluto em 'file'
+        print("SQLite em uso:", dblist)
         cols = [dict(c) for c in conn.execute("PRAGMA table_info(usuarios)").fetchall()]
-        print("Tabela usuarios:", cols)
+        print("Tabela usuarios:", cols or 'não encontrada')
     finally:
         conn.close()
 
@@ -544,6 +583,44 @@ def create_admin(nome, email, senha):
     except Exception as e:
         conn.rollback()
         print("Erro:", e)
+    finally:
+        conn.close()
+
+@app.cli.command("init-db")
+@click.option('--schema', default=os.path.join(BASE_DIR, 'sql', 'schema.sql'))
+def init_db_cli(schema):  # RENOMEADO para não sobrescrever init_db()
+    """Cria as tabelas no DB atual a partir de um schema.sql."""
+    if not os.path.exists(schema):
+        print("Schema não encontrado:", schema)
+        return
+    conn = get_db_connection()
+    try:
+        with open(schema, 'r', encoding='utf-8') as f:
+            conn.executescript(f.read())
+        conn.commit()
+        print("OK: schema aplicado em", DB_PATH)
+    finally:
+        conn.close()
+
+@app.cli.command("upgrade-db")
+def upgrade_db():
+    """Garante estrutura mínima (tabelas + coluna is_admin)."""
+    # garante tabelas
+    init_db()
+    conn = get_db_connection()
+    try:
+        # garante coluna is_admin
+        ensure_is_admin_column(conn)
+        # garante coluna de senha compatível (senha ou senha_hash)
+        ensure_password_column(conn)
+        conn.commit()
+        print("OK: Migração mínima aplicada em", DB_PATH)
+        # Mostra colunas para conferência
+        cols = [dict(c) for c in conn.execute("PRAGMA table_info(usuarios)").fetchall()]
+        print("usuarios =>", cols)
+    except Exception as e:
+        conn.rollback()
+        print("Erro no upgrade-db:", e)
     finally:
         conn.close()
 

@@ -8,6 +8,22 @@
     <p class="hero-subtitle">Descubra as últimas tendências em moda</p>
 </section>
 
+<script>
+if (!window.imgFallback) {
+  window.imgFallback = function(el, w=800, h=800, text='Sem Imagem') {
+    el.onerror = null;
+    const url = `https://placehold.co/${w}x${h}/f0f0f0/666?text=${encodeURIComponent(text)}`;
+    const test = new Image();
+    test.onload = () => el.src = url;
+    test.onerror = () => {
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'><rect width='100%' height='100%' fill='#f0f0f0'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='24' fill='#666'>${text}</text></svg>`;
+      el.src = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+    };
+    test.src = url;
+  };
+}
+</script>
+
 <!-- Filter Section -->
 <section class="filter-section">
     <div class="filter-left">
@@ -211,80 +227,6 @@
         </div>
     {% endif %}
 </section>
-
-<!-- Modal de Visualização Rápida -->
-<div class="quick-view-modal" id="quick-view-modal">
-    <div class="modal-overlay" onclick="closeQuickView()"></div>
-    <div class="modal-content">
-        <button class="modal-close" onclick="closeQuickView()">
-            <i class="fas fa-times"></i>
-        </button>
-        
-        <div class="modal-body">
-            <div class="product-image-section">
-                <!-- No modal (imagem principal) garanta o mesmo fallback -->
-                <img id="qv-main-img" src=""
-                     alt="Produto"
-                     onerror="imgFallback(this, 900, 900, 'Sem Imagem')">
-            </div>
-            
-            <div class="product-details-section">
-                <div class="product-header">
-                    <span id="modal-product-category" class="modal-category"></span>
-                    <h2 id="modal-product-name" class="modal-title"></h2>
-                    <div id="modal-product-price" class="modal-price"></div>
-                </div>
-                
-                <div class="product-description">
-                    <h3>Descrição</h3>
-                    <p id="modal-product-description">Produto de alta qualidade com excelente acabamento e conforto.</p>
-                </div>
-                
-                <div class="product-sizes">
-                    <h3>Tamanhos disponíveis</h3>
-                    <div class="size-selector">
-                        <button class="size-btn" onclick="selectSize('PP')">PP</button>
-                        <button class="size-btn" onclick="selectSize('P')">P</button>
-                        <button class="size-btn active" onclick="selectSize('M')">M</button>
-                        <button class="size-btn" onclick="selectSize('G')">G</button>
-                        <button class="size-btn" onclick="selectSize('GG')">GG</button>
-                        <button class="size-btn" onclick="selectSize('XG')">XG</button>
-                    </div>
-                </div>
-                
-                <div class="product-actions">
-                    {% if session.user_id %}
-                        <button id="modal-add-cart" class="btn-modal-cart" onclick="addToCartFromModal()">
-                            <i class="fas fa-shopping-bag"></i> Adicionar ao Carrinho
-                        </button>
-                        <button class="btn-modal-wishlist" onclick="addToWishlist()">
-                            <i class="fas fa-heart"></i> Favoritar
-                        </button>
-                    {% else %}
-                        <a href="{{ url_for('login') }}" class="btn-modal-cart">
-                            <i class="fas fa-sign-in-alt"></i> Fazer Login para Comprar
-                        </a>
-                    {% endif %}
-                </div>
-                
-                <div class="product-info">
-                    <div class="info-item">
-                        <i class="fas fa-truck"></i>
-                        <span>Frete grátis para compras acima de R$ 150</span>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-shield-alt"></i>
-                        <span>Compra 100% segura e garantida</span>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-redo-alt"></i>
-                        <span>Troca grátis em até 30 dias</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Quick View Modal - Novo Estilo -->
 <div id="qv-modal" class="qv-modal" aria-hidden="true">
@@ -1061,7 +1003,6 @@
 </style>
 
 <script>
-/* Quick View estável: evita recursão e roda uma única vez */
 (() => {
   if (window.__QV_INIT__) return;
   window.__QV_INIT__ = true;
@@ -1072,49 +1013,60 @@
   function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
   function formatBRL(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v); }
 
+  function htmlDecode(str){
+    if (!str) return '';
+    const t = document.createElement('textarea');
+    t.innerHTML = str;
+    return t.value;
+  }
+
   function setMain(i){
     QV.idx = i;
-    const img = document.getElementById('qv-main-img');
+    const img = document.querySelector('#qv-modal #qv-main-img'); // garante o modal novo
     if (!img) return;
     img.style.opacity = .6;
     img.onload = ()=>img.style.opacity = 1;
-    img.onerror = ()=> imgFallback(img, 900, 900, 'Sem Imagem');
+    img.onerror = ()=> window.imgFallback(img, 900, 900, 'Sem Imagem');
     img.src = QV.imgs[i] || '';
-    document.querySelectorAll('.qv-thumb').forEach((t,idx)=>t.classList.toggle('active', idx===i));
+    document.querySelectorAll('#qv-modal .qv-thumb').forEach((t,idx)=>t.classList.toggle('active', idx===i));
   }
 
   function openQuickViewImpl(id){
     const card = document.querySelector(`.product-card[data-id="${id}"]`);
     if (!card) return;
 
-    QV.id = id;
+    // pega o src real do <img> do card (evita &amp;)
+    const imgEl = card.querySelector('.product-image img');
+    const imgFromImgTag = imgEl?.src || '';
+    const imgFromData = card.dataset.imagem ? htmlDecode(card.dataset.imagem) : '';
+
     const nome = card.dataset.nome || 'Produto';
     const preco = parseFloat(card.dataset.preco || '0');
-    const imagem = card.dataset.imagem || '';
-    const desc = card.dataset.descricao || '';
+    const desc  = card.dataset.descricao || '';
 
-    QV.imgs = imagem ? [imagem] : [''];
-    QV.idx = 0;
+    // monta galeria com a melhor fonte disponível
+    const primeira = imgFromImgTag || imgFromData || '';
+    window.QV.imgs = primeira ? [primeira] : [''];
+    window.QV.idx  = 0;
+    window.QV.id   = id;
 
-    // Side info
     document.getElementById('qv-title').textContent = nome;
     document.getElementById('qv-price').textContent = formatBRL(preco);
-    document.getElementById('qv-old').textContent = formatBRL(Math.max(preco * 1.25, preco));
-    document.getElementById('qv-desc').textContent = desc;
+    document.getElementById('qv-old').textContent   = formatBRL(Math.max(preco * 1.25, preco));
+    document.getElementById('qv-desc').textContent  = desc;
     document.getElementById('qv-qty').value = 1;
 
-    // Thumbs
+    // thumbs
     const thumbs = document.getElementById('qv-thumbs');
     thumbs.innerHTML = '';
-    QV.imgs.forEach((src, i) => {
+    window.QV.imgs.forEach((src, i) => {
       const d = document.createElement('div');
-      d.className = 'qv-thumb' + (i === 0 ? ' active' : '');
+      d.className = 'qv-thumb' + (i===0?' active':'');
       d.onclick = () => setMain(i);
-      d.innerHTML = `<img src="${src || ''}" alt="thumb" onerror="imgFallback(this,100,100,'')">`;
+      d.innerHTML = `<img src="${src}" alt="thumb" onerror="imgFallback(this,100,100,'')">`;
       thumbs.appendChild(d);
     });
 
-    // Imagem principal
     setMain(0);
 
     // Comprar
@@ -1131,10 +1083,10 @@
     document.body.style.overflow = 'hidden';
   }
 
-  // API pública sem recursão
+  // expor APIs públicas e binds
   window.openQuickView = (id) => {
     const modal = document.getElementById('qv-modal');
-    if (!modal) { console.warn('qv-modal não encontrado.'); return; }
+    if (!modal) { console.warn('qv-modal não encontrado'); return; }
     openQuickViewImpl(id);
   };
 
