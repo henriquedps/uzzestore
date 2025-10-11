@@ -161,7 +161,11 @@
                      data-imagem="{{ produto.imagem or '' }}"
                      data-id="{{ produto.id }}">
                   <div class="product-image">
-                    <img src="{{ produto.imagem or 'https://via.placeholder.com/800x800/f0f0f0/666?text=Sem+Imagem' }}" alt="{{ produto.nome }}">
+                    <!-- Em cada card: troque o <img> para usar o fallback JS -->
+                    <img src="{{ produto.imagem or '' }}"
+                         alt="{{ produto.nome }}"
+                         loading="lazy"
+                         onerror="imgFallback(this, 800, 800, 'Sem Imagem')">
                     <button class="qv-trigger"><i class="fas fa-eye"></i> Visualização rápida</button>
                   </div>
                   
@@ -216,7 +220,10 @@
         
         <div class="modal-body">
             <div class="product-image-section">
-                <img id="modal-product-image" src="" alt="" class="modal-product-img">
+                <!-- No modal (imagem principal) garanta o mesmo fallback -->
+                <img id="qv-main-img" src=""
+                     alt="Produto"
+                     onerror="imgFallback(this, 900, 900, 'Sem Imagem')">
             </div>
             
             <div class="product-details-section">
@@ -291,7 +298,9 @@
 
       <!-- Imagem grande -->
       <div class="qv-main">
-        <img id="qv-main-img" src="" alt="Produto" onerror="this.src='https://via.placeholder.com/900x900/f0f0f0/666?text=Sem+Imagem'">
+        <img id="qv-main-img" src=""
+             alt="Produto"
+             onerror="imgFallback(this, 900, 900, 'Sem Imagem')">
       </div>
 
       <!-- Detalhes à direita -->
@@ -1123,10 +1132,8 @@ function setMain(i){
   const img = document.getElementById('qv-main-img');
   img.style.opacity = .6;
   img.onload = ()=>img.style.opacity = 1;
-  img.src = QV.imgs[i];
-
-  // ativa thumb
-  document.querySelectorAll('.qv-thumb').forEach((t,idx)=>t.classList.toggle('active', idx===i));
+  img.onerror = ()=> imgFallback(img, 900, 900, 'Sem Imagem');
+  img.src = QV.imgs[i] || '';
 }
 
 function incQty(){ const el = document.getElementById('qv-qty'); el.value = clamp(parseInt(el.value||'1',10)+1,1,99); }
@@ -1247,5 +1254,43 @@ function updateProductsDisplay() {
 
 // Expor caso use onclick inline
 window.filterProducts = filterProducts;
+
+// Fallback robusto de imagem: tenta placehold.co; se falhar, usa SVG inline
+function imgFallback(el, w=800, h=800, text='Sem Imagem') {
+  try {
+    el.onerror = null; // evita loop
+    const tryUrl = `https://placehold.co/${w}x${h}/f0f0f0/666?text=${encodeURIComponent(text)}`;
+    const probe = new Image();
+    probe.onload = () => { el.src = tryUrl; };
+    probe.onerror = () => {
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
+          <rect width="100%" height="100%" fill="#f0f0f0"/>
+          <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+                font-family="Arial, sans-serif" font-size="${Math.max(16, Math.round(w*0.04))}" fill="#666">
+            ${text}
+          </text>
+        </svg>`;
+      el.src = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+    };
+    probe.src = tryUrl;
+  } catch (e) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
+      <rect width="100%" height="100%" fill="#f0f0f0"/>
+      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+            font-family="Arial, sans-serif" font-size="24" fill="#666">${text}</text>
+    </svg>`;
+    el.src = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+  }
+}
+
+// Garante fallback também para imagens sem src definido
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.product-image img').forEach(img => {
+    if (!img.getAttribute('src') || img.getAttribute('src') === '') {
+      imgFallback(img, 800, 800, 'Sem Imagem');
+    }
+  });
+});
 </script>
 {% endblock %}
