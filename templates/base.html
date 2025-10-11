@@ -54,8 +54,8 @@
             padding: 0 40px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
             height: 80px;
+            position: relative;
         }
 
         .logo {
@@ -65,7 +65,8 @@
             color: var(--primary-color);
             text-decoration: none;
             letter-spacing: -0.02em;
-            position: relative;
+            position: absolute;
+            left: 40px; /* Fixa a logo no canto esquerdo */
             transition: var(--transition);
         }
 
@@ -89,6 +90,9 @@
             list-style: none;
             gap: 40px;
             align-items: center;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%); /* Centraliza o menu */
         }
 
         .nav-item a {
@@ -132,6 +136,8 @@
             display: flex;
             align-items: center;
             gap: 25px;
+            position: absolute;
+            right: 40px; /* Fixa as ações no canto direito */
         }
 
         .icon-btn {
@@ -519,14 +525,25 @@
             .nav-container {
                 padding: 0 20px;
                 height: 70px;
-            }
-
-            .nav-menu {
-                display: none;
+                justify-content: space-between; /* No mobile volta ao layout flex normal */
+                position: static;
             }
 
             .logo {
+                position: static;
+                left: auto;
                 font-size: 1.5rem;
+            }
+
+            .nav-menu {
+                display: none; /* Esconde o menu no mobile */
+                position: static;
+                transform: none;
+            }
+
+            .nav-actions {
+                position: static;
+                right: auto;
             }
 
             .hero-section {
@@ -632,7 +649,6 @@
                 <li class="nav-item"><a href="{{ url_for('index', categoria='Conjuntos') }}">Conjuntos</a></li>
                 <li class="nav-item"><a href="{{ url_for('index', categoria='Acessórios') }}">Acessórios</a></li>
                 <li class="nav-item"><a href="{{ url_for('index') }}">Lançamentos</a></li>
-                <li class="nav-item sale"><a href="{{ url_for('index') }}">SALE</a></li>
             </nav>
             
             <div class="nav-actions">
