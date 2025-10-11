@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block title %}UzzerStore - Moda com Estilo{% endblock %}
 
 {% block content %}
@@ -288,6 +287,62 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- Quick View Modal - Novo Estilo -->
+<div id="qv-modal" class="qv-modal" aria-hidden="true">
+  <div class="qv-backdrop" onclick="closeQuickView()"></div>
+  <div class="qv-dialog" role="dialog" aria-modal="true">
+    <button class="qv-close" onclick="closeQuickView()"><i class="fas fa-times"></i></button>
+
+    <div class="qv-content">
+      <!-- Galeria esquerda -->
+      <div class="qv-gallery">
+        <div id="qv-thumbs" class="qv-thumbs"></div>
+      </div>
+
+      <!-- Imagem grande -->
+      <div class="qv-main">
+        <img id="qv-main-img" src="" alt="Produto" onerror="this.src='https://via.placeholder.com/900x900/f0f0f0/666?text=Sem+Imagem'">
+      </div>
+
+      <!-- Detalhes à direita -->
+      <div class="qv-side">
+        <h2 id="qv-title" class="qv-title">Nome do Produto</h2>
+
+        <div class="qv-prices">
+          <span id="qv-old" class="qv-old">R$ 0,00</span>
+          <span id="qv-price" class="qv-price">R$ 0,00</span>
+        </div>
+
+        <div class="qv-qty-row">
+          <div class="qv-qty">
+            <button type="button" class="qty-btn" onclick="decQty()">−</button>
+            <input id="qv-qty" type="number" min="1" max="99" value="1" inputmode="numeric">
+            <button type="button" class="qty-btn" onclick="incQty()">+</button>
+          </div>
+
+          {% if session.user_id %}
+          <button id="qv-buy" class="qv-buy"><i class="fas fa-shopping-bag"></i> Comprar</button>
+          {% else %}
+          <a class="qv-buy" href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Fazer login</a>
+          {% endif %}
+        </div>
+
+        <button id="qv-fav" class="qv-fav"><i class="far fa-heart"></i> Salvar como favorito</button>
+
+        <div class="qv-share">
+          <span>Compartilhar:</span>
+          <a id="share-fb" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a id="share-tw" target="_blank" rel="noopener" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+          <a id="share-wa" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+          <button id="share-copy" class="share-copy" onclick="copyShare()"><i class="fas fa-link"></i></button>
+        </div>
+
+        <p id="qv-desc" class="qv-desc"></p>
+      </div>
+    </div>
+  </div>
 </div>
 
 <style>
@@ -939,521 +994,159 @@
     width: 16px;
 }
 
-/* Mobile */
-@media (max-width: 768px) {
-    .modal-content {
-        width: 95%;
-        max-height: 90vh;
-    }
-    
-    .modal-body {
-        grid-template-columns: 1fr;
-        grid-template-rows: 300px 1fr;
-    }
-    
-    .product-image-section {
-        padding: 20px;
-    }
-    
-    .product-details-section {
-        padding: 25px 20px;
-    }
-    
-    .modal-title {
-        font-size: 1.5rem;
-    }
-    
-    .modal-price {
-        font-size: 1.4rem;
-    }
-    
-    .product-actions {
-        flex-direction: column;
-    }
+/* Grid simples */
+.products-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr)); gap: 20px; }
+.product-image { position: relative; height: 320px; border-radius: 12px; overflow: hidden; background: #f3f4f6; }
+.product-image img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+.product-card:hover .product-image img { transform: scale(1.06); }
+.qv-trigger { position: absolute; inset: 0; margin: auto; height: 44px; width: 70%; max-width: 260px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: rgba(0,0,0,.85); color: #fff; border: none; border-radius: 8px; opacity: 0; transform: translateY(12px);
+  transition: all .3s; cursor: pointer; }
+.product-image:hover .qv-trigger { opacity: 1; transform: translateY(0); }
+.qv-trigger:hover { background: #111; }
+
+/* Modal */
+.qv-modal { position: fixed; inset: 0; display: none; z-index: 3000; }
+.qv-modal.show { display: block; }
+.qv-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(3px); }
+.qv-dialog { position: relative; margin: 40px auto; max-width: 1100px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 70px rgba(0,0,0,.35); }
+.qv-close { position: absolute; right: 14px; top: 12px; background: #fff; border: 1px solid #eee; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
+.qv-close:hover { background: #000; color: #fff; }
+
+.qv-content { display: grid; grid-template-columns: 120px 1fr 420px; gap: 24px; padding: 28px; }
+.qv-gallery { padding-top: 8px; }
+.qv-thumbs { display: flex; flex-direction: column; gap: 10px; max-height: 540px; overflow: auto; }
+.qv-thumb { width: 100%; aspect-ratio: 1/1; border-radius: 8px; overflow: hidden; border: 2px solid transparent; cursor: pointer; background: #f3f4f6; }
+.qv-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.qv-thumb.active { border-color: #111; }
+
+.qv-main { display: flex; align-items: center; justify-content: center; background: #fafafa; border-radius: 12px; min-height: 540px; }
+.qv-main img { width: 100%; height: 100%; max-height: 620px; object-fit: contain; }
+
+.qv-side { display: flex; flex-direction: column; gap: 18px; }
+.qv-title { font-size: 28px; line-height: 1.2; margin: 0; }
+.qv-prices { display: flex; align-items: baseline; gap: 14px; }
+.qv-old { color: #a1a1a1; text-decoration: line-through; }
+.qv-price { font-size: 28px; font-weight: 700; }
+
+.qv-qty-row { display: flex; gap: 12px; align-items: center; }
+.qv-qty { display: inline-flex; align-items: center; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+.qv-qty input { width: 60px; text-align: center; border: 0; padding: 10px 6px; outline: none; }
+.qty-btn { width: 40px; height: 40px; border: 0; background: #f3f4f6; cursor: pointer; font-size: 18px; }
+.qty-btn:hover { background: #e5e7eb; }
+
+.qv-buy { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  background: #1a1a1a; color: #fff; border: 0; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; text-decoration: none; }
+.qv-buy:hover { background: #000; }
+.qv-fav { background: transparent; border: 0; color: #111; text-align: left; display: inline-flex; gap: 8px; align-items: center; cursor: pointer; }
+.qv-fav.active { color: #e74c3c; }
+
+.qv-share { display: flex; align-items: center; gap: 12px; color: #6b7280; }
+.qv-share a, .share-copy { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #e5e7eb; display: inline-flex; align-items: center; justify-content: center; color: #111; background: #fff; }
+.qv-share a:hover, .share-copy:hover { background: #111; color: #fff; }
+
+.qv-desc { color: #6b7280; line-height: 1.6; }
+
+/* Responsivo */
+@media (max-width: 1024px){
+  .qv-content{ grid-template-columns: 100px 1fr 360px; }
+}
+@media (max-width: 860px){
+  .qv-dialog{ margin: 10px; }
+  .qv-content{ grid-template-columns: 1fr; }
+  .qv-gallery{ order: 2; }
+  .qv-main{ order: 1; min-height: 320px; }
+  .qv-side{ order: 3; }
 }
 </style>
 
 <script>
-let allProducts = [];
-let filteredProducts = [];
+let QV = { id:null, imgs:[], idx:0 };
 
-// Inicializar produtos
-document.addEventListener('DOMContentLoaded', function() {
-    allProducts = Array.from(document.querySelectorAll('.product-card'));
-    filteredProducts = [...allProducts];
-});
+function openQuickView(id){
+  const card = document.querySelector(`.product-card[data-id="${id}"]`);
+  if(!card) return;
 
-// Toggle do painel de filtros
-function toggleFilters() {
-    const panel = document.getElementById('filters-panel');
-    const overlay = document.querySelector('.filters-overlay') || createOverlay();
-    
-    panel.classList.toggle('active');
-    overlay.classList.toggle('active');
-    
-    // Atualizar texto do botão
-    const button = document.querySelector('.filter-toggle');
-    const isActive = panel.classList.contains('active');
-    button.innerHTML = isActive ? 
-        '<i class="fas fa-times"></i> Fechar filtros' : 
-        '<i class="fas fa-sliders-h"></i> Mostrar filtros';
-}
+  QV.id = id;
+  const nome = card.dataset.nome;
+  const preco = parseFloat(card.dataset.preco || '0');
+  const imagem = card.dataset.imagem || '';
+  const desc = card.dataset.descricao || '';
 
-// Criar overlay
-function createOverlay() {
-    const overlay = document.createElement('div');
-    overlay.className = 'filters-overlay';
-    overlay.onclick = toggleFilters;
-    document.body.appendChild(overlay);
-    return overlay;
-}
+  // imagens (se no futuro tiver JSON de galeria, pode preencher aqui)
+  QV.imgs = (imagem ? [imagem] : ['https://via.placeholder.com/900x900/f0f0f0/666?text=Sem+Imagem']);
+  QV.idx = 0;
 
-// Obter categorias selecionadas
-function getSelectedCategories() {
-    const checkboxes = document.querySelectorAll('.filter-option input[type="checkbox"]:checked');
-    return Array.from(checkboxes).map(cb => cb.value);
-}
+  document.getElementById('qv-title').textContent = nome;
+  document.getElementById('qv-price').textContent = formatBRL(preco);
+  document.getElementById('qv-old').textContent = formatBRL(Math.max(preco * 1.25, preco)); // "de"
+  document.getElementById('qv-desc').textContent = desc;
+  document.getElementById('qv-qty').value = 1;
 
-// Obter faixa de preço
-function getPriceRange() {
-    const minPrice = document.getElementById('min-price').value;
-    const maxPrice = document.getElementById('max-price').value;
-    
-    return {
-        min: minPrice ? parseFloat(minPrice) : 0,
-        max: maxPrice ? parseFloat(maxPrice) : Infinity
+  // monta thumbs
+  const thumbs = document.getElementById('qv-thumbs');
+  thumbs.innerHTML = '';
+  QV.imgs.forEach((src, i)=>{
+    const d = document.createElement('div');
+    d.className = 'qv-thumb' + (i===0?' active':'');
+    d.onclick = ()=>setMain(i);
+    d.innerHTML = `<img src="${src}" alt="thumb">`;
+    thumbs.appendChild(d);
+  });
+
+  // imagem principal
+  setMain(0);
+
+  // compartilhar
+  const shareUrl = window.location.origin + '/?p=' + id;
+  document.getElementById('share-fb').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+  document.getElementById('share-tw').href = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(nome)}`;
+  document.getElementById('share-wa').href = `https://wa.me/?text=${encodeURIComponent(nome+' - '+shareUrl)}`;
+
+  // comprar
+  const buy = document.getElementById('qv-buy');
+  if (buy && buy.tagName === 'BUTTON') {
+    buy.onclick = ()=>{
+      const q = clamp(parseInt(document.getElementById('qv-qty').value||'1',10),1,99);
+      window.location.href = `/carrinho/adicionar/${id}?q=${q}`;
     };
+  }
+
+  // favorito
+  const fav = document.getElementById('qv-fav');
+  fav.classList.remove('active');
+  fav.onclick = ()=>{
+    fav.classList.toggle('active');
+  };
+
+  // abrir
+  document.getElementById('qv-modal').classList.add('show');
+  document.body.style.overflow = 'hidden';
 }
 
-// Atualizar a função getSelectedSizes
-function getSelectedSizes() {
-    const checkboxes = document.querySelectorAll('.size-option input[type="checkbox"]:checked');
-    return Array.from(checkboxes).map(cb => cb.value);
+function closeQuickView(){
+  document.getElementById('qv-modal').classList.remove('show');
+  document.body.style.overflow = '';
 }
 
-// Atualizar a função filterProducts
-function filterProducts() {
-    const selectedCategories = getSelectedCategories();
-    const selectedSizes = getSelectedSizes();
-    const priceRange = getPriceRange();
-    
-    filteredProducts = allProducts.filter(product => {
-        const categoria = product.dataset.categoria;
-        const preco = parseFloat(product.dataset.preco);
-        const tamanho = product.dataset.tamanho || ''; // Assumindo que você vai adicionar data-tamanho
-        
-        // Filtro de categoria
-        const categoryMatch = selectedCategories.length === 0 || 
-                             selectedCategories.includes('') || 
-                             selectedCategories.includes(categoria);
-        
-        // Filtro de tamanho
-        const sizeMatch = selectedSizes.length === 0 || 
-                         selectedSizes.includes('') || 
-                         selectedSizes.includes(tamanho);
-        
-        // Filtro de preço
-        const priceMatch = preco >= priceRange.min && preco <= priceRange.max;
-        
-        return categoryMatch && sizeMatch && priceMatch;
-    });
-    
-    updateProductsDisplay();
-    updateActiveFilters();
-    updateProductCount();
+function setMain(i){
+  QV.idx = i;
+  const img = document.getElementById('qv-main-img');
+  img.style.opacity = .6;
+  img.onload = ()=>img.style.opacity = 1;
+  img.src = QV.imgs[i];
+
+  // ativa thumb
+  document.querySelectorAll('.qv-thumb').forEach((t,idx)=>t.classList.toggle('active', idx===i));
 }
 
-// Atualizar a função updateActiveFilters
-function updateActiveFilters() {
-    const container = document.getElementById('active-filters');
-    const list = document.getElementById('active-filters-list');
-    
-    const selectedCategories = getSelectedCategories().filter(cat => cat !== '');
-    const selectedSizes = getSelectedSizes().filter(size => size !== '');
-    const priceRange = getPriceRange();
-    
-    list.innerHTML = '';
-    
-    // Adicionar filtros de categoria
-    selectedCategories.forEach(categoria => {
-        if (categoria) {
-            addFilterTag(list, `Categoria: ${categoria}`, () => {
-                const checkbox = document.querySelector(`input[value="${categoria}"]`);
-                checkbox.checked = false;
-                filterProducts();
-            });
-        }
-    });
-    
-    // Adicionar filtros de tamanho
-    selectedSizes.forEach(tamanho => {
-        if (tamanho) {
-            addFilterTag(list, `Tamanho: ${tamanho}`, () => {
-                const checkbox = document.querySelector(`.size-option input[value="${tamanho}"]`);
-                checkbox.checked = false;
-                filterProducts();
-            });
-        }
-    });
-    
-    // Adicionar filtro de preço
-    if (priceRange.min > 0 || priceRange.max < Infinity) {
-        const priceText = `Preço: R$ ${priceRange.min} - R$ ${priceRange.max === Infinity ? '∞' : priceRange.max}`;
-        addFilterTag(list, priceText, () => {
-            document.getElementById('min-price').value = '';
-            document.getElementById('max-price').value = '';
-            filterProducts();
-        });
-    }
-    
-    container.style.display = list.children.length > 0 ? 'block' : 'none';
-}
+function incQty(){ const el = document.getElementById('qv-qty'); el.value = clamp(parseInt(el.value||'1',10)+1,1,99); }
+function decQty(){ const el = document.getElementById('qv-qty'); el.value = clamp(parseInt(el.value||'1',10)-1,1,99); }
 
-// Adicionar tag de filtro ativo
-function addFilterTag(container, text, removeCallback) {
-    const tag = document.createElement('span');
-    tag.className = 'active-filter-tag';
-    tag.innerHTML = `${text} <span class="remove" onclick="this.parentElement.remove(); arguments[0].stopPropagation();">×</span>`;
-    tag.querySelector('.remove').onclick = (e) => {
-        e.stopPropagation();
-        removeCallback();
-    };
-    container.appendChild(tag);
-}
+function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+function formatBRL(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v); }
 
-// Atualizar contador de produtos
-function updateProductCount() {
-    const counter = document.querySelector('.product-count');
-    const count = filteredProducts.length;
-    counter.textContent = `${count} produto${count !== 1 ? 's' : ''}`;
-}
-
-// Ordenar produtos
-function sortProducts(sortBy) {
-    switch(sortBy) {
-        case 'menor-preco':
-            filteredProducts.sort((a, b) => parseFloat(a.dataset.preco) - parseFloat(b.dataset.preco));
-            break;
-        case 'maior-preco':
-            filteredProducts.sort((a, b) => parseFloat(b.dataset.preco) - parseFloat(a.dataset.preco));
-            break;
-        case 'nome-az':
-            filteredProducts.sort((a, b) => a.dataset.nome.localeCompare(b.dataset.nome));
-            break;
-        case 'nome-za':
-            filteredProducts.sort((a, b) => b.dataset.nome.localeCompare(a.dataset.nome));
-            break;
-        case 'mais-novos':
-            filteredProducts.sort((a, b) => parseInt(b.dataset.id) - parseInt(a.dataset.id));
-            break;
-        default:
-            // Em destaque - ordem original
-            break;
-    }
-    
-    const grid = document.getElementById('products-grid');
-    filteredProducts.forEach(product => {
-        grid.appendChild(product);
-    });
-}
-
-// Filtros rápidos
-function setQuickFilter(type) {
-    // Remover active de outros filtros rápidos
-    document.querySelectorAll('.quick-filter').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    // Ativar filtro atual
-    event.target.classList.add('active');
-    
-    // Lógica específica para cada filtro rápido
-    switch(type) {
-        case 'promocao':
-            // Simular promoção - produtos com preço menor que 100
-            document.getElementById('max-price').value = '100';
-            break;
-        case 'lancamento':
-            // Ordenar por mais novos
-            document.querySelector('.sort-dropdown').value = 'mais-novos';
-            sortProducts('mais-novos');
-            break;
-        case 'mais-vendidos':
-            // Ordenar por destaque
-            document.querySelector('.sort-dropdown').value = 'destaque';
-            sortProducts('destaque');
-            break;
-    }
-    
-    filterProducts();
-}
-
-// Limpar todos os filtros
-function clearAllFilters() {
-    // Limpar checkboxes de categoria
-    document.querySelectorAll('.filter-option input[type="checkbox"]').forEach(cb => {
-        cb.checked = cb.value === '';
-    });
-    
-    // Limpar checkboxes de tamanho
-    document.querySelectorAll('.size-option input[type="checkbox"]').forEach(cb => {
-        cb.checked = cb.value === '';
-    });
-    
-    // Limpar preços
-    document.getElementById('min-price').value = '';
-    document.getElementById('max-price').value = '';
-    
-    // Limpar filtros rápidos
-    document.querySelectorAll('.quick-filter').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    // Resetar ordenação
-    document.querySelector('.sort-dropdown').value = 'destaque';
-    
-    filterProducts();
-}
-
-// Adicionar ao carrinho com animação
-function addToCart(produtoId, produtoNome) {
-    // Animação do botão
-    const button = event.target;
-    const originalText = button.innerHTML;
-    
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adicionando...';
-    button.disabled = true;
-    
-    // Simular requisição
-    setTimeout(() => {
-        // Redirecionar para adicionar ao carrinho
-        window.location.href = `/carrinho/adicionar/${produtoId}`;
-    }, 500);
-}
-
-let currentProductId = null;
-let selectedSize = 'M';
-
-// Dados dos produtos para o modal
-const productData = {
-{% for produto in produtos %}
-{{ produto.id }}: {
-    id: {{ produto.id }},
-    nome: "{{ produto.nome }}",
-    preco: {{ produto.preco }},
-    categoria: "{{ produto.categoria or 'Produto' }}",
-    imagem: "{{ produto.imagem or '' }}",
-    descricao: "{{ produto.descricao or 'Produto de alta qualidade com excelente acabamento e conforto.' }}"
-}{% if not loop.last %},{% endif %}
-{% endfor %}
-};
-
-// Abrir visualização rápida
-function quickView(produtoId) {
-    currentProductId = produtoId;
-    const produto = productData[produtoId];
-    
-    if (!produto) {
-        console.error('Produto não encontrado:', produtoId);
-        return;
-    }
-    
-    // Preencher dados no modal
-    const modalImg = document.getElementById('modal-product-image');
-    const imgSrc = produto.imagem || 'https://via.placeholder.com/500x500/f8f9fa/6c757d?text=Imagem+Indispon%C3%ADvel';
-    
-    // Mostrar loading enquanto carrega
-    modalImg.style.opacity = '0.5';
-    modalImg.src = imgSrc;
-    
-    modalImg.onload = function() {
-        this.style.opacity = '1';
-    };
-    
-    modalImg.onerror = function() {
-        this.src = 'https://via.placeholder.com/500x500/f8f9fa/6c757d?text=Imagem+Indispon%C3%ADvel';
-        this.style.opacity = '1';
-    };
-    
-    modalImg.alt = produto.nome;
-    document.getElementById('modal-product-category').textContent = produto.categoria;
-    document.getElementById('modal-product-name').textContent = produto.nome;
-    document.getElementById('modal-product-price').textContent = formatCurrency(produto.preco);
-    document.getElementById('modal-product-description').textContent = produto.descricao;
-    
-    // Resetar tamanho selecionado
-    selectedSize = 'M';
-    document.querySelectorAll('.size-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    const mBtn = document.querySelector('.size-btn[onclick="selectSize(\'M\')"]');
-    if (mBtn) mBtn.classList.add('active');
-    
-    // Mostrar modal
-    const modal = document.getElementById('quick-view-modal');
-    modal.style.display = 'flex';
-    setTimeout(() => {
-        modal.classList.add('active');
-    }, 10);
-    
-    // Bloquear scroll do body
-    document.body.style.overflow = 'hidden';
-}
-
-// Fechar modal
-function closeQuickView() {
-    const modal = document.getElementById('quick-view-modal');
-    modal.classList.remove('active');
-    
-    setTimeout(() => {
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
-    }, 300);
-}
-
-// Selecionar tamanho
-function selectSize(size) {
-    selectedSize = size;
-    
-    document.querySelectorAll('.size-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    event.target.classList.add('active');
-}
-
-// Adicionar ao carrinho do modal
-function addToCartFromModal() {
-    if (!currentProductId) return;
-    
-    const button = document.getElementById('modal-add-cart');
-    const originalText = button.innerHTML;
-    
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adicionando...';
-    button.disabled = true;
-    
-    // Simular requisição
-    setTimeout(() => {
-        window.location.href = `/carrinho/adicionar/${currentProductId}`;
-    }, 500);
-}
-
-// Adicionar à lista de desejos
-function addToWishlist() {
-    if (!currentProductId) return;
-    
-    const button = event.target;
-    const originalText = button.innerHTML;
-    
-    button.innerHTML = '<i class="fas fa-heart" style="color: #ff4757;"></i> Favoritado!';
-    button.disabled = true;
-    
-    setTimeout(() => {
-        button.innerHTML = originalText;
-        button.disabled = false;
-    }, 2000);
-}
-
-// Formatar moeda
-function formatCurrency(value) {
-    return new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    }).format(value);
-}
-
-// Fechar modal com ESC
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeQuickView();
-    }
-});
-
-// Melhorar carregamento das imagens
-document.addEventListener('DOMContentLoaded', function() {
-    // Lazy loading para imagens
-    const images = document.querySelectorAll('.product-image img');
-    
-    images.forEach(img => {
-        // Quando a imagem carregar com sucesso
-        img.addEventListener('load', function() {
-            this.classList.add('loaded');
-        });
-        
-        // Se a imagem falhar ao carregar
-        img.addEventListener('error', function() {
-            console.log('Erro ao carregar imagem:', this.src);
-            
-            // Criar placeholder personalizado
-            const placeholder = document.createElement('div');
-            placeholder.className = 'product-placeholder';
-            placeholder.innerHTML = `
-                <i class="fas fa-image"></i>
-                <p>Imagem indisponível</p>
-            `;
-            
-            // Substituir a imagem pelo placeholder
-            this.parentNode.insertBefore(placeholder, this);
-            this.style.display = 'none';
-        });
-        
-        // Forçar verificação se a imagem já está carregada
-        if (img.complete) {
-            img.classList.add('loaded');
-        }
-    });
-});
-
-// Atualizar função quickView para lidar melhor com imagens
-function quickView(produtoId) {
-    currentProductId = produtoId;
-    const produto = productData[produtoId];
-    
-    if (!produto) {
-        console.error('Produto não encontrado:', produtoId);
-        return;
-    }
-    
-    // Preencher dados no modal
-    const modalImg = document.getElementById('modal-product-image');
-    const imgSrc = produto.imagem || 'https://via.placeholder.com/500x500/f8f9fa/6c757d?text=Imagem+Indispon%C3%ADvel';
-    
-    // Mostrar loading enquanto carrega
-    modalImg.style.opacity = '0.5';
-    modalImg.src = imgSrc;
-    
-    modalImg.onload = function() {
-        this.style.opacity = '1';
-    };
-    
-    modalImg.onerror = function() {
-        this.src = 'https://via.placeholder.com/500x500/f8f9fa/6c757d?text=Imagem+Indispon%C3%ADvel';
-        this.style.opacity = '1';
-    };
-    
-    modalImg.alt = produto.nome;
-    document.getElementById('modal-product-category').textContent = produto.categoria;
-    document.getElementById('modal-product-name').textContent = produto.nome;
-    document.getElementById('modal-product-price').textContent = formatCurrency(produto.preco);
-    document.getElementById('modal-product-description').textContent = produto.descricao;
-    
-    // Resetar tamanho selecionado
-    selectedSize = 'M';
-    document.querySelectorAll('.size-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    const mBtn = document.querySelector('.size-btn[onclick="selectSize(\'M\')"]');
-    if (mBtn) mBtn.classList.add('active');
-    
-    // Mostrar modal
-    const modal = document.getElementById('quick-view-modal');
-    modal.style.display = 'flex';
-    setTimeout(() => {
-        modal.classList.add('active');
-    }, 10);
-    
-    // Bloquear scroll do body
-    document.body.style.overflow = 'hidden';
-}
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeQuickView(); });
 </script>
 {% endblock %}

@@ -153,48 +153,41 @@ def carrinho_adicionar(produto_id):
     if 'user_id' not in session:
         flash('Você precisa estar logado para adicionar ao carrinho!', 'error')
         return redirect(url_for('login'))
+
+    # NOVO: quantidade via querystring ?q= (padrão 1, máx. 99)
+    try:
+        q = int(request.args.get('q', 1))
+    except ValueError:
+        q = 1
+    quantidade = max(1, min(q, 99))
     
     try:
         conn = get_db_connection()
         produto = conn.execute('SELECT * FROM produtos WHERE id = ?', (produto_id,)).fetchone()
         conn.close()
-        
+
         if not produto:
             flash('Produto não encontrado!', 'error')
             return redirect(url_for('index'))
-        
-        # Inicializar carrinho se não existir
+
         if 'carrinho' not in session:
             session['carrinho'] = []
-        
+
         carrinho = session['carrinho']
-        print(f"Debug - Carrinho antes: {carrinho}")  # Debug
-        
-        # Verificar se produto já existe no carrinho
-        produto_encontrado = False
         for item in carrinho:
             if item['produto_id'] == produto_id:
-                item['quantidade'] += 1
-                produto_encontrado = True
+                item['quantidade'] += quantidade
                 break
-        
-        # Se não encontrou, adicionar novo item
-        if not produto_encontrado:
-            carrinho.append({
-                'produto_id': produto_id,
-                'quantidade': 1
-            })
-        
-        # Salvar no session
+        else:
+            carrinho.append({'produto_id': produto_id, 'quantidade': quantidade})
+
         session['carrinho'] = carrinho
         session.permanent = True
-        session.modified = True  # Forçar salvamento
-        
-        print(f"Debug - Carrinho depois: {session['carrinho']}")  # Debug
-        
-        flash(f'✅ "{produto["nome"]}" adicionado ao carrinho!', 'success')
+        session.modified = True
+
+        flash(f'✅ "{produto["nome"]}" x{quantidade} adicionado ao carrinho!', 'success')
         return redirect(request.referrer or url_for('index'))
-        
+
     except Exception as e:
         print(f"Erro ao adicionar ao carrinho: {e}")
         flash('Erro ao adicionar produto ao carrinho!', 'error')
