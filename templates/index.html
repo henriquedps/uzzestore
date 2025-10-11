@@ -153,47 +153,29 @@
         <div class="products-grid" id="products-grid">
             <!-- Atualize a seção do produto no index.html -->
             {% for produto in produtos %}
-                <div class="product-card" 
-                     data-categoria="{{ produto.categoria or '' }}" 
-                     data-preco="{{ produto.preco }}" 
-                     data-nome="{{ produto.nome|lower }}"
-                     data-id="{{ produto.id }}">
-                    <div class="product-image">
-                        {% if produto.imagem %}
-                            <img src="{{ produto.imagem }}" 
-                                 alt="{{ produto.nome }}" 
-                                 loading="lazy"
-                                 onerror="this.onerror=null; this.src='https://via.placeholder.com/400x400/f0f0f0/666?text=Sem+Imagem';">
-                        {% else %}
-                            <div class="product-placeholder">
-                                <i class="fas fa-image"></i>
-                                <p>Sem imagem</p>
-                            </div>
-                        {% endif %}
-                        <div class="product-overlay">
-                            <button class="quick-view" onclick="quickView({{ produto.id }})">
-                                <i class="fas fa-eye"></i> Visualização Rápida
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="product-info">
-                        <h3 class="product-name">{{ produto.nome }}</h3>
-                        {% if produto.categoria %}
-                            <span class="product-category">{{ produto.categoria }}</span>
-                        {% endif %}
-                        <div class="product-price">{{ produto.preco|currency }}</div>
-                        
-                        {% if session.user_id %}
-                            <button onclick="addToCart({{ produto.id }}, '{{ produto.nome }}')" class="btn-add-cart">
-                                <i class="fas fa-shopping-bag"></i> Adicionar ao Carrinho
-                            </button>
-                        {% else %}
-                            <a href="{{ url_for('login') }}" class="btn-add-cart">
-                                <i class="fas fa-sign-in-alt"></i> Fazer Login para Comprar
-                            </a>
-                        {% endif %}
-                    </div>
+                <div class="product-card" data-id="{{ produto.id }}" data-imagem="{{ produto.imagem or '' }}" data-preco="{{ produto.preco }}" data-nome="{{ produto.nome|e }}" data-descricao="{{ (produto.descricao or '')|e }}">
+                  <div class="product-image">
+                    <img src="{{ produto.imagem or 'https://via.placeholder.com/800x800/f0f0f0/666?text=Sem+Imagem' }}" alt="{{ produto.nome }}">
+                    <button class="qv-trigger"><i class="fas fa-eye"></i> Visualização rápida</button>
+                  </div>
+                  
+                  <div class="product-info">
+                      <h3 class="product-name">{{ produto.nome }}</h3>
+                      {% if produto.categoria %}
+                          <span class="product-category">{{ produto.categoria }}</span>
+                      {% endif %}
+                      <div class="product-price">{{ produto.preco|currency }}</div>
+                      
+                      {% if session.user_id %}
+                          <button onclick="addToCart({{ produto.id }}, '{{ produto.nome }}')" class="btn-add-cart">
+                              <i class="fas fa-shopping-bag"></i> Adicionar ao Carrinho
+                          </button>
+                      {% else %}
+                          <a href="{{ url_for('login') }}" class="btn-add-cart">
+                              <i class="fas fa-sign-in-alt"></i> Fazer Login para Comprar
+                          </a>
+                      {% endif %}
+                  </div>
                 </div>
             {% endfor %}
         </div>
@@ -1148,5 +1130,28 @@ function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
 function formatBRL(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v); }
 
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeQuickView(); });
+
+// Torna acessível aos handlers inline
+window.openQuickView = openQuickView;
+window.closeQuickView = closeQuickView;
+
+// Delegação de clique (funciona mesmo se o onclick inline não rodar)
+document.addEventListener('click', function(e){
+  const btn = e.target.closest('.qv-trigger');
+  if (!btn) return;
+  const card = btn.closest('.product-card');
+  if (card) openQuickView(card.dataset.id);
+});
+
+// Defensivo: avisa se o modal não está no DOM
+const _open = openQuickView;
+function openQuickView(id){
+  const modal = document.getElementById('qv-modal');
+  if (!modal) {
+    console.warn('Modal de Visualização Rápida não encontrado (id="qv-modal").');
+    return;
+  }
+  return _open(id); // chama a implementação original
+}
 </script>
 {% endblock %}
