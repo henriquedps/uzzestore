@@ -6,65 +6,894 @@
 <!-- Hero Section -->
 <section class="hero-section">
     <h1 class="hero-title">Busque sua inspiração de visual</h1>
+    <p class="hero-subtitle">Descubra as últimas tendências em moda</p>
 </section>
 
 <!-- Filter Section -->
 <section class="filter-section">
     <div class="filter-left">
-        <button class="filter-toggle">
+        <button class="filter-toggle" onclick="toggleFilters()">
             <i class="fas fa-sliders-h"></i> Mostrar filtros
         </button>
-        <span class="product-count">{{ produtos|length }} produtos</span>
+        <span class="product-count">{{ produtos|length }} produto{{ 's' if produtos|length != 1 else '' }}</span>
     </div>
     <div class="filter-right">
-        <label>Ordenar por:</label>
-        <select class="sort-dropdown">
-            <option>Em destaque</option>
-            <option>Menor preço</option>
-            <option>Maior preço</option>
-            <option>Mais novos</option>
+        <label class="sort-label">Ordenar por:</label>
+        <select class="sort-dropdown" onchange="sortProducts(this.value)">
+            <option value="destaque">Em destaque</option>
+            <option value="menor-preco">Menor preço</option>
+            <option value="maior-preco">Maior preço</option>
+            <option value="nome-az">Nome A-Z</option>
+            <option value="nome-za">Nome Z-A</option>
+            <option value="mais-novos">Mais novos</option>
         </select>
     </div>
 </section>
 
+<!-- Panel de Filtros -->
+<div class="filters-panel" id="filters-panel">
+    <div class="filters-container">
+        <div class="filters-header">
+            <h3>🔍 Filtros</h3>
+            <button class="close-filters" onclick="toggleFilters()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="filters-content">
+            <!-- Filtro por Categoria -->
+            <div class="filter-group">
+                <h4>Categoria</h4>
+                <div class="filter-options">
+                    <label class="filter-option">
+                        <input type="checkbox" value="" onchange="filterProducts()" checked>
+                        <span class="checkmark"></span>
+                        Todas as categorias
+                    </label>
+                    {% for categoria in categorias %}
+                    <label class="filter-option">
+                        <input type="checkbox" value="{{ categoria.categoria }}" onchange="filterProducts()">
+                        <span class="checkmark"></span>
+                        {{ categoria.categoria }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Filtro por Preço -->
+            <div class="filter-group">
+                <h4>Faixa de Preço</h4>
+                <div class="price-range">
+                    <div class="price-inputs">
+                        <div>
+                            <label>Mín:</label>
+                            <input type="number" id="min-price" placeholder="0" min="0" onchange="filterProducts()">
+                        </div>
+                        <div>
+                            <label>Máx:</label>
+                            <input type="number" id="max-price" placeholder="1000" min="0" onchange="filterProducts()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtro por Tamanho -->
+            <div class="filter-group">
+                <h4>Tamanho</h4>
+                <div class="size-options">
+                    <label class="size-option">
+                        <input type="checkbox" value="" onchange="filterProducts()" checked>
+                        <span class="size-checkmark">Todos</span>
+                    </label>
+                    <label class="size-option">
+                        <input type="checkbox" value="PP" onchange="filterProducts()">
+                        <span class="size-checkmark">PP</span>
+                    </label>
+                    <label class="size-option">
+                        <input type="checkbox" value="P" onchange="filterProducts()">
+                        <span class="size-checkmark">P</span>
+                    </label>
+                    <label class="size-option">
+                        <input type="checkbox" value="M" onchange="filterProducts()">
+                        <span class="size-checkmark">M</span>
+                    </label>
+                    <label class="size-option">
+                        <input type="checkbox" value="G" onchange="filterProducts()">
+                        <span class="size-checkmark">G</span>
+                    </label>
+                    <label class="size-option">
+                        <input type="checkbox" value="GG" onchange="filterProducts()">
+                        <span class="size-checkmark">GG</span>
+                    </label>
+                    <label class="size-option">
+                        <input type="checkbox" value="XG" onchange="filterProducts()">
+                        <span class="size-checkmark">XG</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Filtros Rápidos -->
+            <div class="filter-group">
+                <h4>Filtros Rápidos</h4>
+                <div class="quick-filters">
+                    <button class="quick-filter" onclick="setQuickFilter('promocao')">
+                        🏷️ Promoção
+                    </button>
+                    <button class="quick-filter" onclick="setQuickFilter('lancamento')">
+                        ⭐ Lançamentos
+                    </button>
+                    <button class="quick-filter" onclick="setQuickFilter('mais-vendidos')">
+                        🔥 Mais Vendidos
+                    </button>
+                </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="filter-actions">
+                <button class="btn-clear-filters" onclick="clearAllFilters()">
+                    🗑️ Limpar Filtros
+                </button>
+                <button class="btn-apply-filters" onclick="toggleFilters()">
+                    ✅ Aplicar Filtros
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Products Section -->
 <section class="products-container">
+    <div class="products-header">
+        <div class="active-filters" id="active-filters" style="display: none;">
+            <span class="active-filters-label">Filtros ativos:</span>
+            <div class="active-filters-list" id="active-filters-list"></div>
+        </div>
+    </div>
+
     {% if produtos %}
-        <div class="products-grid">
+        <div class="products-grid" id="products-grid">
             {% for produto in produtos %}
-                <div class="product-card">
+                <div class="product-card" 
+                     data-categoria="{{ produto.categoria or '' }}" 
+                     data-preco="{{ produto.preco }}" 
+                     data-nome="{{ produto.nome|lower }}"
+                     data-id="{{ produto.id }}">
                     <div class="product-image">
                         {% if produto.imagem %}
-                            <img src="{{ produto.imagem }}" alt="{{ produto.nome }}">
+                            <img src="{{ produto.imagem }}" alt="{{ produto.nome }}" loading="lazy">
                         {% else %}
-                            <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 3rem; color: #ccc;">
-                                👗
+                            <div class="product-placeholder">
+                                <i class="fas fa-image"></i>
                             </div>
                         {% endif %}
+                        <div class="product-overlay">
+                            <button class="quick-view" onclick="quickView({{ produto.id }})">
+                                <i class="fas fa-eye"></i> Visualização Rápida
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="product-info">
                         <h3 class="product-name">{{ produto.nome }}</h3>
+                        {% if produto.categoria %}
+                            <span class="product-category">{{ produto.categoria }}</span>
+                        {% endif %}
                         <div class="product-price">{{ produto.preco|currency }}</div>
                         
                         {% if session.user_id %}
-                            <a href="{{ url_for('carrinho_adicionar', produto_id=produto.id) }}" class="btn-add-cart">
-                                Adicionar ao Carrinho
-                            </a>
+                            <button onclick="addToCart({{ produto.id }}, '{{ produto.nome }}')" class="btn-add-cart">
+                                <i class="fas fa-shopping-bag"></i> Adicionar ao Carrinho
+                            </button>
                         {% else %}
                             <a href="{{ url_for('login') }}" class="btn-add-cart">
-                                Fazer Login para Comprar
+                                <i class="fas fa-sign-in-alt"></i> Fazer Login para Comprar
                             </a>
                         {% endif %}
                     </div>
                 </div>
             {% endfor %}
         </div>
+
+        <!-- Mensagem quando não há produtos filtrados -->
+        <div class="no-products-message" id="no-products" style="display: none;">
+            <div style="text-align: center; padding: 80px 20px; color: #666;">
+                <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.3;"></i>
+                <h3>Nenhum produto encontrado</h3>
+                <p>Tente ajustar os filtros ou buscar por outros termos</p>
+                <button onclick="clearAllFilters()" class="btn-clear-filters" style="margin-top: 20px;">
+                    🔄 Limpar todos os filtros
+                </button>
+            </div>
+        </div>
     {% else %}
         <div style="text-align: center; padding: 80px 20px; color: #666;">
-            <h3>Nenhum produto encontrado</h3>
-            <p>Em breve novos produtos!</p>
+            <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.3;"></i>
+            <h3>Nenhum produto cadastrado</h3>
+            <p>Em breve novos produtos incríveis!</p>
         </div>
     {% endif %}
 </section>
+
+<style>
+/* Estilos para o sistema de filtros */
+.filters-panel {
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 400px;
+    height: 100vh;
+    background: white;
+    box-shadow: -5px 0 20px rgba(0,0,0,0.1);
+    z-index: 2000;
+    transition: right 0.3s ease;
+    overflow-y: auto;
+}
+
+.filters-panel.active {
+    right: 0;
+}
+
+.filters-container {
+    padding: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.filters-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--secondary-color);
+}
+
+.filters-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+}
+
+.close-filters {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.close-filters:hover {
+    background: var(--border-light);
+    color: var(--text-primary);
+}
+
+.filters-content {
+    flex: 1;
+    padding: 25px;
+}
+
+.filter-group {
+    margin-bottom: 30px;
+}
+
+.filter-group h4 {
+    margin-bottom: 15px;
+    color: var(--text-primary);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.filter-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.filter-option {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 8px 0;
+    transition: all 0.3s ease;
+}
+
+.filter-option:hover {
+    color: var(--accent-color);
+}
+
+.filter-option input[type="checkbox"] {
+    display: none;
+}
+
+.checkmark {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border-light);
+    border-radius: 4px;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.filter-option input[type="checkbox"]:checked + .checkmark {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.filter-option input[type="checkbox"]:checked + .checkmark::after {
+    content: "✓";
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.price-range {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.price-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.price-inputs div {
+    display: flex;
+    flex-direction: column;
+}
+
+.price-inputs label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.price-inputs input {
+    padding: 8px 12px;
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.size-options {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.size-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.size-option input[type="checkbox"] {
+    display: none;
+}
+
+.size-checkmark {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--border-light);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    background: white;
+    color: var(--text-secondary);
+}
+
+.size-option:hover .size-checkmark {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.size-option input[type="checkbox"]:checked + .size-checkmark {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+/* Estilo especial para "Todos" */
+.size-option:first-child .size-checkmark {
+    font-size: 10px;
+    padding: 0 4px;
+}
+
+/* Mobile responsivo para tamanhos */
+@media (max-width: 768px) {
+    .size-options {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+    }
+    
+    .size-checkmark {
+        width: 35px;
+        height: 35px;
+        font-size: 11px;
+    }
+}
+
+.quick-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.quick-filter {
+    background: var(--secondary-color);
+    border: 1px solid var(--border-light);
+    padding: 10px 15px;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.quick-filter:hover, .quick-filter.active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.filter-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-light);
+}
+
+.btn-clear-filters, .btn-apply-filters {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-clear-filters {
+    background: white;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-light);
+}
+
+.btn-clear-filters:hover {
+    background: var(--secondary-color);
+}
+
+.btn-apply-filters {
+    background: var(--primary-color);
+    color: white;
+    border: 1px solid var(--primary-color);
+}
+
+.btn-apply-filters:hover {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.active-filters {
+    background: var(--secondary-color);
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--accent-color);
+}
+
+.active-filters-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-right: 10px;
+}
+
+.active-filters-list {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.active-filter-tag {
+    background: var(--accent-color);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.active-filter-tag .remove {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.product-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 3rem;
+    color: #ccc;
+    background: var(--secondary-color);
+}
+
+.product-category {
+    font-size: 12px;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.product-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.product-card:hover .product-overlay {
+    opacity: 1;
+}
+
+.quick-view {
+    background: white;
+    color: var(--text-primary);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.quick-view:hover {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* Overlay para fechar filtros */
+.filters-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.filters-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .filters-panel {
+        width: 100%;
+        right: -100%;
+    }
+    
+    .filter-section {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+    
+    .sort-container {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+let allProducts = [];
+let filteredProducts = [];
+
+// Inicializar produtos
+document.addEventListener('DOMContentLoaded', function() {
+    allProducts = Array.from(document.querySelectorAll('.product-card'));
+    filteredProducts = [...allProducts];
+});
+
+// Toggle do painel de filtros
+function toggleFilters() {
+    const panel = document.getElementById('filters-panel');
+    const overlay = document.querySelector('.filters-overlay') || createOverlay();
+    
+    panel.classList.toggle('active');
+    overlay.classList.toggle('active');
+    
+    // Atualizar texto do botão
+    const button = document.querySelector('.filter-toggle');
+    const isActive = panel.classList.contains('active');
+    button.innerHTML = isActive ? 
+        '<i class="fas fa-times"></i> Fechar filtros' : 
+        '<i class="fas fa-sliders-h"></i> Mostrar filtros';
+}
+
+// Criar overlay
+function createOverlay() {
+    const overlay = document.createElement('div');
+    overlay.className = 'filters-overlay';
+    overlay.onclick = toggleFilters;
+    document.body.appendChild(overlay);
+    return overlay;
+}
+
+// Obter categorias selecionadas
+function getSelectedCategories() {
+    const checkboxes = document.querySelectorAll('.filter-option input[type="checkbox"]:checked');
+    return Array.from(checkboxes).map(cb => cb.value);
+}
+
+// Obter faixa de preço
+function getPriceRange() {
+    const minPrice = document.getElementById('min-price').value;
+    const maxPrice = document.getElementById('max-price').value;
+    
+    return {
+        min: minPrice ? parseFloat(minPrice) : 0,
+        max: maxPrice ? parseFloat(maxPrice) : Infinity
+    };
+}
+
+// Atualizar a função getSelectedSizes
+function getSelectedSizes() {
+    const checkboxes = document.querySelectorAll('.size-option input[type="checkbox"]:checked');
+    return Array.from(checkboxes).map(cb => cb.value);
+}
+
+// Atualizar a função filterProducts
+function filterProducts() {
+    const selectedCategories = getSelectedCategories();
+    const selectedSizes = getSelectedSizes();
+    const priceRange = getPriceRange();
+    
+    filteredProducts = allProducts.filter(product => {
+        const categoria = product.dataset.categoria;
+        const preco = parseFloat(product.dataset.preco);
+        const tamanho = product.dataset.tamanho || ''; // Assumindo que você vai adicionar data-tamanho
+        
+        // Filtro de categoria
+        const categoryMatch = selectedCategories.length === 0 || 
+                             selectedCategories.includes('') || 
+                             selectedCategories.includes(categoria);
+        
+        // Filtro de tamanho
+        const sizeMatch = selectedSizes.length === 0 || 
+                         selectedSizes.includes('') || 
+                         selectedSizes.includes(tamanho);
+        
+        // Filtro de preço
+        const priceMatch = preco >= priceRange.min && preco <= priceRange.max;
+        
+        return categoryMatch && sizeMatch && priceMatch;
+    });
+    
+    updateProductsDisplay();
+    updateActiveFilters();
+    updateProductCount();
+}
+
+// Atualizar a função updateActiveFilters
+function updateActiveFilters() {
+    const container = document.getElementById('active-filters');
+    const list = document.getElementById('active-filters-list');
+    
+    const selectedCategories = getSelectedCategories().filter(cat => cat !== '');
+    const selectedSizes = getSelectedSizes().filter(size => size !== '');
+    const priceRange = getPriceRange();
+    
+    list.innerHTML = '';
+    
+    // Adicionar filtros de categoria
+    selectedCategories.forEach(categoria => {
+        if (categoria) {
+            addFilterTag(list, `Categoria: ${categoria}`, () => {
+                const checkbox = document.querySelector(`input[value="${categoria}"]`);
+                checkbox.checked = false;
+                filterProducts();
+            });
+        }
+    });
+    
+    // Adicionar filtros de tamanho
+    selectedSizes.forEach(tamanho => {
+        if (tamanho) {
+            addFilterTag(list, `Tamanho: ${tamanho}`, () => {
+                const checkbox = document.querySelector(`.size-option input[value="${tamanho}"]`);
+                checkbox.checked = false;
+                filterProducts();
+            });
+        }
+    });
+    
+    // Adicionar filtro de preço
+    if (priceRange.min > 0 || priceRange.max < Infinity) {
+        const priceText = `Preço: R$ ${priceRange.min} - R$ ${priceRange.max === Infinity ? '∞' : priceRange.max}`;
+        addFilterTag(list, priceText, () => {
+            document.getElementById('min-price').value = '';
+            document.getElementById('max-price').value = '';
+            filterProducts();
+        });
+    }
+    
+    container.style.display = list.children.length > 0 ? 'block' : 'none';
+}
+
+// Adicionar tag de filtro ativo
+function addFilterTag(container, text, removeCallback) {
+    const tag = document.createElement('span');
+    tag.className = 'active-filter-tag';
+    tag.innerHTML = `${text} <span class="remove" onclick="this.parentElement.remove(); arguments[0].stopPropagation();">×</span>`;
+    tag.querySelector('.remove').onclick = (e) => {
+        e.stopPropagation();
+        removeCallback();
+    };
+    container.appendChild(tag);
+}
+
+// Atualizar contador de produtos
+function updateProductCount() {
+    const counter = document.querySelector('.product-count');
+    const count = filteredProducts.length;
+    counter.textContent = `${count} produto${count !== 1 ? 's' : ''}`;
+}
+
+// Ordenar produtos
+function sortProducts(sortBy) {
+    switch(sortBy) {
+        case 'menor-preco':
+            filteredProducts.sort((a, b) => parseFloat(a.dataset.preco) - parseFloat(b.dataset.preco));
+            break;
+        case 'maior-preco':
+            filteredProducts.sort((a, b) => parseFloat(b.dataset.preco) - parseFloat(a.dataset.preco));
+            break;
+        case 'nome-az':
+            filteredProducts.sort((a, b) => a.dataset.nome.localeCompare(b.dataset.nome));
+            break;
+        case 'nome-za':
+            filteredProducts.sort((a, b) => b.dataset.nome.localeCompare(a.dataset.nome));
+            break;
+        case 'mais-novos':
+            filteredProducts.sort((a, b) => parseInt(b.dataset.id) - parseInt(a.dataset.id));
+            break;
+        default:
+            // Em destaque - ordem original
+            break;
+    }
+    
+    const grid = document.getElementById('products-grid');
+    filteredProducts.forEach(product => {
+        grid.appendChild(product);
+    });
+}
+
+// Filtros rápidos
+function setQuickFilter(type) {
+    // Remover active de outros filtros rápidos
+    document.querySelectorAll('.quick-filter').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Ativar filtro atual
+    event.target.classList.add('active');
+    
+    // Lógica específica para cada filtro rápido
+    switch(type) {
+        case 'promocao':
+            // Simular promoção - produtos com preço menor que 100
+            document.getElementById('max-price').value = '100';
+            break;
+        case 'lancamento':
+            // Ordenar por mais novos
+            document.querySelector('.sort-dropdown').value = 'mais-novos';
+            sortProducts('mais-novos');
+            break;
+        case 'mais-vendidos':
+            // Ordenar por destaque
+            document.querySelector('.sort-dropdown').value = 'destaque';
+            sortProducts('destaque');
+            break;
+    }
+    
+    filterProducts();
+}
+
+// Limpar todos os filtros
+function clearAllFilters() {
+    // Limpar checkboxes de categoria
+    document.querySelectorAll('.filter-option input[type="checkbox"]').forEach(cb => {
+        cb.checked = cb.value === '';
+    });
+    
+    // Limpar checkboxes de tamanho
+    document.querySelectorAll('.size-option input[type="checkbox"]').forEach(cb => {
+        cb.checked = cb.value === '';
+    });
+    
+    // Limpar preços
+    document.getElementById('min-price').value = '';
+    document.getElementById('max-price').value = '';
+    
+    // Limpar filtros rápidos
+    document.querySelectorAll('.quick-filter').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Resetar ordenação
+    document.querySelector('.sort-dropdown').value = 'destaque';
+    
+    filterProducts();
+}
+
+// Adicionar ao carrinho com animação
+function addToCart(produtoId, produtoNome) {
+    // Animação do botão
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adicionando...';
+    button.disabled = true;
+    
+    // Simular requisição
+    setTimeout(() => {
+        // Redirecionar para adicionar ao carrinho
+        window.location.href = `/carrinho/adicionar/${produtoId}`;
+    }, 500);
+}
+
+// Visualização rápida
+function quickView(produtoId) {
+    alert(`Visualização rápida do produto ${produtoId} - Funcionalidade em desenvolvimento!`);
+}
+</script>
 {% endblock %}
