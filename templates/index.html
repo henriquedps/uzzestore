@@ -166,7 +166,9 @@
                          alt="{{ produto.nome }}"
                          loading="lazy"
                          onerror="imgFallback(this, 800, 800, 'Sem Imagem')">
-                    <button class="qv-trigger"><i class="fas fa-eye"></i> Visualização rápida</button>
+                    <button class="qv-trigger" data-id="{{ produto.id }}">
+  <i class="fas fa-eye"></i> Visualização rápida
+</button>
                   </div>
                   
                   <div class="product-info">
@@ -1059,238 +1061,116 @@
 </style>
 
 <script>
-let QV = { id:null, imgs:[], idx:0 };
+/* Quick View estável: evita recursão e roda uma única vez */
+(() => {
+  if (window.__QV_INIT__) return;
+  window.__QV_INIT__ = true;
 
-function openQuickView(id){
-  const card = document.querySelector(`.product-card[data-id="${id}"]`);
-  if(!card) return;
+  const QV = window.QV || { id:null, imgs:[], idx:0 };
+  window.QV = QV;
 
-  QV.id = id;
-  const nome = card.dataset.nome;
-  const preco = parseFloat(card.dataset.preco || '0');
-  const imagem = card.dataset.imagem || '';
-  const desc = card.dataset.descricao || '';
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+  function formatBRL(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v); }
 
-  // imagens (se no futuro tiver JSON de galeria, pode preencher aqui)
-  QV.imgs = (imagem ? [imagem] : ['https://via.placeholder.com/900x900/f0f0f0/666?text=Sem+Imagem']);
-  QV.idx = 0;
-
-  document.getElementById('qv-title').textContent = nome;
-  document.getElementById('qv-price').textContent = formatBRL(preco);
-  document.getElementById('qv-old').textContent = formatBRL(Math.max(preco * 1.25, preco)); // "de"
-  document.getElementById('qv-desc').textContent = desc;
-  document.getElementById('qv-qty').value = 1;
-
-  // monta thumbs
-  const thumbs = document.getElementById('qv-thumbs');
-  thumbs.innerHTML = '';
-  QV.imgs.forEach((src, i)=>{
-    const d = document.createElement('div');
-    d.className = 'qv-thumb' + (i===0?' active':'');
-    d.onclick = ()=>setMain(i);
-    d.innerHTML = `<img src="${src}" alt="thumb">`;
-    thumbs.appendChild(d);
-  });
-
-  // imagem principal
-  setMain(0);
-
-  // compartilhar
-  const shareUrl = window.location.origin + '/?p=' + id;
-  document.getElementById('share-fb').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-  document.getElementById('share-tw').href = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(nome)}`;
-  document.getElementById('share-wa').href = `https://wa.me/?text=${encodeURIComponent(nome+' - '+shareUrl)}`;
-
-  // comprar
-  const buy = document.getElementById('qv-buy');
-  if (buy && buy.tagName === 'BUTTON') {
-    buy.onclick = ()=>{
-      const q = clamp(parseInt(document.getElementById('qv-qty').value||'1',10),1,99);
-      window.location.href = `/carrinho/adicionar/${id}?q=${q}`;
-    };
+  function setMain(i){
+    QV.idx = i;
+    const img = document.getElementById('qv-main-img');
+    if (!img) return;
+    img.style.opacity = .6;
+    img.onload = ()=>img.style.opacity = 1;
+    img.onerror = ()=> imgFallback(img, 900, 900, 'Sem Imagem');
+    img.src = QV.imgs[i] || '';
+    document.querySelectorAll('.qv-thumb').forEach((t,idx)=>t.classList.toggle('active', idx===i));
   }
 
-  // favorito
-  const fav = document.getElementById('qv-fav');
-  fav.classList.remove('active');
-  fav.onclick = ()=>{
-    fav.classList.toggle('active');
+  function openQuickViewImpl(id){
+    const card = document.querySelector(`.product-card[data-id="${id}"]`);
+    if (!card) return;
+
+    QV.id = id;
+    const nome = card.dataset.nome || 'Produto';
+    const preco = parseFloat(card.dataset.preco || '0');
+    const imagem = card.dataset.imagem || '';
+    const desc = card.dataset.descricao || '';
+
+    QV.imgs = imagem ? [imagem] : [''];
+    QV.idx = 0;
+
+    // Side info
+    document.getElementById('qv-title').textContent = nome;
+    document.getElementById('qv-price').textContent = formatBRL(preco);
+    document.getElementById('qv-old').textContent = formatBRL(Math.max(preco * 1.25, preco));
+    document.getElementById('qv-desc').textContent = desc;
+    document.getElementById('qv-qty').value = 1;
+
+    // Thumbs
+    const thumbs = document.getElementById('qv-thumbs');
+    thumbs.innerHTML = '';
+    QV.imgs.forEach((src, i) => {
+      const d = document.createElement('div');
+      d.className = 'qv-thumb' + (i === 0 ? ' active' : '');
+      d.onclick = () => setMain(i);
+      d.innerHTML = `<img src="${src || ''}" alt="thumb" onerror="imgFallback(this,100,100,'')">`;
+      thumbs.appendChild(d);
+    });
+
+    // Imagem principal
+    setMain(0);
+
+    // Comprar
+    const buy = document.getElementById('qv-buy');
+    if (buy && buy.tagName === 'BUTTON') {
+      buy.onclick = () => {
+        const q = clamp(parseInt(document.getElementById('qv-qty').value || '1', 10), 1, 99);
+        window.location.href = `/carrinho/adicionar/${id}?q=${q}`;
+      };
+    }
+
+    // Abrir modal
+    document.getElementById('qv-modal').classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+
+  // API pública sem recursão
+  window.openQuickView = (id) => {
+    const modal = document.getElementById('qv-modal');
+    if (!modal) { console.warn('qv-modal não encontrado.'); return; }
+    openQuickViewImpl(id);
   };
 
-  // abrir
-  document.getElementById('qv-modal').classList.add('show');
-  document.body.style.overflow = 'hidden';
-}
+  window.closeQuickView = () => {
+    const modal = document.getElementById('qv-modal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+  };
 
-function closeQuickView(){
-  document.getElementById('qv-modal').classList.remove('show');
-  document.body.style.overflow = '';
-}
-
-function setMain(i){
-  QV.idx = i;
-  const img = document.getElementById('qv-main-img');
-  img.style.opacity = .6;
-  img.onload = ()=>img.style.opacity = 1;
-  img.onerror = ()=> imgFallback(img, 900, 900, 'Sem Imagem');
-  img.src = QV.imgs[i] || '';
-}
-
-function incQty(){ const el = document.getElementById('qv-qty'); el.value = clamp(parseInt(el.value||'1',10)+1,1,99); }
-function decQty(){ const el = document.getElementById('qv-qty'); el.value = clamp(parseInt(el.value||'1',10)-1,1,99); }
-
-function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
-function formatBRL(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v); }
-
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeQuickView(); });
-
-// Torna acessível aos handlers inline
-window.openQuickView = openQuickView;
-window.closeQuickView = closeQuickView;
-
-// Delegação de clique (funciona mesmo se o onclick inline não rodar)
-document.addEventListener('click', function(e){
-  const btn = e.target.closest('.qv-trigger');
-  if (!btn) return;
-  const card = btn.closest('.product-card');
-  if (card) openQuickView(card.dataset.id);
-});
-
-// Defensivo: avisa se o modal não está no DOM
-const _open = openQuickView;
-function openQuickView(id){
-  const modal = document.getElementById('qv-modal');
-  if (!modal) {
-    console.warn('Modal de Visualização Rápida não encontrado (id="qv-modal").');
-    return;
-  }
-  return _open(id); // chama a implementação original
-}
-
-let allProducts = [];
-let filteredProducts = [];
-
-document.addEventListener('DOMContentLoaded', () => {
-  allProducts = Array.from(document.querySelectorAll('.product-card'));
-  ensureDefaultFilters();
-  filterProducts(true);
-});
-
-function ensureDefaultFilters() {
-  // “Todos” marcado por padrão
-  document.querySelectorAll('.filter-option input[value=""]').forEach(cb => cb.checked = true);
-  document.querySelectorAll('.size-option input[value=""]').forEach(cb => cb.checked = true);
-  // limpa preços
-  const min = document.getElementById('min-price'); if (min) min.value = '';
-  const max = document.getElementById('max-price'); if (max) max.value = '';
-}
-
-function hasActiveFilters() {
-  const cats = Array.from(document.querySelectorAll('.filter-option input[type="checkbox"]:checked'))
-                    .map(cb => cb.value).filter(v => v !== '');
-  const sizes = Array.from(document.querySelectorAll('.size-option input[type="checkbox"]:checked'))
-                     .map(cb => cb.value).filter(v => v !== '');
-  const min = parseFloat(document.getElementById('min-price')?.value || '');
-  const max = parseFloat(document.getElementById('max-price')?.value || '');
-  return cats.length || sizes.length || !isNaN(min) || !isNaN(max);
-}
-
-function getSelected(selector) {
-  return Array.from(document.querySelectorAll(selector))
-    .filter(cb => cb.checked)
-    .map(cb => cb.value);
-}
-
-function getPriceRange() {
-  const min = parseFloat(document.getElementById('min-price')?.value || '');
-  const max = parseFloat(document.getElementById('max-price')?.value || '');
-  return { min: isNaN(min) ? 0 : min, max: isNaN(max) ? Infinity : max };
-}
-
-function filterProducts(isInit = false) {
-  const selectedCategories = getSelected('.filter-option input[type="checkbox"]');
-  const selectedSizes = getSelected('.size-option input[type="checkbox"]');
-  const priceRange = getPriceRange();
-
-  const showAllByCat = selectedCategories.length === 0 || selectedCategories.includes('');
-  const showAllBySize = selectedSizes.length === 0 || selectedSizes.includes('');
-
-  filteredProducts = allProducts.filter(p => {
-    const categoria = p.dataset.categoria || '';
-    const tamanho = p.dataset.tamanho || '';
-    let preco = parseFloat(p.dataset.preco);
-    if (isNaN(preco)) preco = 0; // evita NaN derrubar o filtro
-
-    const catOK = showAllByCat || selectedCategories.includes(categoria);
-    const sizeOK = showAllBySize || selectedSizes.includes(tamanho);
-    const priceOK = preco >= priceRange.min && preco <= priceRange.max;
-
-    return catOK && sizeOK && priceOK;
+  // Delegação: aciona pelo botão com classe .qv-trigger
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.qv-trigger');
+    if (!btn) return;
+    const id = btn.dataset.id || btn.closest('.product-card')?.dataset.id;
+    if (id) window.openQuickView(id);
   });
 
-  // Fallback: sem filtros ativos não pode sumir tudo
-  if (!hasActiveFilters() && filteredProducts.length === 0) {
-    filteredProducts = [...allProducts];
-  }
+  // ESC fecha
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') window.closeQuickView(); });
+})();
+</script>
 
-  updateProductsDisplay();
-  if (typeof updateActiveFilters === 'function') updateActiveFilters();
-  if (typeof updateProductCount === 'function') updateProductCount();
-}
-
-function updateProductsDisplay() {
-  const grid = document.getElementById('products-grid');
-  const noProducts = document.getElementById('no-products');
-
-  allProducts.forEach(p => p.style.display = 'none');
-  filteredProducts.forEach(p => p.style.display = 'block');
-
-  if (grid && noProducts) {
-    const anyVisible = filteredProducts.length > 0;
-    grid.style.display = anyVisible ? 'grid' : 'none';
-    noProducts.style.display = anyVisible ? 'none' : 'block';
-  }
-}
-
-// Expor caso use onclick inline
-window.filterProducts = filterProducts;
-
-// Fallback robusto de imagem: tenta placehold.co; se falhar, usa SVG inline
+<script>
 function imgFallback(el, w=800, h=800, text='Sem Imagem') {
-  try {
-    el.onerror = null; // evita loop
-    const tryUrl = `https://placehold.co/${w}x${h}/f0f0f0/666?text=${encodeURIComponent(text)}`;
-    const probe = new Image();
-    probe.onload = () => { el.src = tryUrl; };
-    probe.onerror = () => {
-      const svg = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
-          <rect width="100%" height="100%" fill="#f0f0f0"/>
-          <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
-                font-family="Arial, sans-serif" font-size="${Math.max(16, Math.round(w*0.04))}" fill="#666">
-            ${text}
-          </text>
-        </svg>`;
-      el.src = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
-    };
-    probe.src = tryUrl;
-  } catch (e) {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
-      <rect width="100%" height="100%" fill="#f0f0f0"/>
-      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
-            font-family="Arial, sans-serif" font-size="24" fill="#666">${text}</text>
-    </svg>`;
+  el.onerror = null;
+  const url = `https://placehold.co/${w}x${h}/f0f0f0/666?text=${encodeURIComponent(text)}`;
+  const test = new Image();
+  test.onload = () => el.src = url;
+  test.onerror = () => {
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'>
+      <rect width='100%' height='100%' fill='#f0f0f0'/><text x='50%' y='50%' dominant-baseline='middle'
+      text-anchor='middle' font-family='Arial' font-size='24' fill='#666'>${text}</text></svg>`;
     el.src = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
-  }
+  };
+  test.src = url;
 }
-
-// Garante fallback também para imagens sem src definido
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('.product-image img').forEach(img => {
-    if (!img.getAttribute('src') || img.getAttribute('src') === '') {
-      imgFallback(img, 800, 800, 'Sem Imagem');
-    }
-  });
-});
 </script>
 {% endblock %}
