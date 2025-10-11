@@ -214,6 +214,77 @@
     {% endif %}
 </section>
 
+<!-- Modal de Visualização Rápida -->
+<div class="quick-view-modal" id="quick-view-modal">
+    <div class="modal-overlay" onclick="closeQuickView()"></div>
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeQuickView()">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <div class="modal-body">
+            <div class="product-image-section">
+                <img id="modal-product-image" src="" alt="" class="modal-product-img">
+            </div>
+            
+            <div class="product-details-section">
+                <div class="product-header">
+                    <span id="modal-product-category" class="modal-category"></span>
+                    <h2 id="modal-product-name" class="modal-title"></h2>
+                    <div id="modal-product-price" class="modal-price"></div>
+                </div>
+                
+                <div class="product-description">
+                    <h3>Descrição</h3>
+                    <p id="modal-product-description">Produto de alta qualidade com excelente acabamento e conforto.</p>
+                </div>
+                
+                <div class="product-sizes">
+                    <h3>Tamanhos disponíveis</h3>
+                    <div class="size-selector">
+                        <button class="size-btn" onclick="selectSize('PP')">PP</button>
+                        <button class="size-btn" onclick="selectSize('P')">P</button>
+                        <button class="size-btn active" onclick="selectSize('M')">M</button>
+                        <button class="size-btn" onclick="selectSize('G')">G</button>
+                        <button class="size-btn" onclick="selectSize('GG')">GG</button>
+                        <button class="size-btn" onclick="selectSize('XG')">XG</button>
+                    </div>
+                </div>
+                
+                <div class="product-actions">
+                    {% if session.user_id %}
+                        <button id="modal-add-cart" class="btn-modal-cart" onclick="addToCartFromModal()">
+                            <i class="fas fa-shopping-bag"></i> Adicionar ao Carrinho
+                        </button>
+                        <button class="btn-modal-wishlist" onclick="addToWishlist()">
+                            <i class="fas fa-heart"></i> Favoritar
+                        </button>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="btn-modal-cart">
+                            <i class="fas fa-sign-in-alt"></i> Fazer Login para Comprar
+                        </a>
+                    {% endif %}
+                </div>
+                
+                <div class="product-info">
+                    <div class="info-item">
+                        <i class="fas fa-truck"></i>
+                        <span>Frete grátis para compras acima de R$ 150</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Compra 100% segura e garantida</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-redo-alt"></i>
+                        <span>Troca grátis em até 30 dias</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
 /* Estilos para o sistema de filtros */
 .filters-panel {
@@ -614,21 +685,281 @@
     visibility: visible;
 }
 
+/* Modal de Visualização Rápida */
+.quick-view-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3000;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.quick-view-modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    position: relative;
+    background: white;
+    border-radius: 16px;
+    max-width: 900px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.modal-close:hover {
+    background: var(--accent-color);
+    color: white;
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: 70vh;
+    overflow: hidden;
+}
+
+.product-image-section {
+    background: var(--secondary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+.modal-product-img {
+    width: 100%;
+    height: 100%;
+    max-height: 500px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.product-details-section {
+    padding: 40px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.modal-category {
+    font-size: 12px;
+    color: var(--accent-color);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: var(--text-primary);
+    margin: 5px 0 15px 0;
+    line-height: 1.2;
+}
+
+.modal-price {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    font-family: 'Playfair Display', serif;
+}
+
+.product-description h3,
+.product-sizes h3 {
+    font-size: 16px;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.product-description p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.size-selector {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.size-btn {
+    width: 45px;
+    height: 45px;
+    border: 2px solid var(--border-light);
+    background: white;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.size-btn:hover {
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+}
+
+.size-btn.active {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+}
+
+.product-actions {
+    display: flex;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.btn-modal-cart,
+.btn-modal-wishlist {
+    flex: 1;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.btn-modal-cart {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-modal-cart:hover {
+    background: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.btn-modal-wishlist {
+    background: white;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-light);
+}
+
+.btn-modal-wishlist:hover {
+    background: #ff4757;
+    color: white;
+    border-color: #ff4757;
+}
+
+.product-info {
+    border-top: 1px solid var(--border-light);
+    padding-top: 20px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.info-item i {
+    color: var(--accent-color);
+    width: 16px;
+}
+
 /* Mobile */
 @media (max-width: 768px) {
-    .filters-panel {
-        width: 100%;
-        right: -100%;
+    .modal-content {
+        width: 95%;
+        max-height: 90vh;
     }
     
-    .filter-section {
+    .modal-body {
+        grid-template-columns: 1fr;
+        grid-template-rows: 300px 1fr;
+    }
+    
+    .product-image-section {
+        padding: 20px;
+    }
+    
+    .product-details-section {
+        padding: 25px 20px;
+    }
+    
+    .modal-title {
+        font-size: 1.5rem;
+    }
+    
+    .modal-price {
+        font-size: 1.4rem;
+    }
+    
+    .product-actions {
         flex-direction: column;
-        gap: 15px;
-        align-items: flex-start;
-    }
-    
-    .sort-container {
-        width: 100%;
     }
 }
 </style>
@@ -891,9 +1222,126 @@ function addToCart(produtoId, produtoNome) {
     }, 500);
 }
 
-// Visualização rápida
+let currentProductId = null;
+let selectedSize = 'M';
+
+// Dados dos produtos para o modal
+const productData = {
+    {% for produto in produtos %}
+    {{ produto.id }}: {
+        id: {{ produto.id }},
+        nome: "{{ produto.nome }}",
+        preco: {{ produto.preco }},
+        categoria: "{{ produto.categoria or 'Produto' }}",
+        imagem: "{{ produto.imagem or '' }}",
+        descricao: "{{ produto.descricao or 'Produto de alta qualidade com excelente acabamento e conforto.' }}"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+};
+
+// Abrir visualização rápida
 function quickView(produtoId) {
-    alert(`Visualização rápida do produto ${produtoId} - Funcionalidade em desenvolvimento!`);
+    currentProductId = produtoId;
+    const produto = productData[produtoId];
+    
+    if (!produto) {
+        console.error('Produto não encontrado:', produtoId);
+        return;
+    }
+    
+    // Preencher dados no modal
+    document.getElementById('modal-product-image').src = produto.imagem || 'https://via.placeholder.com/400x400?text=Sem+Imagem';
+    document.getElementById('modal-product-image').alt = produto.nome;
+    document.getElementById('modal-product-category').textContent = produto.categoria;
+    document.getElementById('modal-product-name').textContent = produto.nome;
+    document.getElementById('modal-product-price').textContent = formatCurrency(produto.preco);
+    document.getElementById('modal-product-description').textContent = produto.descricao;
+    
+    // Resetar tamanho selecionado
+    selectedSize = 'M';
+    document.querySelectorAll('.size-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector('.size-btn[onclick="selectSize(\'M\')"]').classList.add('active');
+    
+    // Mostrar modal
+    const modal = document.getElementById('quick-view-modal');
+    modal.style.display = 'flex';
+    setTimeout(() => {
+        modal.classList.add('active');
+    }, 10);
+    
+    // Bloquear scroll do body
+    document.body.style.overflow = 'hidden';
 }
+
+// Fechar modal
+function closeQuickView() {
+    const modal = document.getElementById('quick-view-modal');
+    modal.classList.remove('active');
+    
+    setTimeout(() => {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }, 300);
+}
+
+// Selecionar tamanho
+function selectSize(size) {
+    selectedSize = size;
+    
+    document.querySelectorAll('.size-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    event.target.classList.add('active');
+}
+
+// Adicionar ao carrinho do modal
+function addToCartFromModal() {
+    if (!currentProductId) return;
+    
+    const button = document.getElementById('modal-add-cart');
+    const originalText = button.innerHTML;
+    
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adicionando...';
+    button.disabled = true;
+    
+    // Simular requisição
+    setTimeout(() => {
+        window.location.href = `/carrinho/adicionar/${currentProductId}`;
+    }, 500);
+}
+
+// Adicionar à lista de desejos
+function addToWishlist() {
+    if (!currentProductId) return;
+    
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    button.innerHTML = '<i class="fas fa-heart" style="color: #ff4757;"></i> Favoritado!';
+    button.disabled = true;
+    
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }, 2000);
+}
+
+// Formatar moeda
+function formatCurrency(value) {
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    }).format(value);
+}
+
+// Fechar modal com ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeQuickView();
+    }
+});
 </script>
 {% endblock %}
