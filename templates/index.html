@@ -153,7 +153,13 @@
         <div class="products-grid" id="products-grid">
             <!-- Atualize a seção do produto no index.html -->
             {% for produto in produtos %}
-                <div class="product-card" data-id="{{ produto.id }}" data-imagem="{{ produto.imagem or '' }}" data-preco="{{ produto.preco }}" data-nome="{{ produto.nome|e }}" data-descricao="{{ (produto.descricao or '')|e }}">
+                <!-- no card -->
+                <div class="product-card"
+                     data-preco="{{ ('%.2f'|format(produto.preco|float)) }}"
+                     data-categoria="{{ produto.categoria or '' }}"
+                     data-nome="{{ produto.nome|e }}"
+                     data-imagem="{{ produto.imagem or '' }}"
+                     data-id="{{ produto.id }}">
                   <div class="product-image">
                     <img src="{{ produto.imagem or 'https://via.placeholder.com/800x800/f0f0f0/666?text=Sem+Imagem' }}" alt="{{ produto.nome }}">
                     <button class="qv-trigger"><i class="fas fa-eye"></i> Visualização rápida</button>
@@ -1153,5 +1159,93 @@ function openQuickView(id){
   }
   return _open(id); // chama a implementação original
 }
+
+let allProducts = [];
+let filteredProducts = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+  allProducts = Array.from(document.querySelectorAll('.product-card'));
+  ensureDefaultFilters();
+  filterProducts(true);
+});
+
+function ensureDefaultFilters() {
+  // “Todos” marcado por padrão
+  document.querySelectorAll('.filter-option input[value=""]').forEach(cb => cb.checked = true);
+  document.querySelectorAll('.size-option input[value=""]').forEach(cb => cb.checked = true);
+  // limpa preços
+  const min = document.getElementById('min-price'); if (min) min.value = '';
+  const max = document.getElementById('max-price'); if (max) max.value = '';
+}
+
+function hasActiveFilters() {
+  const cats = Array.from(document.querySelectorAll('.filter-option input[type="checkbox"]:checked'))
+                    .map(cb => cb.value).filter(v => v !== '');
+  const sizes = Array.from(document.querySelectorAll('.size-option input[type="checkbox"]:checked'))
+                     .map(cb => cb.value).filter(v => v !== '');
+  const min = parseFloat(document.getElementById('min-price')?.value || '');
+  const max = parseFloat(document.getElementById('max-price')?.value || '');
+  return cats.length || sizes.length || !isNaN(min) || !isNaN(max);
+}
+
+function getSelected(selector) {
+  return Array.from(document.querySelectorAll(selector))
+    .filter(cb => cb.checked)
+    .map(cb => cb.value);
+}
+
+function getPriceRange() {
+  const min = parseFloat(document.getElementById('min-price')?.value || '');
+  const max = parseFloat(document.getElementById('max-price')?.value || '');
+  return { min: isNaN(min) ? 0 : min, max: isNaN(max) ? Infinity : max };
+}
+
+function filterProducts(isInit = false) {
+  const selectedCategories = getSelected('.filter-option input[type="checkbox"]');
+  const selectedSizes = getSelected('.size-option input[type="checkbox"]');
+  const priceRange = getPriceRange();
+
+  const showAllByCat = selectedCategories.length === 0 || selectedCategories.includes('');
+  const showAllBySize = selectedSizes.length === 0 || selectedSizes.includes('');
+
+  filteredProducts = allProducts.filter(p => {
+    const categoria = p.dataset.categoria || '';
+    const tamanho = p.dataset.tamanho || '';
+    let preco = parseFloat(p.dataset.preco);
+    if (isNaN(preco)) preco = 0; // evita NaN derrubar o filtro
+
+    const catOK = showAllByCat || selectedCategories.includes(categoria);
+    const sizeOK = showAllBySize || selectedSizes.includes(tamanho);
+    const priceOK = preco >= priceRange.min && preco <= priceRange.max;
+
+    return catOK && sizeOK && priceOK;
+  });
+
+  // Fallback: sem filtros ativos não pode sumir tudo
+  if (!hasActiveFilters() && filteredProducts.length === 0) {
+    filteredProducts = [...allProducts];
+  }
+
+  updateProductsDisplay();
+  if (typeof updateActiveFilters === 'function') updateActiveFilters();
+  if (typeof updateProductCount === 'function') updateProductCount();
+}
+
+function updateProductsDisplay() {
+  const grid = document.getElementById('products-grid');
+  const noProducts = document.getElementById('no-products');
+
+  allProducts.forEach(p => p.style.display = 'none');
+  filteredProducts.forEach(p => p.style.display = 'block');
+
+  if (grid && noProducts) {
+    const anyVisible = filteredProducts.length > 0;
+    grid.style.display = anyVisible ? 'grid' : 'none';
+    noProducts.style.display = anyVisible ? 'none' : 'block';
+  }
+}
+
+// Expor caso use onclick inline
+window.filterProducts = filterProducts;
 </script>
 {% endblock %}
