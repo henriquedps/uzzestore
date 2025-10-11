@@ -6,6 +6,29 @@ import os
 import json
 from datetime import datetime
 import uuid
+import click
+from werkzeug.security import generate_password_hash
+
+def _conn_rw():
+    # usa sua função existente
+    return get_db_connection()
+
+def ensure_is_admin_column(conn):
+    cols = [r['name'] for r in conn.execute("PRAGMA table_info(usuarios)").fetchall()]
+    if 'is_admin' not in cols:
+        conn.execute("ALTER TABLE usuarios ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0")
+        conn.commit()
+
+def ensure_password_column(conn):
+    cols = [r['name'] for r in conn.execute("PRAGMA table_info(usuarios)").fetchall()]
+    # Preferimos senha_hash; se não existir, cria
+    if 'senha_hash' in cols:
+        return 'senha_hash'
+    if 'senha' in cols:
+        return 'senha'
+    conn.execute("ALTER TABLE usuarios ADD COLUMN senha_hash TEXT")
+    conn.commit()
+    return 'senha_hash'
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'uzzer-store-secret-key-2024')
@@ -482,6 +505,47 @@ def debug_produtos():
         return html
     except Exception as e:
         return f"Erro: {e}"
+
+@app.cli.command("db-info")
+def db_info():
+    """Mostra o arquivo do banco e colunas da tabela usuarios."""
+    conn = _conn_rw()
+    try:
+        dblist = [dict(r) for r in conn.execute("PRAGMA database_list").fetchall()]
+        print("SQLite databases:", dblist)  # veja o caminho absoluto em 'file'
+        cols = [dict(c) for c in conn.execute("PRAGMA table_info(usuarios)").fetchall()]
+        print("Tabela usuarios:", cols)
+    finally:
+        conn.close()
+
+@app.cli.command("create-admin")
+@click.option('--nome', prompt=True)
+@click.option('--email', prompt=True)
+@click.option('--senha', prompt=True, hide_input=True, confirmation_prompt=True)
+def create_admin(nome, email, senha):
+    """Cria (ou promove) um usuário para administrador."""
+    conn = _conn_rw()
+    try:
+        ensure_is_admin_column(conn)
+        pass_col = ensure_password_column(conn)
+        senha_val = generate_password_hash(senha) if pass_col == 'senha_hash' else senha
+
+        u = conn.execute("SELECT id FROM usuarios WHERE email = ?", (email,)).fetchone()
+        if u:
+            conn.execute(f"UPDATE usuarios SET nome = ?, {pass_col} = ?, is_admin = 1 WHERE id = ?",
+                         (nome, senha_val, u['id']))
+            msg = f'Usuário atualizado e promovido a admin: {email}'
+        else:
+            conn.execute(f"INSERT INTO usuarios (nome, email, {pass_col}, is_admin) VALUES (?, ?, ?, 1)",
+                         (nome, email, senha_val))
+            msg = f'Admin criado: {email}'
+        conn.commit()
+        print("OK:", msg)
+    except Exception as e:
+        conn.rollback()
+        print("Erro:", e)
+    finally:
+        conn.close()
 
 # Para o Vercel, não usar if __name__ == '__main__'
 # O app será executado automaticamente
