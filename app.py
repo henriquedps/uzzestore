@@ -71,20 +71,6 @@ def init_db():
             )
         ''')
         
-        # Criar tabela pedidos
-        conn.execute('''
-            CREATE TABLE IF NOT EXISTS pedidos (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                usuario_id INTEGER NOT NULL,
-                itens TEXT NOT NULL,
-                total REAL NOT NULL,
-                endereco TEXT,
-                status TEXT DEFAULT 'pendente',
-                data_pedido TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
-            )
-        ''')
-        
         # Verificar se existem produtos, se não, criar alguns
         count = conn.execute('SELECT COUNT(*) FROM produtos').fetchone()[0]
         if count == 0:
@@ -152,6 +138,7 @@ def carrinho():
         return redirect(url_for('login'))
     
     carrinho_itens = session.get('carrinho', [])
+    print(f"Debug - Itens no carrinho: {carrinho_itens}")  # Debug
     
     if not carrinho_itens:
         return render_template('carrinho.html', itens=[], total=0)
@@ -174,6 +161,7 @@ def carrinho():
         
         conn.close()
         
+        print(f"Debug - Itens detalhados: {len(itens_detalhados)}")  # Debug
         return render_template('carrinho.html', itens=itens_detalhados, total=total)
     except Exception as e:
         print(f"Erro no carrinho: {e}")
@@ -194,11 +182,14 @@ def carrinho_adicionar(produto_id):
             flash('Produto não encontrado!', 'error')
             return redirect(url_for('index'))
         
+        # Inicializar carrinho se não existir
         if 'carrinho' not in session:
             session['carrinho'] = []
         
         carrinho = session['carrinho']
+        print(f"Debug - Carrinho antes: {carrinho}")  # Debug
         
+        # Verificar se produto já existe no carrinho
         produto_encontrado = False
         for item in carrinho:
             if item['produto_id'] == produto_id:
@@ -206,17 +197,23 @@ def carrinho_adicionar(produto_id):
                 produto_encontrado = True
                 break
         
+        # Se não encontrou, adicionar novo item
         if not produto_encontrado:
             carrinho.append({
                 'produto_id': produto_id,
                 'quantidade': 1
             })
         
+        # Salvar no session
         session['carrinho'] = carrinho
         session.permanent = True
+        session.modified = True  # Forçar salvamento
+        
+        print(f"Debug - Carrinho depois: {session['carrinho']}")  # Debug
         
         flash(f'✅ "{produto["nome"]}" adicionado ao carrinho!', 'success')
         return redirect(request.referrer or url_for('index'))
+        
     except Exception as e:
         print(f"Erro ao adicionar ao carrinho: {e}")
         flash('Erro ao adicionar produto ao carrinho!', 'error')
@@ -229,6 +226,15 @@ def carrinho_remover(produto_id):
         session['carrinho'] = [item for item in carrinho if item['produto_id'] != produto_id]
         session.permanent = True
         flash('Item removido do carrinho!', 'info')
+    
+    return redirect(url_for('carrinho'))
+
+@app.route('/carrinho/limpar')
+def carrinho_limpar():
+    if 'carrinho' in session:
+        session['carrinho'] = []
+        session.permanent = True
+        flash('Carrinho limpo!', 'info')
     
     return redirect(url_for('carrinho'))
 
@@ -362,9 +368,8 @@ def admin_dashboard():
         stats = {
             'total_usuarios': conn.execute('SELECT COUNT(*) FROM usuarios').fetchone()[0],
             'total_produtos': conn.execute('SELECT COUNT(*) FROM produtos').fetchone()[0],
-            'total_pedidos': 0,
-            'vendas_total': 0,
-            'pedidos_recentes': []
+            'carrinho_ativos': 0,  # Removido contador de pedidos
+            'vendas_total': 0,     # Removido vendas
         }
         
         conn.close()
@@ -388,33 +393,94 @@ def admin_produtos():
     except Exception as e:
         return f"Erro: {e}"
 
-@app.route('/admin/pedidos')
-def admin_pedidos():
+@app.route('/admin/produtos/novo', methods=['GET', 'POST'])
+def admin_novo_produto():
+    if not is_admin():
+        flash('Acesso negado!', 'error')
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        nome = request.form['nome']
+        preco = float(request.form['preco'])
+        categoria = request.form['categoria']
+        descricao = request.form['descricao']
+        imagem = request.form['imagem']
+        
+        try:
+            conn = get_db_connection()
+            conn.execute('''
+                INSERT INTO produtos (nome, preco, categoria, descricao, imagem)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (nome, preco, categoria, descricao, imagem))
+            conn.commit()
+            conn.close()
+            
+            flash(f'Produto "{nome}" adicionado com sucesso!', 'success')
+            return redirect(url_for('admin_produtos'))
+        except Exception as e:
+            flash(f'Erro ao adicionar produto: {e}', 'error')
+    
+    return render_template('admin_novo_produto.html')
+
+@app.route('/admin/produtos/editar/<int:produto_id>', methods=['GET', 'POST'])
+def admin_editar_produto(produto_id):
     if not is_admin():
         flash('Acesso negado!', 'error')
         return redirect(url_for('login'))
     
     conn = get_db_connection()
-    pedidos = conn.execute('SELECT * FROM pedidos ORDER BY id DESC').fetchall()
-    conn.close()
+    produto = conn.execute('SELECT * FROM produtos WHERE id = ?', (produto_id,)).fetchone()
     
-    return render_template('admin_pedidos.html', pedidos=pedidos)
+    if not produto:
+        flash('Produto não encontrado!', 'error')
+        return redirect(url_for('admin_produtos'))
+    
+    if request.method == 'POST':
+        nome = request.form['nome']
+        preco = float(request.form['preco'])
+        categoria = request.form['categoria']
+        descricao = request.form['descricao']
+        imagem = request.form['imagem']
+        
+        try:
+            conn.execute('''
+                UPDATE produtos 
+                SET nome = ?, preco = ?, categoria = ?, descricao = ?, imagem = ?
+                WHERE id = ?
+            ''', (nome, preco, categoria, descricao, imagem, produto_id))
+            conn.commit()
+            conn.close()
+            
+            flash(f'Produto "{nome}" atualizado com sucesso!', 'success')
+            return redirect(url_for('admin_produtos'))
+        except Exception as e:
+            flash(f'Erro ao atualizar produto: {e}', 'error')
+    
+    conn.close()
+    return render_template('admin_editar_produto.html', produto=produto)
 
-@app.route('/meus-pedidos')
-def pedidos_usuario():
-    if 'user_id' not in session:
-        flash('Você precisa estar logado!', 'error')
+@app.route('/admin/produtos/deletar/<int:produto_id>')
+def admin_deletar_produto(produto_id):
+    if not is_admin():
+        flash('Acesso negado!', 'error')
         return redirect(url_for('login'))
     
-    conn = get_db_connection()
-    pedidos = conn.execute('''
-        SELECT * FROM pedidos 
-        WHERE usuario_id = ? 
-        ORDER BY id DESC
-    ''', (session['user_id'],)).fetchall()
-    conn.close()
+    try:
+        conn = get_db_connection()
+        produto = conn.execute('SELECT nome FROM produtos WHERE id = ?', (produto_id,)).fetchone()
+        
+        if produto:
+            conn.execute('DELETE FROM produtos WHERE id = ?', (produto_id,))
+            conn.commit()
+            flash(f'Produto "{produto["nome"]}" removido com sucesso!', 'success')
+        else:
+            flash('Produto não encontrado!', 'error')
+        
+        conn.close()
+    except Exception as e:
+        flash(f'Erro ao remover produto: {e}', 'error')
     
-    return render_template('pedidos_usuario.html', pedidos=pedidos)
+    return redirect(url_for('admin_produtos'))
 
 # Para o Vercel, não usar if __name__ == '__main__'
 # O app será executado automaticamente

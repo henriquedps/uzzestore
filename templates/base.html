@@ -652,8 +652,9 @@
                     <div class="cart-container">
                         <a href="{{ url_for('carrinho') }}" class="icon-btn">
                             <i class="fas fa-shopping-bag"></i>
-                            {% if session.carrinho and session.carrinho|length > 0 %}
-                                <span class="cart-count">{{ session.carrinho|length }}</span>
+                            {% set cart_items = session.get('carrinho', []) %}
+                            {% if cart_items|length > 0 %}
+                                <span class="cart-count">{{ cart_items|length }}</span>
                             {% endif %}
                         </a>
                     </div>
