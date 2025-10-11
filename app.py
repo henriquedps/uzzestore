@@ -71,25 +71,6 @@ def init_db():
             )
         ''')
         
-        # Verificar se existem produtos, se não, criar alguns
-        count = conn.execute('SELECT COUNT(*) FROM produtos').fetchone()[0]
-        if count == 0:
-            produtos_exemplo = [
-                ('Camiseta Básica Branca', 49.90, 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=400&fit=crop', 'Camisetas', 'Camiseta básica em algodão, confortável e versátil.'),
-                ('Calça Jeans Skinny', 129.90, 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=300&h=400&fit=crop', 'Calças', 'Calça jeans skinny com lavagem escura, perfeita para o dia a dia.'),
-                ('Vestido Floral', 89.90, 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=300&h=400&fit=crop', 'Vestidos', 'Vestido floral feminino, ideal para ocasiões especiais.'),
-                ('Tênis Casual', 159.90, 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=400&fit=crop', 'Calçados', 'Tênis casual confortável para uso diário.'),
-                ('Bolsa de Couro', 199.90, 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=400&fit=crop', 'Acessórios', 'Bolsa de couro genuíno, elegante e durável.'),
-                ('Jaqueta Jeans', 179.90, 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=300&h=400&fit=crop', 'Jaquetas', 'Jaqueta jeans clássica, perfeita para qualquer ocasião.'),
-                ('Saia Midi', 69.90, 'https://images.unsplash.com/photo-1583496661160-fb5886a13d24?w=300&h=400&fit=crop', 'Saias', 'Saia midi elegante, ideal para trabalho ou passeio.'),
-                ('Camisa Social', 99.90, 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=300&h=400&fit=crop', 'Camisas', 'Camisa social premium, corte moderno.'),
-            ]
-            
-            for produto in produtos_exemplo:
-                conn.execute('''
-                    INSERT INTO produtos (nome, preco, imagem, categoria, descricao)
-                    VALUES (?, ?, ?, ?, ?)
-                ''', produto)
         
         # Criar usuário admin se não existir
         admin_exists = conn.execute('SELECT COUNT(*) FROM usuarios WHERE email = ?', ('admin@uzzerstore.com',)).fetchone()[0]
