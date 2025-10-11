@@ -463,6 +463,33 @@ def admin_deletar_produto(produto_id):
     
     return redirect(url_for('admin_produtos'))
 
+@app.route('/debug/produtos')
+def debug_produtos():
+    if not is_admin():
+        return "Acesso negado"
+    
+    try:
+        conn = get_db_connection()
+        produtos = conn.execute('SELECT * FROM produtos ORDER BY id DESC').fetchall()
+        conn.close()
+        
+        html = "<h1>Debug - Produtos</h1><br>"
+        for produto in produtos:
+            html += f"""
+            <div style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+                <h3>ID: {produto['id']} - {produto['nome']}</h3>
+                <p><strong>Preço:</strong> R$ {produto['preco']}</p>
+                <p><strong>Categoria:</strong> {produto['categoria']}</p>
+                <p><strong>URL da Imagem:</strong> {produto['imagem'] or 'Não informado'}</p>
+                {f'<img src="{produto["imagem"]}" style="max-width: 200px; height: auto;" onerror="this.src=\'data:image/svg+xml,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;200&quot; height=&quot;200&quot;><rect width=&quot;200&quot; height=&quot;200&quot; fill=&quot;%23f0f0f0&quot;/><text x=&quot;50%25&quot; y=&quot;50%25&quot; text-anchor=&quot;middle&quot; dy=&quot;.3em&quot; fill=&quot;%23666&quot;>Erro</text></svg>\'">' if produto['imagem'] else '<p style="color: #999;">Sem imagem</p>'}
+                <hr>
+            </div>
+            """
+        
+        return html
+    except Exception as e:
+        return f"Erro: {e}"
+
 # Para o Vercel, não usar if __name__ == '__main__'
 # O app será executado automaticamente
 print("🚀 UzzerStore inicializado para produção!")

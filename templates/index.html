@@ -160,10 +160,14 @@
                      data-id="{{ produto.id }}">
                     <div class="product-image">
                         {% if produto.imagem %}
-                            <img src="{{ produto.imagem }}" alt="{{ produto.nome }}" loading="lazy">
+                            <img src="{{ produto.imagem }}" 
+                                 alt="{{ produto.nome }}" 
+                                 loading="lazy"
+                                 onerror="this.onerror=null; this.src='https://via.placeholder.com/400x400/f0f0f0/666?text=Sem+Imagem';">
                         {% else %}
                             <div class="product-placeholder">
                                 <i class="fas fa-image"></i>
+                                <p>Sem imagem</p>
                             </div>
                         {% endif %}
                         <div class="product-overlay">
@@ -612,58 +616,62 @@
     font-weight: bold;
 }
 
-.product-placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    font-size: 3rem;
-    color: #ccc;
+/* Melhorar estilos das imagens dos produtos */
+.product-image {
+    height: 400px;
     background: var(--secondary-color);
+    overflow: hidden;
+    position: relative;
+    border-radius: 12px 12px 0 0;
 }
 
-.product-category {
-    font-size: 12px;
-    color: var(--text-light);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 5px;
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     display: block;
 }
 
-.product-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.7);
+.product-card:hover .product-image img {
+    transform: scale(1.08);
+}
+
+.product-placeholder {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    height: 100%;
+    color: #ccc;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.product-placeholder i {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    opacity: 0.5;
+}
+
+.product-placeholder p {
+    font-size: 14px;
+    margin: 0;
+    opacity: 0.7;
+}
+
+/* Melhorar o loading das imagens */
+.product-image img[src=""], 
+.product-image img:not([src]) {
+    display: none;
+}
+
+.product-image img {
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s ease, transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.product-card:hover .product-overlay {
+.product-image img.loaded {
     opacity: 1;
-}
-
-.quick-view {
-    background: white;
-    color: var(--text-primary);
-    border: none;
-    padding: 10px 20px;
-    border-radius: 25px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.quick-view:hover {
-    background: var(--accent-color);
-    color: white;
 }
 
 /* Overlay para fechar filtros */
@@ -1227,16 +1235,16 @@ let selectedSize = 'M';
 
 // Dados dos produtos para o modal
 const productData = {
-    {% for produto in produtos %}
-    {{ produto.id }}: {
-        id: {{ produto.id }},
-        nome: "{{ produto.nome }}",
-        preco: {{ produto.preco }},
-        categoria: "{{ produto.categoria or 'Produto' }}",
-        imagem: "{{ produto.imagem or '' }}",
-        descricao: "{{ produto.descricao or 'Produto de alta qualidade com excelente acabamento e conforto.' }}"
-    }{% if not loop.last %},{% endif %}
-    {% endfor %}
+{% for produto in produtos %}
+{{ produto.id }}: {
+    id: {{ produto.id }},
+    nome: "{{ produto.nome }}",
+    preco: {{ produto.preco }},
+    categoria: "{{ produto.categoria or 'Produto' }}",
+    imagem: "{{ produto.imagem or '' }}",
+    descricao: "{{ produto.descricao or 'Produto de alta qualidade com excelente acabamento e conforto.' }}"
+}{% if not loop.last %},{% endif %}
+{% endfor %}
 };
 
 // Abrir visualização rápida
@@ -1250,8 +1258,23 @@ function quickView(produtoId) {
     }
     
     // Preencher dados no modal
-    document.getElementById('modal-product-image').src = produto.imagem || 'https://via.placeholder.com/400x400?text=Sem+Imagem';
-    document.getElementById('modal-product-image').alt = produto.nome;
+    const modalImg = document.getElementById('modal-product-image');
+    const imgSrc = produto.imagem || 'https://via.placeholder.com/500x500/f8f9fa/6c757d?text=Imagem+Indispon%C3%ADvel';
+    
+    // Mostrar loading enquanto carrega
+    modalImg.style.opacity = '0.5';
+    modalImg.src = imgSrc;
+    
+    modalImg.onload = function() {
+        this.style.opacity = '1';
+    };
+    
+    modalImg.onerror = function() {
+        this.src = 'https://via.placeholder.com/500x500/f8f9fa/6c757d?text=Imagem+Indispon%C3%ADvel';
+        this.style.opacity = '1';
+    };
+    
+    modalImg.alt = produto.nome;
     document.getElementById('modal-product-category').textContent = produto.categoria;
     document.getElementById('modal-product-name').textContent = produto.nome;
     document.getElementById('modal-product-price').textContent = formatCurrency(produto.preco);
@@ -1262,7 +1285,8 @@ function quickView(produtoId) {
     document.querySelectorAll('.size-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    document.querySelector('.size-btn[onclick="selectSize(\'M\')"]').classList.add('active');
+    const mBtn = document.querySelector('.size-btn[onclick="selectSize(\'M\')"]');
+    if (mBtn) mBtn.classList.add('active');
     
     // Mostrar modal
     const modal = document.getElementById('quick-view-modal');
@@ -1343,5 +1367,92 @@ document.addEventListener('keydown', function(e) {
         closeQuickView();
     }
 });
+
+// Melhorar carregamento das imagens
+document.addEventListener('DOMContentLoaded', function() {
+    // Lazy loading para imagens
+    const images = document.querySelectorAll('.product-image img');
+    
+    images.forEach(img => {
+        // Quando a imagem carregar com sucesso
+        img.addEventListener('load', function() {
+            this.classList.add('loaded');
+        });
+        
+        // Se a imagem falhar ao carregar
+        img.addEventListener('error', function() {
+            console.log('Erro ao carregar imagem:', this.src);
+            
+            // Criar placeholder personalizado
+            const placeholder = document.createElement('div');
+            placeholder.className = 'product-placeholder';
+            placeholder.innerHTML = `
+                <i class="fas fa-image"></i>
+                <p>Imagem indisponível</p>
+            `;
+            
+            // Substituir a imagem pelo placeholder
+            this.parentNode.insertBefore(placeholder, this);
+            this.style.display = 'none';
+        });
+        
+        // Forçar verificação se a imagem já está carregada
+        if (img.complete) {
+            img.classList.add('loaded');
+        }
+    });
+});
+
+// Atualizar função quickView para lidar melhor com imagens
+function quickView(produtoId) {
+    currentProductId = produtoId;
+    const produto = productData[produtoId];
+    
+    if (!produto) {
+        console.error('Produto não encontrado:', produtoId);
+        return;
+    }
+    
+    // Preencher dados no modal
+    const modalImg = document.getElementById('modal-product-image');
+    const imgSrc = produto.imagem || 'https://via.placeholder.com/500x500/f8f9fa/6c757d?text=Imagem+Indispon%C3%ADvel';
+    
+    // Mostrar loading enquanto carrega
+    modalImg.style.opacity = '0.5';
+    modalImg.src = imgSrc;
+    
+    modalImg.onload = function() {
+        this.style.opacity = '1';
+    };
+    
+    modalImg.onerror = function() {
+        this.src = 'https://via.placeholder.com/500x500/f8f9fa/6c757d?text=Imagem+Indispon%C3%ADvel';
+        this.style.opacity = '1';
+    };
+    
+    modalImg.alt = produto.nome;
+    document.getElementById('modal-product-category').textContent = produto.categoria;
+    document.getElementById('modal-product-name').textContent = produto.nome;
+    document.getElementById('modal-product-price').textContent = formatCurrency(produto.preco);
+    document.getElementById('modal-product-description').textContent = produto.descricao;
+    
+    // Resetar tamanho selecionado
+    selectedSize = 'M';
+    document.querySelectorAll('.size-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    const mBtn = document.querySelector('.size-btn[onclick="selectSize(\'M\')"]');
+    if (mBtn) mBtn.classList.add('active');
+    
+    // Mostrar modal
+    const modal = document.getElementById('quick-view-modal');
+    modal.style.display = 'flex';
+    setTimeout(() => {
+        modal.classList.add('active');
+    }, 10);
+    
+    // Bloquear scroll do body
+    document.body.style.overflow = 'hidden';
+}
 </script>
 {% endblock %}
