@@ -1,7 +1,8 @@
+import os
+import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from decimal import Decimal
 from werkzeug.security import generate_password_hash, check_password_hash
-import sqlite3
 import os
 import json
 from datetime import datetime
@@ -18,15 +19,16 @@ except Exception:
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_DB = os.path.join(BASE_DIR, 'data', 'app.db')
 DB_PATH = os.getenv('DB_PATH', DEFAULT_DB)
-
-# NOVO: tornar absoluto se for relativo
 if not os.path.isabs(DB_PATH):
     DB_PATH = os.path.join(BASE_DIR, DB_PATH)
+db_dir = os.path.dirname(DB_PATH)
+if db_dir:
+    os.makedirs(db_dir, exist_ok=True)
 
-DB_DIR = os.path.dirname(DB_PATH)
-# NOVO: só cria se houver diretório definido
-if DB_DIR:
-    os.makedirs(DB_DIR, exist_ok=True)
+def get_db_connection():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 def _conn_rw():
     # usa sua função existente
@@ -78,11 +80,6 @@ def from_json_filter(value):
         return value or []
     except (json.JSONDecodeError, TypeError):
         return []
-
-def get_db_connection():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
 
 def init_db():
     """Inicializar banco de dados"""
