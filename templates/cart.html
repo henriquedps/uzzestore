@@ -4,16 +4,25 @@
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/cart.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modern-cart.css') }}">
 {% endblock %}
 
 {% block content %}
+<!-- Header do Carrinho -->
+<div class="cart-header">
+    <h1>🛒 Minha Sacola</h1>
+    <div class="cart-breadcrumb">
+        <a href="{{ url_for('index') }}">Início</a> > 
+        <a href="{{ url_for('index') }}">Produtos</a> > 
+        <span>Carrinho</span>
+    </div>
+</div>
+
 <div class="carrinho-container">
-    <h1>🛒 Seu Carrinho</h1>
-    
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
+                <div class="alert alert-{{ 'success' if category == 'success' else 'error' if category == 'error' else 'warning' }}">{{ message }}</div>
             {% endfor %}
         {% endif %}
     {% endwith %}
@@ -22,24 +31,38 @@
         <div class="carrinho-content">
             <div class="itens-carrinho">
                 {% for item in items %}
-                    <div class="item-carrinho">
-                        {% if item.imagem %}
-                            <img src="{{ item.imagem }}" alt="{{ item.nome }}" class="item-imagem">
-                        {% else %}
-                            <div class="item-sem-imagem">📷</div>
-                        {% endif %}
+                    <div class="item-carrinho" data-produto-id="{{ item.produto_id }}">
+                        <div class="item-imagem-container">
+                            {% if item.imagem %}
+                                <img src="{{ item.imagem }}" alt="{{ item.nome }}" class="item-imagem"
+                                     onerror="imgFallback(this, 120, 120, 'Produto')">
+                            {% else %}
+                                <div class="item-sem-imagem">�</div>
+                            {% endif %}
+                        </div>
                         
                         <div class="item-info">
                             <h3>{{ item.nome }}</h3>
                             <p class="item-preco">{{ item.preco|currency }}</p>
-                            <p class="item-quantidade">Quantidade: {{ item.quantidade }}</p>
+                            <div class="item-detalhes">
+                                <span class="item-tamanho">Tam: M</span>
+                                <span class="item-cor">Cor: Padrão</span>
+                            </div>
+                        </div>
+                        
+                        <div class="item-quantidade-container">
+                            <div class="quantidade-controls">
+                                <button class="btn-quantidade" onclick="updateQuantity({{ item.produto_id }}, -1)">−</button>
+                                <span class="quantidade-display">{{ item.quantidade }}</span>
+                                <button class="btn-quantidade" onclick="updateQuantity({{ item.produto_id }}, 1)">+</button>
+                            </div>
                         </div>
                         
                         <div class="item-subtotal">
-                            <p><strong>{{ (item.preco * item.quantidade)|currency }}</strong></p>
-                            <a href="{{ url_for('carrinho_remover', produto_id=item.produto_id) }}" 
-                               class="btn-remover"
-                               onclick="return confirm('Remover este item do carrinho?')">🗑️ Remover</a>
+                            <p class="subtotal-valor">{{ (item.preco * item.quantidade)|currency }}</p>
+                            <button class="btn-remover" onclick="removeItem({{ item.produto_id }})">
+                                🗑️ Remover
+                            </button>
                         </div>
                     </div>
                 {% endfor %}
@@ -48,17 +71,34 @@
             <div class="carrinho-resumo">
                 <div class="resumo-card">
                     <h3>📋 Resumo do Pedido</h3>
+                    
+                    <!-- Cupom de Desconto -->
+                    <div class="cupom-section">
+                        <h4>🎫 Cupom de Desconto</h4>
+                        <div class="cupom-input-group">
+                            <input type="text" class="cupom-input" placeholder="Digite seu cupom" id="cupom-input">
+                            <button class="btn-cupom" onclick="aplicarCupom()">Aplicar</button>
+                        </div>
+                    </div>
+                    
                     <div class="resumo-linha">
-                        <span>Subtotal:</span>
+                        <span>Subtotal ({{ items|length }} {{ 'item' if items|length == 1 else 'itens' }}):</span>
                         <span>{{ total|currency }}</span>
                     </div>
                     <div class="resumo-linha">
                         <span>Frete:</span>
-                        <span>Grátis</span>
+                        <span class="resumo-frete">GRÁTIS</span>
                     </div>
+                    <div class="resumo-linha" style="display: none;" id="desconto-linha">
+                        <span>Desconto:</span>
+                        <span id="desconto-valor">R$ 0,00</span>
+                    </div>
+                    
                     <div class="resumo-total">
-                        <span>Total:</span>
-                        <span><strong>{{ total|currency }}</strong></span>
+                        <div class="resumo-linha">
+                            <span>Total:</span>
+                            <span id="total-final">{{ total|currency }}</span>
+                        </div>
                     </div>
                     
                     {% if session.user_id %}
@@ -67,30 +107,170 @@
                         </a>
                     {% else %}
                         <div class="login-necessario">
-                            <p>⚠️ Faça login para finalizar a compra</p>
+                            <p>Faça login para finalizar a compra</p>
                             <a href="{{ url_for('login') }}" class="btn-login-checkout">
                                 🔐 Fazer Login
                             </a>
-                            <p style="font-size: 0.9rem; margin-top: 8px;">
-                                Não tem conta? <a href="{{ url_for('cadastro') }}">Cadastre-se aqui</a>
+                            <p style="font-size: 0.9rem; margin-top: 10px; color: #666;">
+                                Não tem conta? <a href="{{ url_for('cadastro') }}" style="color: #e67e22; text-decoration: none;">Cadastre-se aqui</a>
                             </p>
                         </div>
                     {% endif %}
                     
-                    <a href="{{ url_for('carrinho_limpar') }}" 
-                       class="btn-limpar"
-                       onclick="return confirm('Limpar todo o carrinho?')">
+                    <button class="btn-limpar" onclick="limparCarrinho()">
                         🗑️ Limpar Carrinho
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
     {% else %}
         <div class="carrinho-vazio">
-            <h2>😔 Seu carrinho está vazio</h2>
+            <h2>😔 Sua sacola está vazia</h2>
             <p>Que tal adicionar alguns produtos incríveis?</p>
-            <a href="{{ url_for('produtos') }}" class="btn-comprar">🛍️ Ver Produtos</a>
+            <a href="{{ url_for('index') }}" class="btn-comprar">🛍️ Ver Produtos</a>
         </div>
     {% endif %}
 </div>
+
+<script>
+// Função para atualizar quantidade
+function updateQuantity(produtoId, change) {
+    const quantidadeElement = document.querySelector(`[data-produto-id="${produtoId}"] .quantidade-display`);
+    if (!quantidadeElement) return;
+    
+    let quantidade = parseInt(quantidadeElement.textContent) + change;
+    if (quantidade < 1) quantidade = 1;
+    
+    // Aqui você faria uma requisição AJAX para atualizar no servidor
+    // Por enquanto, apenas atualiza visualmente
+    quantidadeElement.textContent = quantidade;
+    
+    // Atualizar subtotal do item
+    updateItemSubtotal(produtoId, quantidade);
+}
+
+// Função para remover item
+function removeItem(produtoId) {
+    if (confirm('Tem certeza que deseja remover este item?')) {
+        window.location.href = `/carrinho/remover/${produtoId}`;
+    }
+}
+
+// Função para limpar carrinho
+function limparCarrinho() {
+    if (confirm('Tem certeza que deseja limpar todo o carrinho?')) {
+        window.location.href = '{{ url_for("carrinho_limpar") }}';
+    }
+}
+
+// Função para aplicar cupom
+function aplicarCupom() {
+    const cupomInput = document.getElementById('cupom-input');
+    const cupom = cupomInput.value.trim().toUpperCase();
+    
+    if (!cupom) {
+        alert('Digite um cupom válido');
+        return;
+    }
+    
+    // Simular aplicação de cupom
+    const cuponsValidos = {
+        'DESCONTO10': 0.10,
+        'BEMVINDO': 0.15,
+        'FRETEGRATIS': 0.05,
+        'UZZER20': 0.20
+    };
+    
+    if (cuponsValidos[cupom]) {
+        const desconto = cuponsValidos[cupom];
+        const total = parseFloat('{{ total }}'.replace(',', '.'));
+        const valorDesconto = total * desconto;
+        const novoTotal = total - valorDesconto;
+        
+        // Mostrar desconto
+        document.getElementById('desconto-linha').style.display = 'flex';
+        document.getElementById('desconto-valor').textContent = `- R$ ${valorDesconto.toFixed(2).replace('.', ',')}`;
+        document.getElementById('total-final').textContent = `R$ ${novoTotal.toFixed(2).replace('.', ',')}`;
+        
+        // Feedback visual
+        cupomInput.style.borderColor = '#27ae60';
+        cupomInput.style.backgroundColor = '#d4edda';
+        
+        alert(`Cupom aplicado! Desconto de ${(desconto * 100)}%`);
+    } else {
+        // Cupom inválido
+        cupomInput.style.borderColor = '#e74c3c';
+        cupomInput.style.backgroundColor = '#f8d7da';
+        alert('Cupom inválido ou expirado');
+        
+        // Resetar após 3 segundos
+        setTimeout(() => {
+            cupomInput.style.borderColor = '#e9ecef';
+            cupomInput.style.backgroundColor = 'white';
+        }, 3000);
+    }
+}
+
+// Função para atualizar subtotal do item
+function updateItemSubtotal(produtoId, quantidade) {
+    // Esta função seria implementada com a lógica real do seu backend
+    console.log(`Atualizando quantidade do produto ${produtoId} para ${quantidade}`);
+}
+
+// Animações na entrada da página
+document.addEventListener('DOMContentLoaded', function() {
+    // Animar entrada dos itens
+    const items = document.querySelectorAll('.item-carrinho');
+    items.forEach((item, index) => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            item.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+            item.style.opacity = '1';
+            item.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+    
+    // Animar resumo
+    const resumo = document.querySelector('.carrinho-resumo');
+    if (resumo) {
+        resumo.style.opacity = '0';
+        resumo.style.transform = 'translateX(30px)';
+        setTimeout(() => {
+            resumo.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+            resumo.style.opacity = '1';
+            resumo.style.transform = 'translateX(0)';
+        }, 300);
+    }
+});
+
+// Função de fallback para imagens
+function imgFallback(el, w=120, h=120, text='Produto') {
+    el.onerror = null;
+    
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}' viewBox='0 0 ${w} ${h}'>
+      <defs>
+        <linearGradient id='bgGrad' x1='0%' y1='0%' x2='100%' y2='100%'>
+          <stop offset='0%' style='stop-color:#f8f9fa;stop-opacity:1' />
+          <stop offset='100%' style='stop-color:#e9ecef;stop-opacity:1' />
+        </linearGradient>
+        <linearGradient id='iconGrad' x1='0%' y1='0%' x2='100%' y2='100%'>
+          <stop offset='0%' style='stop-color:#e67e22;stop-opacity:0.3' />
+          <stop offset='100%' style='stop-color:#f39c12;stop-opacity:0.3' />
+        </linearGradient>
+      </defs>
+      <rect width='100%' height='100%' fill='url(#bgGrad)'/>
+      <g transform='translate(${w/2-20}, ${h/2-20})'>
+        <rect x='0' y='10' width='40' height='30' rx='3' fill='url(#iconGrad)' stroke='#6c757d' stroke-width='1.5'/>
+        <circle cx='30' cy='18' r='3' fill='#6c757d'/>
+        <polygon points='5,30 15,20 25,25 32,22 32,35 5,35' fill='#6c757d'/>
+      </g>
+      <text x='50%' y='${h-8}' text-anchor='middle' font-family='Inter, sans-serif' font-size='10' fill='#6c757d' font-weight='600'>${text}</text>
+    </svg>`;
+    
+    el.src = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+    el.className += ' img-fallback';
+}
+</script>
+
 {% endblock %}

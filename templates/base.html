@@ -7,19 +7,46 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-1S8s..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/filters.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/products-cards.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/vibrant-theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sacola-lateral.css') }}">
     <style>
         :root {
-            --primary-color: #1a1a1a;
-            --secondary-color: #f8f8f8;
-            --accent-color: #d4af37;
-            --text-primary: #1a1a1a;
-            --text-secondary: #666666;
-            --text-light: #999999;
-            --white: #ffffff;
-            --border-light: #e5e5e5;
-            --shadow-light: 0 2px 20px rgba(0,0,0,0.08);
-            --shadow-medium: 0 8px 40px rgba(0,0,0,0.12);
+            /* 👔 Paleta Masculina Moderna */
+            --primary-color: #1a1a1a;      /* Preto elegante - cor principal */
+            --secondary-color: #2c3e50;    /* Azul naval - elementos secundários */
+            --accent-color: #e67e22;       /* Laranja queimado - destaques */
+            --gold-accent: #f39c12;        /* Dourado - elementos premium */
+            --steel-accent: #34495e;       /* Cinza aço - elementos neutros */
+            
+            /* 📝 Cores de Texto Masculinas */
+            --text-primary: #d8d8d8;       /* Preto para texto principal */
+            --text-secondary: #34495e;     /* Cinza escuro para texto secundário */
+            --text-light: #ffffff;         /* Branco para texto em fundos escuros */
+            --text-muted: #7f8c8d;         /* Cinza para texto sutil */
+            
+            /* 🎯 Backgrounds Masculinos */
+            --bg-primary: #ffffff;         /* Fundo principal branco */
+            --bg-secondary: #f4f4f4;       /* Fundo alternativo cinza claro */
+            --bg-dark: #1a1a1a;           /* Fundo escuro elegante */
+            --bg-gradient: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 50%, #34495e 100%);
+            
+            /* 🖼️ Bordas Masculinas */
+            --border-light: #bdc3c7;       /* Borda sutil */
+            --border-medium: #95a5a6;      /* Borda média */
+            --border-dark: #2c3e50;        /* Borda escura */
+            --border-accent: #e67e22;      /* Borda colorida */
+            
+            /* ✨ Sombras Masculinas */
+            --shadow-light: 0 2px 10px rgba(26, 26, 26, 0.1);
+            --shadow-medium: 0 8px 30px rgba(26, 26, 26, 0.15);
+            --shadow-heavy: 0 20px 60px rgba(26, 26, 26, 0.25);
+            --shadow-colored: 0 4px 20px rgba(230, 126, 34, 0.3);
+            
+            /* 🎭 Transições Suaves */
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
 
         * {
@@ -27,26 +54,27 @@
             padding: 0;
             box-sizing: border-box;
         }
-
+                                                   
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--white);
+            background: var(--bg-primary);
             color: var(--text-primary);
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Header Elegante */
+        /* Header Masculino Elegante */    
         .header {
-            background: rgba(255, 255, 255, 0.95);
+            background: var(--bg-gradient);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border-light);
+            border-bottom: 3px solid var(--accent-color);
             position: sticky;
             top: 0;
             z-index: 1000;
             transition: var(--transition);
+            box-shadow: var(--shadow-heavy);
         }
 
         .nav-container {
@@ -61,13 +89,21 @@
 
         .logo {
             font-family: 'Playfair Display', serif;
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 700;
-            color: var(--primary-color);
+            color: var(--text-light);
             text-decoration: none;
             letter-spacing: -0.02em;
             position: absolute;
-            left: 40px; 
+            left: 40px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            transition: var(--transition-bounce);
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+            color: var(--gold-accent);
+            text-shadow: 0 0 20px rgba(243, 156, 18, 0.8);
         }
 
         .logo::after {
@@ -76,8 +112,8 @@
             bottom: -2px;
             left: 0;
             width: 0;
-            height: 2px;
-            background: linear-gradient(90deg, var(--accent-color), var(--primary-color));
+            height: 3px;
+            background: linear-gradient(90deg, var(--gold-accent), var(--accent-color));
             transition: width 0.3s ease;
         }
 
@@ -94,14 +130,17 @@
 
         .nav-item a {
             text-decoration: none;
-            color: var(--text-secondary);
-            font-weight: 500;
+            color: var(--text-light);
+            font-weight: 600;
             font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 1px;
             position: relative;
-            transition: var(--transition);
-            padding: 8px 0;
+            transition: var(--transition-bounce);
+            padding: 12px 16px;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
         }
 
         .nav-item a::before {
@@ -117,7 +156,10 @@
         }
 
         .nav-item a:hover {
-            color: var(--primary-color);
+            color: var(--gold-accent);
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(230, 126, 34, 0.4);
         }
 
         .nav-item a:hover::before {
@@ -186,19 +228,20 @@
         }
 
         .btn-auth {
-            padding: 10px 20px;
-            border: 1px solid var(--border-light);
-            background: var(--white);
+            padding: 12px 24px;
+            border: 2px solid var(--gold-accent);
+            background: rgba(255, 255, 255, 0.95);
             color: var(--text-primary);
             text-decoration: none;
-            font-size: 12px;
-            font-weight: 500;
+            font-size: 13px;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-radius: 25px;
+            letter-spacing: 1px;
+            border-radius: 4px;
             transition: var(--transition);
             position: relative;
             overflow: hidden;
+            backdrop-filter: blur(10px);
         }
 
         .btn-auth::before {
@@ -218,21 +261,24 @@
 
         .btn-auth:hover {
             background: var(--primary-color);
-            color: var(--white);
+            color: var(--text-light);
             border-color: var(--primary-color);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
         }
 
         .btn-auth.primary {
-            background: var(--primary-color);
-            color: var(--white);
-            border-color: var(--primary-color);
+            background: linear-gradient(135deg, var(--accent-color), var(--gold-accent));
+            color: var(--text-light);
+            border-color: var(--accent-color);
+            box-shadow: var(--shadow-colored);
         }
 
         .btn-auth.primary:hover {
-            background: var(--accent-color);
-            border-color: var(--accent-color);
+            background: linear-gradient(135deg, var(--gold-accent), var(--accent-color));
+            border-color: var(--gold-accent);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-heavy);
         }
 
         .user-greeting {
@@ -641,6 +687,17 @@
                     <i class="fas fa-search"></i>
                 </button>
                 
+                <!-- Carrinho sempre visível -->
+                <div class="cart-container">
+                    <button class="icon-btn cart-toggle" onclick="toggleSacola()">
+                        <i class="fas fa-shopping-bag"></i>
+                        {% set cart_items = session.get('carrinho', []) %}
+                        {% if cart_items|length > 0 %}
+                            <span class="cart-count">{{ cart_items|length }}</span>
+                        {% endif %}
+                    </button>
+                </div>
+                
                 {% if session.user_id %}
                     <div class="auth-buttons">
                         <span class="user-greeting">Olá, {{ session.user_nome }}</span>
@@ -649,24 +706,11 @@
                             <a href="{{ url_for('admin_dashboard') }}" class="btn-auth primary">Admin</a>
                         {% endif %}
                     </div>
-                    
-                    <div class="cart-container">
-                        <a href="{{ url_for('carrinho') }}" class="icon-btn">
-                            <i class="fas fa-shopping-bag"></i>
-                            {% set cart_items = session.get('carrinho', []) %}
-                            {% if cart_items|length > 0 %}
-                                <span class="cart-count">{{ cart_items|length }}</span>
-                            {% endif %}
-                        </a>
-                    </div>
                 {% else %}
                     <div class="auth-buttons">
                         <a href="{{ url_for('login') }}" class="btn-auth">Entrar</a>
                         <a href="{{ url_for('cadastro') }}" class="btn-auth primary">Cadastrar</a>
                     </div>
-                    <button class="icon-btn">
-                        <i class="fas fa-user"></i>
-                    </button>
                 {% endif %}
             </div>
         </div>
@@ -723,6 +767,226 @@
                 setTimeout(() => message.remove(), 300);
             }, 5000);
         });
+
+        // Carregar itens da sacola
+        carregarItensSacola();
+    </script>
+
+    <!-- Overlay da Sacola Lateral -->
+    <div id="sacola-overlay" class="sacola-overlay">
+        <div class="sacola-sidebar">
+            <div class="sacola-header">
+                <h3>MINHA SACOLA</h3>
+                <button class="sacola-close" onclick="toggleSacola()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="sacola-content" id="sacola-items">
+                <!-- Itens serão carregados via JavaScript -->
+            </div>
+            
+            <div class="sacola-footer">
+                <div class="sacola-subtotal">
+                    <span>Subtotal</span>
+                    <span id="sacola-total">R$ 0,00</span>
+                </div>
+                <button class="sacola-finalizar" onclick="window.location.href='{{ url_for('carrinho') }}'">
+                    FINALIZAR COMPRA
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função para toggle da sacola
+        function toggleSacola() {
+            const overlay = document.getElementById('sacola-overlay');
+            if (overlay.classList.contains('active')) {
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            } else {
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                carregarItensSacola();
+            }
+        }
+
+        // Função para carregar itens da sacola
+        async function carregarItensSacola() {
+            try {
+                const response = await fetch('/api/carrinho');
+                const data = await response.json();
+                
+                const container = document.getElementById('sacola-items');
+                const totalElement = document.getElementById('sacola-total');
+                
+                if (data.items && data.items.length > 0) {
+                    container.innerHTML = data.items.map(item => `
+                        <div class="sacola-item" data-produto-id="${item.produto_id}" data-tamanho="${item.tamanho || 'M'}" data-cor="${item.cor || 'Padrão'}">
+                            <div class="sacola-item-image">
+                                ${item.imagem ? 
+                                    `<img src="${item.imagem}" alt="${item.nome}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0yNSAyMEgyMFYxNUgxNVYyMEgxMFYyNUgxNVYzMEgyMFYyNUgyNVYyMFoiIGZpbGw9IiNDQ0NDQ0MiLz4KPC9zdmc+Cg==';">` : 
+                                    `<div class="sacola-item-placeholder">👕</div>`
+                                }
+                            </div>
+                            <div class="sacola-item-details">
+                                <h4>${item.nome}</h4>
+                                <p>Tam: ${item.tamanho || 'M'} | Cor: ${item.cor || 'Padrão'}</p>
+                                <div class="sacola-item-price">R$ ${item.preco ? item.preco.toFixed(2).replace('.', ',') : '0,00'}</div>
+                            </div>
+                            <div class="sacola-item-quantity">
+                                <button onclick="alterarQuantidade(${item.produto_id}, -1, '${item.tamanho || 'M'}', '${item.cor || 'Padrão'}')">−</button>
+                                <span>${item.quantidade}</span>
+                                <button onclick="alterarQuantidade(${item.produto_id}, 1, '${item.tamanho || 'M'}', '${item.cor || 'Padrão'}')">+</button>
+                            </div>
+                            <button class="sacola-item-remove" onclick="removerItem(${item.produto_id}, '${item.tamanho || 'M'}', '${item.cor || 'Padrão'}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `).join('');
+                    
+                    totalElement.textContent = `R$ ${data.total.toFixed(2).replace('.', ',')}`;
+                } else {
+                    container.innerHTML = `
+                        <div class="sacola-empty">
+                            <i class="fas fa-shopping-bag"></i>
+                            <p>Sua sacola está vazia</p>
+                            <button onclick="toggleSacola(); window.location.href='{{ url_for('index') }}'">
+                                CONTINUAR COMPRANDO
+                            </button>
+                        </div>
+                    `;
+                    totalElement.textContent = 'R$ 0,00';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar sacola:', error);
+            }
+        }
+
+        // Função para alterar quantidade
+        async function alterarQuantidade(produtoId, delta, tamanho, cor) {
+            try {
+                const response = await fetch(`/carrinho/alterar-quantidade/${produtoId}?ajax=true&delta=${delta}&tamanho=${encodeURIComponent(tamanho)}&cor=${encodeURIComponent(cor)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Recarregar os itens da sacola
+                    carregarItensSacola();
+                    
+                    // Atualizar contador na sacola do header
+                    const cartCount = document.querySelector('.cart-count');
+                    if (cartCount) {
+                        if (data.carrinho_count > 0) {
+                            cartCount.textContent = data.carrinho_count;
+                            cartCount.style.display = 'block';
+                        } else {
+                            cartCount.style.display = 'none';
+                        }
+                    }
+                } else {
+                    console.error('Erro ao alterar quantidade:', data.message);
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+            }
+        }
+
+        // Função para remover item
+        async function removerItem(produtoId, tamanho, cor) {
+            if (confirm('Tem certeza que deseja remover este item?')) {
+                try {
+                    const response = await fetch(`/carrinho/remover/${produtoId}?ajax=true&tamanho=${encodeURIComponent(tamanho)}&cor=${encodeURIComponent(cor)}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Recarregar os itens da sacola
+                        carregarItensSacola();
+                        
+                        // Atualizar contador na sacola do header
+                        const cartCount = document.querySelector('.cart-count');
+                        if (cartCount) {
+                            if (data.carrinho_count > 0) {
+                                cartCount.textContent = data.carrinho_count;
+                                cartCount.style.display = 'block';
+                            } else {
+                                cartCount.style.display = 'none';
+                            }
+                        }
+                        
+                        // Mostrar notificação
+                        showNotification('Item removido da sacola!', 'info');
+                    } else {
+                        console.error('Erro ao remover item:', data.message);
+                    }
+                } catch (error) {
+                    console.error('Erro:', error);
+                }
+            }
+        }
+
+        // Função para mostrar notificações na sacola
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()">&times;</button>
+            `;
+            
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : type === 'info' ? '#3498db' : '#f39c12'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 6px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                font-family: Inter, sans-serif;
+                font-size: 14px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                animation: slideInRight 0.3s ease;
+            `;
+            
+            notification.querySelector('button').style.cssText = `
+                background: none;
+                border: none;
+                color: white;
+                font-size: 18px;
+                cursor: pointer;
+                padding: 0;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.style.animation = 'slideOutRight 0.3s ease';
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, 3000);
+        }
     </script>
 </body>
 </html>

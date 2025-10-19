@@ -1,78 +1,416 @@
+/* ==============================================
+   PAINEL ADMINISTRATIVO - DESIGN MODERNO
+   ============================================== */
+
+/* Layout Principal */
 .admin-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    background: var(--bg-secondary);
+    min-height: 100vh;
 }
 
+/* Header do Admin */
 .admin-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid var(--border);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    padding: 30px 40px;
+    border-radius: 16px;
+    margin-bottom: 40px;
+    box-shadow: var(--shadow-heavy);
+    position: relative;
+    overflow: hidden;
 }
 
-.admin-title {
-  color: var(--primary);
-  font-size: 2rem;
-  margin: 0;
+.admin-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: translate(50px, -50px);
 }
 
-.admin-actions {
-  display: flex;
-  gap: 12px;
+.admin-header h1 {
+    color: var(--text-light);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
-.btn-admin {
-  background: var(--primary);
-  color: var(--card);
-  padding: 10px 16px;
-  border-radius: var(--radius);
-  text-decoration: none;
-  font-weight: 600;
-  transition: background 0.2s, transform 0.1s;
+.admin-header .admin-nav {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
 }
 
-.btn-admin:hover {
-  background: var(--secondary);
-  transform: translateY(-2px);
+.admin-nav-btn {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--text-light);
+    padding: 12px 24px;
+    text-decoration: none;
+    border-radius: 25px;
+    font-weight: 500;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: var(--transition);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.btn-admin.danger {
-  background: var(--error);
+.admin-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
 
-.btn-admin.small {
-  padding: 6px 12px;
-  font-size: 0.9rem;
+.admin-nav-btn.primary {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
 }
 
-/* Grid de produtos */
-.produtos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
+.admin-nav-btn.primary:hover {
+    background: var(--gold-accent);
+    border-color: var(--gold-accent);
 }
 
-.produto-card {
-  background: var(--card);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  padding: 16px;
-  box-shadow: var(--shadow);
-  transition: transform 0.2s;
+/* Cards de Estatísticas */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-bottom: 50px;
 }
 
-.produto-card:hover {
-  transform: translateY(-4px);
+.stat-card {
+    background: var(--bg-primary);
+    padding: 35px 30px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: var(--shadow-medium);
+    border: 1px solid var(--border-light);
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition);
 }
 
-.produto-imagem {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent-color), var(--gold-accent));
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-heavy);
+}
+
+.stat-card .stat-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    display: block;
+    color: var(--accent-color);
+}
+
+.stat-card h3 {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.stat-card .stat-number {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    margin: 0;
+    line-height: 1;
+}
+
+/* Cards de Ação */
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-bottom: 50px;
+}
+
+.action-card {
+    background: var(--bg-primary);
+    padding: 40px 30px;
+    border-radius: 20px;
+    text-decoration: none;
+    color: var(--text-primary);
+    box-shadow: var(--shadow-medium);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border-light);
+}
+
+.action-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--accent-color), var(--gold-accent));
+    transition: width 0.3s ease;
+    z-index: 1;
+}
+
+.action-card:hover::before {
+    width: 100%;
+}
+
+.action-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-heavy);
+    color: var(--text-light);
+}
+
+.action-card .card-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+}
+
+.action-card .action-icon {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    display: block;
+    transition: var(--transition);
+}
+
+.action-card h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.action-card p {
+    opacity: 0.8;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* Tabela de Produtos Moderna */
+.products-table-container {
+    background: var(--bg-primary);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow-medium);
+    border: 1px solid var(--border-light);
+}
+
+.products-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.products-table thead {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+.products-table th {
+    padding: 20px 15px;
+    text-align: left;
+    color: var(--text-light);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.products-table tbody tr {
+    border-bottom: 1px solid var(--border-light);
+    transition: var(--transition);
+}
+
+.products-table tbody tr:hover {
+    background: var(--bg-secondary);
+}
+
+.products-table td {
+    padding: 20px 15px;
+    vertical-align: middle;
+}
+
+.product-img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: var(--shadow-light);
+}
+
+.product-img-placeholder {
+    width: 70px;
+    height: 70px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--text-muted);
+}
+
+.product-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.product-price {
+    font-weight: 700;
+    color: var(--accent-color);
+    font-size: 1.1rem;
+}
+
+.product-category {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Botões de Ação */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.btn-action {
+    padding: 10px 16px;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+}
+
+.btn-edit {
+    background: var(--secondary-color);
+    color: var(--text-light);
+}
+
+.btn-edit:hover {
+    background: var(--steel-accent);
+    transform: translateY(-2px);
+}
+
+.btn-delete {
+    background: #e74c3c;
+    color: var(--text-light);
+}
+
+.btn-delete:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+}
+
+/* Estado Vazio */
+.empty-state {
+    text-align: center;
+    padding: 80px 40px;
+    background: var(--bg-primary);
+    border-radius: 20px;
+    box-shadow: var(--shadow-light);
+}
+
+.empty-state .empty-icon {
+    font-size: 4rem;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+}
+
+.btn-primary-large {
+    background: linear-gradient(135deg, var(--accent-color), var(--gold-accent));
+    color: var(--text-light);
+    padding: 18px 35px;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: var(--transition);
+    box-shadow: var(--shadow-colored);
+}
+
+.btn-primary-large:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-heavy);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .admin-container {
+        padding: 20px 15px;
+    }
+    
+    .admin-header {
+        padding: 25px 20px;
+        text-align: center;
+    }
+    
+    .admin-header h1 {
+        font-size: 2rem;
+        justify-content: center;
+    }
+    
+    .admin-nav {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .stats-grid,
+    .actions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .products-table-container {
+        overflow-x: auto;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}
   border-radius: var(--radius);
   margin-bottom: 12px;
 }

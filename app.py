@@ -51,6 +51,14 @@ def ensure_password_column(conn):
     conn.commit()
     return 'senha_hash'
 
+def ensure_tamanhos_column(conn):
+    """Garante que a coluna tamanhos existe na tabela produtos"""
+    cols = [r['name'] for r in conn.execute("PRAGMA table_info(produtos)").fetchall()]
+    if 'tamanhos' not in cols:
+        conn.execute("ALTER TABLE produtos ADD COLUMN tamanhos TEXT")
+        conn.commit()
+        print("✅ Coluna 'tamanhos' adicionada à tabela produtos")
+
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'uzzer-store-secret-key-2024')
 
@@ -110,6 +118,9 @@ def init_db():
 
         # Garante coluna is_admin (se faltar, cria)
         ensure_is_admin_column(conn)
+        
+        # Garante coluna tamanhos (se faltar, cria)
+        ensure_tamanhos_column(conn)
 
         # Admin padrão (com is_admin=1)
         admin_exists = conn.execute('SELECT COUNT(*) FROM usuarios WHERE email = ?', ('admin@uzzerstore.com',)).fetchone()[0]
@@ -161,9 +172,7 @@ def is_admin():
 # ROTAS DO CARRINHO
 @app.route('/carrinho')
 def carrinho():
-    if 'user_id' not in session:
-        flash('Você precisa estar logado para ver o carrinho!', 'error')
-        return redirect(url_for('login'))
+    # Permite ver carrinho sem login - usar sessão temporária
     
     carrinho_itens = session.get('carrinho', [])
     print(f"Debug - Itens no carrinho: {carrinho_itens}")  # Debug
@@ -195,12 +204,49 @@ def carrinho():
         print(f"Erro no carrinho: {e}")
         return render_template('carrinho.html', itens=[], total=0)
 
+# API para sacola lateral
+@app.route('/api/carrinho')
+def api_carrinho():
+    """API endpoint para carregar itens da sacola lateral"""
+    from flask import jsonify
+    
+    carrinho_itens = session.get('carrinho', [])
+    
+    if not carrinho_itens:
+        return jsonify({'items': [], 'total': 0})
+    
+    try:
+        conn = get_db_connection()
+        itens_api = []
+        total = 0
+        
+        for item in carrinho_itens:
+            produto = conn.execute('SELECT * FROM produtos WHERE id = ?', (item['produto_id'],)).fetchone()
+            if produto:
+                item_total = float(produto['preco']) * item['quantidade']
+                itens_api.append({
+                    'produto_id': produto['id'],
+                    'nome': produto['nome'],
+                    'preco': float(produto['preco']),
+                    'imagem': produto['imagem'],
+                    'quantidade': item['quantidade'],
+                    'tamanho': item.get('tamanho', 'M'),
+                    'cor': item.get('cor', 'Padrão'),
+                    'subtotal': item_total
+                })
+                total += item_total
+        
+        conn.close()
+        return jsonify({'items': itens_api, 'total': total})
+    
+    except Exception as e:
+        print(f"Erro na API do carrinho: {e}")
+        return jsonify({'items': [], 'total': 0, 'error': str(e)})
+
 @app.route('/carrinho/adicionar/<int:produto_id>')
 def carrinho_adicionar(produto_id):
-    if 'user_id' not in session:
-        flash('Você precisa estar logado para adicionar ao carrinho!', 'error')
-        return redirect(url_for('login'))
-
+    # Permite adicionar ao carrinho sem login - usar sessão temporária
+    
     # NOVO: quantidade via querystring ?q= (padrão 1, máx. 99)
     try:
         q = int(request.args.get('q', 1))
@@ -208,12 +254,18 @@ def carrinho_adicionar(produto_id):
         q = 1
     quantidade = max(1, min(q, 99))
     
+    # Capturar tamanho e cor dos parâmetros
+    tamanho = request.args.get('tamanho', 'M')
+    cor = request.args.get('cor', 'Padrão')
+    
     try:
         conn = get_db_connection()
         produto = conn.execute('SELECT * FROM produtos WHERE id = ?', (produto_id,)).fetchone()
         conn.close()
 
         if not produto:
+            if request.headers.get('Content-Type') == 'application/json' or request.args.get('ajax'):
+                return jsonify({'success': False, 'message': 'Produto não encontrado!'})
             flash('Produto não encontrado!', 'error')
             return redirect(url_for('index'))
 
@@ -221,32 +273,136 @@ def carrinho_adicionar(produto_id):
             session['carrinho'] = []
 
         carrinho = session['carrinho']
+        # Verificar se o produto já está no carrinho (considerando tamanho e cor)
+        item_encontrado = False
         for item in carrinho:
-            if item['produto_id'] == produto_id:
+            if (item['produto_id'] == produto_id and 
+                item.get('tamanho') == tamanho and 
+                item.get('cor') == cor):
                 item['quantidade'] += quantidade
+                item_encontrado = True
                 break
-        else:
-            carrinho.append({'produto_id': produto_id, 'quantidade': quantidade})
+        
+        if not item_encontrado:
+            carrinho.append({
+                'produto_id': produto_id, 
+                'quantidade': quantidade,
+                'tamanho': tamanho,
+                'cor': cor
+            })
 
         session['carrinho'] = carrinho
         session.permanent = True
         session.modified = True
+
+        # Se for requisição AJAX, retornar JSON
+        if request.headers.get('Content-Type') == 'application/json' or request.args.get('ajax'):
+            from flask import jsonify
+            return jsonify({
+                'success': True, 
+                'message': f'"{produto["nome"]}" adicionado ao carrinho!',
+                'produto': {
+                    'id': produto['id'],
+                    'nome': produto['nome'],
+                    'preco': float(produto['preco']),
+                    'imagem': produto['imagem'],
+                    'tamanho': tamanho,
+                    'cor': cor,
+                    'quantidade': quantidade
+                }
+            })
 
         flash(f'✅ "{produto["nome"]}" x{quantidade} adicionado ao carrinho!', 'success')
         return redirect(request.referrer or url_for('index'))
 
     except Exception as e:
         print(f"Erro ao adicionar ao carrinho: {e}")
+        
+        if request.headers.get('Content-Type') == 'application/json' or request.args.get('ajax'):
+            from flask import jsonify
+            return jsonify({'success': False, 'message': 'Erro ao adicionar produto ao carrinho!'})
+            
         flash('Erro ao adicionar produto ao carrinho!', 'error')
         return redirect(url_for('index'))
 
 @app.route('/carrinho/remover/<int:produto_id>')
 def carrinho_remover(produto_id):
+    # Capturar tamanho e cor dos parâmetros para remoção específica
+    tamanho = request.args.get('tamanho')
+    cor = request.args.get('cor')
+    
     if 'carrinho' in session:
         carrinho = session['carrinho']
-        session['carrinho'] = [item for item in carrinho if item['produto_id'] != produto_id]
+        
+        if tamanho and cor:
+            # Remover item específico considerando tamanho e cor
+            session['carrinho'] = [
+                item for item in carrinho 
+                if not (item['produto_id'] == produto_id and 
+                       item.get('tamanho') == tamanho and 
+                       item.get('cor') == cor)
+            ]
+        else:
+            # Remover todos os itens deste produto
+            session['carrinho'] = [item for item in carrinho if item['produto_id'] != produto_id]
+        
         session.permanent = True
+        session.modified = True
+        
+        # Se for requisição AJAX, retornar JSON
+        if request.headers.get('Content-Type') == 'application/json' or request.args.get('ajax'):
+            from flask import jsonify
+            return jsonify({
+                'success': True, 
+                'message': 'Item removido do carrinho!',
+                'carrinho_count': len(session['carrinho'])
+            })
+        
         flash('Item removido do carrinho!', 'info')
+    
+    return redirect(url_for('carrinho'))
+
+@app.route('/carrinho/alterar-quantidade/<int:produto_id>')
+def carrinho_alterar_quantidade(produto_id):
+    """Altera a quantidade de um item específico no carrinho"""
+    tamanho = request.args.get('tamanho')
+    cor = request.args.get('cor')
+    delta = int(request.args.get('delta', 0))  # +1 ou -1
+    
+    if 'carrinho' in session and delta != 0:
+        carrinho = session['carrinho']
+        
+        for item in carrinho:
+            if (item['produto_id'] == produto_id and 
+                item.get('tamanho') == tamanho and 
+                item.get('cor') == cor):
+                
+                nova_quantidade = item['quantidade'] + delta
+                
+                if nova_quantidade <= 0:
+                    # Remove o item se quantidade for 0 ou menor
+                    session['carrinho'] = [
+                        i for i in carrinho 
+                        if not (i['produto_id'] == produto_id and 
+                               i.get('tamanho') == tamanho and 
+                               i.get('cor') == cor)
+                    ]
+                else:
+                    # Atualiza a quantidade (máximo 99)
+                    item['quantidade'] = min(nova_quantidade, 99)
+                
+                session.permanent = True
+                session.modified = True
+                break
+        
+        # Se for requisição AJAX, retornar JSON
+        if request.headers.get('Content-Type') == 'application/json' or request.args.get('ajax'):
+            from flask import jsonify
+            return jsonify({
+                'success': True, 
+                'message': 'Quantidade atualizada!',
+                'carrinho_count': len(session['carrinho'])
+            })
     
     return redirect(url_for('carrinho'))
 
@@ -296,6 +452,86 @@ def index():
             h1 {{ color: #00d4aa; }}
         </style>
         """
+
+# ROTA MOBILE
+@app.route('/mobile')
+def mobile_index():
+    try:
+        init_db()  # Garantir que o DB existe
+        
+        categoria_selecionada = request.args.get('categoria')
+        
+        conn = get_db_connection()
+        
+        if categoria_selecionada:
+            produtos = conn.execute(
+                'SELECT * FROM produtos WHERE categoria = ? ORDER BY id DESC',
+                (categoria_selecionada,)
+            ).fetchall()
+        else:
+            produtos = conn.execute('SELECT * FROM produtos ORDER BY id DESC').fetchall()
+        
+        categorias = conn.execute('SELECT DISTINCT categoria FROM produtos WHERE categoria IS NOT NULL ORDER BY categoria').fetchall()
+        
+        conn.close()
+        
+        return render_template('mobile_index.html', 
+                             produtos=produtos, 
+                             categorias=categorias,
+                             categoria_selecionada=categoria_selecionada)
+    except Exception as e:
+        print(f"Erro na rota mobile: {e}")
+        return f"""
+        <h1>🏪 UzzerStore Mobile</h1>
+        <p>Loja em inicialização...</p>
+        <p>Erro: {e}</p>
+        <style>
+            body {{ font-family: Arial; padding: 20px; text-align: center; }}
+            h1 {{ color: #00d4aa; }}
+        </style>
+        """
+
+# ROTA DO PRODUTO INDIVIDUAL
+@app.route('/produto/<int:produto_id>')
+def produto_detalhes(produto_id):
+    try:
+        conn = get_db_connection()
+        produto = conn.execute('SELECT * FROM produtos WHERE id = ?', (produto_id,)).fetchone()
+        
+        if not produto:
+            conn.close()
+            flash('Produto não encontrado!', 'error')
+            return redirect(url_for('index'))
+        
+        # Buscar produtos relacionados da mesma categoria
+        produtos_relacionados = conn.execute(
+            'SELECT * FROM produtos WHERE categoria = ? AND id != ? ORDER BY RANDOM() LIMIT 4',
+            (produto['categoria'], produto_id)
+        ).fetchall()
+        
+        conn.close()
+        
+        return render_template('produto_detalhes.html', 
+                             produto=produto, 
+                             produtos_relacionados=produtos_relacionados)
+    except Exception as e:
+        print(f"Erro na página do produto: {e}")
+        flash('Erro ao carregar produto!', 'error')
+        return redirect(url_for('index'))
+
+# PWA Routes
+@app.route('/sw.js')
+def service_worker():
+    response = app.send_static_file('sw.js')
+    response.headers['Content-Type'] = 'application/javascript'
+    response.headers['Service-Worker-Allowed'] = '/'
+    return response
+
+@app.route('/manifest.json')
+def manifest():
+    response = app.send_static_file('manifest.json')
+    response.headers['Content-Type'] = 'application/manifest+json'
+    return response
 
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
@@ -370,6 +606,12 @@ def login():
 
                 session['is_admin'] = bool(db_admin or is_first_user or is_admin_email)
 
+                # Migrar carrinho da sessão para o usuário logado (se houver)
+                if 'carrinho' in session and session['carrinho']:
+                    # Aqui você pode implementar a migração para banco de dados se quiser
+                    # Por agora, mantemos o carrinho na sessão
+                    pass
+
                 if session['is_admin']:
                     flash(f'Bem-vindo(a) Admin, {user["nome"]}! 🔧', 'success')
                 else:
@@ -439,12 +681,19 @@ def admin_novo_produto():
         descricao = request.form['descricao']
         imagem = request.form['imagem']
         
+        # Processar tamanhos selecionados
+        tamanhos_selecionados = request.form.getlist('tamanhos[]')
+        tamanhos_str = ','.join(tamanhos_selecionados) if tamanhos_selecionados else ''
+        
         try:
             conn = get_db_connection()
+            # Garantir que a coluna tamanhos existe
+            ensure_tamanhos_column(conn)
+            
             conn.execute('''
-                INSERT INTO produtos (nome, preco, categoria, descricao, imagem)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (nome, preco, categoria, descricao, imagem))
+                INSERT INTO produtos (nome, preco, categoria, descricao, imagem, tamanhos)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (nome, preco, categoria, descricao, imagem, tamanhos_str))
             conn.commit()
             conn.close()
             
@@ -475,12 +724,19 @@ def admin_editar_produto(produto_id):
         descricao = request.form['descricao']
         imagem = request.form['imagem']
         
+        # Processar tamanhos selecionados
+        tamanhos_selecionados = request.form.getlist('tamanhos[]')
+        tamanhos_str = ','.join(tamanhos_selecionados) if tamanhos_selecionados else ''
+        
         try:
+            # Garantir que a coluna tamanhos existe
+            ensure_tamanhos_column(conn)
+            
             conn.execute('''
                 UPDATE produtos 
-                SET nome = ?, preco = ?, categoria = ?, descricao = ?, imagem = ?
+                SET nome = ?, preco = ?, categoria = ?, descricao = ?, imagem = ?, tamanhos = ?
                 WHERE id = ?
-            ''', (nome, preco, categoria, descricao, imagem, produto_id))
+            ''', (nome, preco, categoria, descricao, imagem, tamanhos_str, produto_id))
             conn.commit()
             conn.close()
             
@@ -627,3 +883,9 @@ print("🚀 UzzerStore inicializado para produção!")
 
 # Inicializar DB na primeira execução
 init_db()
+
+
+if __name__ == "__main__":
+    init_db()
+    app.run(debug=True, host='192.168.100.24')
+

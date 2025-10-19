@@ -3,54 +3,97 @@
 {% block title %}Gerenciar Produtos - Admin{% endblock %}
 
 {% block content %}
-<div class="products-container">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-        <h1>📦 Gerenciar Produtos</h1>
-        <div>
-            <a href="{{ url_for('admin_dashboard') }}" style="margin-right: 15px; color: #666;">Dashboard</a>
-            <a href="{{ url_for('admin_novo_produto') }}" style="background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; margin-right: 15px;">Novo Produto</a>
-            <a href="{{ url_for('logout') }}" style="color: #e74c3c;">Sair</a>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+
+<div class="admin-container">
+    <div class="admin-header">
+        <h1>
+            <i class="fas fa-boxes"></i>
+            Gerenciar Produtos
+        </h1>
+        <div class="admin-nav">
+            <a href="{{ url_for('admin_dashboard') }}" class="admin-nav-btn">
+                <i class="fas fa-arrow-left"></i>
+                Dashboard
+            </a>
+            <a href="{{ url_for('admin_novo_produto') }}" class="admin-nav-btn primary">
+                <i class="fas fa-plus"></i>
+                Novo Produto
+            </a>
+            <a href="{{ url_for('logout') }}" class="admin-nav-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                Sair
+            </a>
         </div>
     </div>
     
     {% if produtos %}
-        <div style="background: white; border-radius: 12px; overflow: hidden; border: 1px solid #eee;">
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead style="background: #f8f9fa;">
+        <div class="products-table-container">
+            <table class="products-table">
+                <thead>
                     <tr>
-                        <th style="padding: 15px; text-align: left; border-bottom: 1px solid #eee;">Imagem</th>
-                        <th style="padding: 15px; text-align: left; border-bottom: 1px solid #eee;">Nome</th>
-                        <th style="padding: 15px; text-align: left; border-bottom: 1px solid #eee;">Preço</th>
-                        <th style="padding: 15px; text-align: left; border-bottom: 1px solid #eee;">Categoria</th>
-                        <th style="padding: 15px; text-align: center; border-bottom: 1px solid #eee;">Ações</th>
+                        <th>
+                            <i class="fas fa-image"></i>
+                            Imagem
+                        </th>
+                        <th>
+                            <i class="fas fa-tag"></i>
+                            Nome
+                        </th>
+                        <th>
+                            <i class="fas fa-dollar-sign"></i>
+                            Preço
+                        </th>
+                        <th>
+                            <i class="fas fa-folder"></i>
+                            Categoria
+                        </th>
+                        <th style="text-align: center;">
+                            <i class="fas fa-cogs"></i>
+                            Ações
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for produto in produtos %}
-                    <tr style="border-bottom: 1px solid #f0f0f0;">
-                        <td style="padding: 15px;">
+                    <tr>
+                        <td>
                             {% if produto.imagem %}
                                 <img src="{{ produto.imagem }}" alt="{{ produto.nome }}" 
-                                     style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                                     class="product-img"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="product-img-placeholder" style="display: none;">
+                                    <i class="fas fa-image"></i>
+                                </div>
                             {% else %}
-                                <div style="width: 60px; height: 60px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                                    📦
+                                <div class="product-img-placeholder">
+                                    <i class="fas fa-image"></i>
                                 </div>
                             {% endif %}
                         </td>
-                        <td style="padding: 15px; font-weight: 500;">{{ produto.nome }}</td>
-                        <td style="padding: 15px; font-weight: bold; color: #1a1a1a;">{{ produto.preco|currency }}</td>
-                        <td style="padding: 15px;">{{ produto.categoria or 'Sem categoria' }}</td>
-                        <td style="padding: 15px; text-align: center;">
-                            <a href="{{ url_for('admin_editar_produto', produto_id=produto.id) }}" 
-                               style="background: #007bff; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px; font-size: 12px; margin-right: 5px;">
-                                Editar
-                            </a>
-                            <a href="{{ url_for('admin_deletar_produto', produto_id=produto.id) }}" 
-                               onclick="return confirm('Tem certeza que deseja deletar este produto?')"
-                               style="background: #dc3545; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px; font-size: 12px;">
-                                Deletar
-                            </a>
+                        <td>
+                            <span class="product-name">{{ produto.nome }}</span>
+                        </td>
+                        <td>
+                            <span class="product-price">{{ produto.preco|currency }}</span>
+                        </td>
+                        <td>
+                            <span class="product-category">{{ produto.categoria or 'Sem categoria' }}</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{{ url_for('admin_editar_produto', produto_id=produto.id) }}" 
+                                   class="btn-action btn-edit" title="Editar produto">
+                                    <i class="fas fa-edit"></i>
+                                    Editar
+                                </a>
+                                <a href="{{ url_for('admin_deletar_produto', produto_id=produto.id) }}" 
+                                   onclick="return confirm('⚠️ Tem certeza que deseja deletar este produto?\n\nEsta ação não pode ser desfeita!')"
+                                   class="btn-action btn-delete" title="Deletar produto">
+                                    <i class="fas fa-trash"></i>
+                                    Deletar
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -58,11 +101,14 @@
             </table>
         </div>
     {% else %}
-        <div style="text-align: center; padding: 80px 20px; background: white; border-radius: 12px;">
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-box-open"></i>
+            </div>
             <h3>Nenhum produto cadastrado</h3>
-            <p style="margin: 20px 0; color: #666;">Adicione produtos para começar a vender</p>
-            <a href="{{ url_for('admin_novo_produto') }}" 
-               style="background: #28a745; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px;">
+            <p>Comece adicionando seu primeiro produto ao catálogo da loja</p>
+            <a href="{{ url_for('admin_novo_produto') }}" class="btn-primary-large">
+                <i class="fas fa-plus"></i>
                 Adicionar Primeiro Produto
             </a>
         </div>

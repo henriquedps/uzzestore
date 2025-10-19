@@ -1,0 +1,405 @@
+/* 🛍️ Sacola Lateral - Estilo da Imagem */
+
+.cart-toggle {
+    cursor: pointer !important;
+    transition: all 0.3s ease;
+}
+
+.cart-toggle:hover {
+    transform: scale(1.1);
+}
+
+/* Overlay da Sacola */
+.sacola-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.sacola-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Sidebar da Sacola */
+.sacola-sidebar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 400px;
+    height: 100vh;
+    background: #ffffff;
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.1);
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.sacola-overlay.active .sacola-sidebar {
+    transform: translateX(0);
+}
+
+/* Header da Sacola */
+.sacola-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    border-bottom: 1px solid #f0f0f0;
+    background: #ffffff;
+    min-height: 72px;
+}
+
+.sacola-header h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.sacola-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #666;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sacola-close:hover {
+    background: #f5f5f5;
+    color: #1a1a1a;
+}
+
+/* Conteúdo da Sacola */
+.sacola-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+    background: #ffffff;
+}
+
+/* Item da Sacola - Layout da Imagem */
+.sacola-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 24px;
+    border-bottom: 1px solid #f8f8f8;
+    gap: 16px;
+    transition: background 0.2s ease;
+    position: relative;
+}
+
+.sacola-item:hover {
+    background: #fafafa;
+}
+
+.sacola-item-image {
+    width: 80px;
+    height: 100px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #f8f8f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sacola-item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.sacola-item-placeholder {
+    font-size: 32px;
+    color: #ddd;
+}
+
+.sacola-item-details {
+    flex: 1;
+    min-width: 0;
+    padding-right: 12px;
+}
+
+.sacola-item-details h4 {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1a1a1a;
+    margin: 0 0 8px 0;
+    line-height: 1.3;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.sacola-item-details p {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: #888;
+    margin: 0 0 12px 0;
+    line-height: 1.3;
+}
+
+.sacola-item-price {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 12px;
+}
+
+/* Controles de Quantidade - Layout da Imagem */
+.sacola-item-quantity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: auto;
+}
+
+.sacola-item-quantity button {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #e0e0e0;
+    background: #ffffff;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 400;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sacola-item-quantity button:hover {
+    border-color: #1a1a1a;
+    color: #1a1a1a;
+}
+
+.sacola-item-quantity span {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1a1a1a;
+    min-width: 24px;
+    text-align: center;
+}
+
+/* Botão Remover - Posição absoluta como na imagem */
+.sacola-item-remove {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: #ccc;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 2px;
+    transition: all 0.2s ease;
+    font-size: 12px;
+}
+
+.sacola-item-remove:hover {
+    color: #999;
+}
+
+/* Footer da Sacola */
+.sacola-footer {
+    padding: 24px;
+    border-top: 1px solid #f0f0f0;
+    background: #ffffff;
+}
+
+.sacola-subtotal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    font-family: 'Inter', sans-serif;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.sacola-subtotal span:first-child {
+    font-size: 14px;
+    color: #888;
+    font-weight: 400;
+}
+
+.sacola-subtotal span:last-child {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.sacola-finalizar {
+    width: 100%;
+    padding: 16px;
+    background: #1a1a1a;
+    color: #ffffff;
+    border: none;
+    border-radius: 2px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+.sacola-finalizar:hover {
+    background: #333;
+    transform: translateY(-1px);
+}
+
+/* Sacola Vazia */
+.sacola-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 24px;
+    text-align: center;
+    height: calc(100% - 160px);
+}
+
+.sacola-empty i {
+    font-size: 56px;
+    color: #e8e8e8;
+    margin-bottom: 20px;
+}
+
+.sacola-empty p {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    color: #888;
+    margin: 0 0 28px 0;
+    font-weight: 400;
+}
+
+.sacola-empty button {
+    padding: 14px 28px;
+    background: #1a1a1a;
+    color: #ffffff;
+    border: none;
+    border-radius: 2px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sacola-empty button:hover {
+    background: #333;
+    transform: translateY(-1px);
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .sacola-sidebar {
+        width: 100vw;
+    }
+    
+    .sacola-item {
+        padding: 20px;
+        gap: 12px;
+    }
+    
+    .sacola-item-image {
+        width: 64px;
+        height: 80px;
+    }
+    
+    .sacola-header {
+        padding: 20px;
+    }
+    
+    .sacola-footer {
+        padding: 20px;
+    }
+}
+
+/* Scrollbar personalizada */
+.sacola-content::-webkit-scrollbar {
+    width: 3px;
+}
+
+.sacola-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sacola-content::-webkit-scrollbar-thumb {
+    background: #e8e8e8;
+    border-radius: 1px;
+}
+
+.sacola-content::-webkit-scrollbar-thumb:hover {
+    background: #ddd;
+}
+
+/* Animação suave */
+.sacola-item {
+    animation: fadeInUp 0.3s ease forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animações para notificações */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}

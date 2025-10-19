@@ -1,0 +1,352 @@
+/* 
+ * CSS para Cards de Produtos com Filtros
+ * Estilos para exibição e funcionalidade de produtos
+ */
+
+/* ============= CONTAINER DE PRODUTOS ============= */
+.products-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.produtos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 20px;
+    transition: opacity 0.3s ease;
+}
+
+/* ============= CARDS DE PRODUTOS ============= */
+.produto-card {
+    background: var(--filter-bg, #ffffff);
+    border-radius: 12px;
+    border: 1px solid var(--filter-border, #e2e8f0);
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.produto-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.produto-card .product-image {
+    position: relative;
+    width: 100%;
+    height: 240px;
+    overflow: hidden;
+}
+
+.produto-card .product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.produto-card:hover .product-image img {
+    transform: scale(1.08);
+}
+
+.produto-card .product-image a {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* ============= INFORMAÇÕES DO PRODUTO ============= */
+.produto-card .product-info {
+    padding: 20px;
+}
+
+.produto-nome {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--filter-text, #334155);
+    margin-bottom: 8px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.produto-nome a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.produto-nome a:hover {
+    color: var(--filter-accent, #3b82f6);
+}
+
+.produto-preco {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--filter-accent, #3b82f6);
+    margin-bottom: 16px;
+    font-family: 'Playfair Display', serif;
+}
+
+/* ============= BOTÃO ADICIONAR AO CARRINHO ============= */
+.btn-add-cart {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, var(--filter-accent, #3b82f6), #2563eb);
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 48px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-add-cart:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-add-cart:active {
+    transform: translateY(0);
+}
+
+.btn-add-cart i {
+    font-size: 16px;
+}
+
+/* ============= ESTADOS DE LOADING E EMPTY ============= */
+.produtos-grid.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.no-products-message {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--filter-text-secondary, #64748b);
+}
+
+.no-products-message i {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    opacity: 0.3;
+    color: var(--filter-text-secondary, #64748b);
+}
+
+.no-products-message h3 {
+    margin-bottom: 12px;
+    color: var(--filter-text, #334155);
+    font-size: 1.5rem;
+}
+
+.no-products-message p {
+    margin-bottom: 24px;
+    font-size: 16px;
+}
+
+.no-products-message .btn-clear-filters {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: var(--filter-accent, #3b82f6);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.no-products-message .btn-clear-filters:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+/* ============= BADGES E ETIQUETAS ============= */
+.produto-card .product-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: var(--filter-accent, #3b82f6);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 2;
+}
+
+.produto-card .product-badge.promocao {
+    background: #ef4444;
+}
+
+.produto-card .product-badge.lancamento {
+    background: #10b981;
+}
+
+.produto-card .product-badge.mais-vendido {
+    background: #f59e0b;
+}
+
+/* ============= INFORMAÇÕES OCULTAS PARA FILTROS ============= */
+.produto-categoria,
+.produto-tamanhos {
+    display: none !important;
+}
+
+/* ============= RESPONSIVIDADE ============= */
+@media (max-width: 768px) {
+    .products-container {
+        padding: 16px;
+    }
+    
+    .produtos-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 16px;
+    }
+    
+    .produto-card .product-image {
+        height: 200px;
+    }
+    
+    .produto-card .product-info {
+        padding: 16px;
+    }
+    
+    .produto-nome {
+        font-size: 15px;
+    }
+    
+    .produto-preco {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .produtos-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 12px;
+    }
+    
+    .produto-card {
+        margin: 0 4px;
+    }
+    
+    .no-products-message {
+        padding: 60px 16px;
+    }
+    
+    .no-products-message i {
+        font-size: 2.5rem;
+    }
+    
+    .no-products-message h3 {
+        font-size: 1.25rem;
+    }
+}
+
+/* ============= ANIMAÇÕES ============= */
+@keyframes productSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.produto-card {
+    animation: productSlideIn 0.4s ease-out;
+}
+
+.produto-card:nth-child(1) { animation-delay: 0.1s; }
+.produto-card:nth-child(2) { animation-delay: 0.2s; }
+.produto-card:nth-child(3) { animation-delay: 0.3s; }
+.produto-card:nth-child(4) { animation-delay: 0.4s; }
+
+/* ============= MODO ESCURO ============= */
+@media (prefers-color-scheme: dark) {
+    .produto-card {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    
+    .produto-nome,
+    .produto-nome a {
+        color: #f1f5f9;
+    }
+    
+    .produto-nome a:hover {
+        color: #60a5fa;
+    }
+    
+    .no-products-message {
+        color: #94a3b8;
+    }
+    
+    .no-products-message h3 {
+        color: #f1f5f9;
+    }
+}
+
+/* ============= ACESSIBILIDADE ============= */
+@media (prefers-reduced-motion: reduce) {
+    .produto-card,
+    .produto-card .product-image img,
+    .btn-add-cart {
+        transition: none !important;
+        animation: none !important;
+    }
+    
+    .produto-card:hover {
+        transform: none;
+    }
+    
+    .produto-card:hover .product-image img {
+        transform: none;
+    }
+}
+
+/* ============= FOCUS STATES ============= */
+.produto-card .product-image a:focus,
+.produto-nome a:focus,
+.btn-add-cart:focus {
+    outline: 2px solid var(--filter-accent, #3b82f6);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* ============= ALTO CONTRASTE ============= */
+@media (prefers-contrast: high) {
+    .produto-card {
+        border-width: 2px;
+    }
+    
+    .btn-add-cart {
+        border: 2px solid currentColor;
+    }
+}

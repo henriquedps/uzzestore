@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% block title %}UzzerStore - Moda com Estilo{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modern-products.css') }}">
+{% endblock %}
+
 {% block content %}
 <!-- Hero Section -->
 <section class="hero-section">
@@ -9,19 +13,77 @@
 </section>
 
 <script>
+// Modern Image Fallback System
 if (!window.imgFallback) {
-  window.imgFallback = function(el, w=800, h=800, text='Sem Imagem') {
+  window.imgFallback = function(el, w=400, h=400, text='Produto') {
     el.onerror = null;
-    const url = `https://placehold.co/${w}x${h}/f0f0f0/666?text=${encodeURIComponent(text)}`;
-    const test = new Image();
-    test.onload = () => el.src = url;
-    test.onerror = () => {
-      const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'><rect width='100%' height='100%' fill='#f0f0f0'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='24' fill='#666'>${text}</text></svg>`;
-      el.src = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
-    };
-    test.src = url;
+    
+    // Criar um SVG moderno com gradiente e ícone
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}' viewBox='0 0 ${w} ${h}'>
+      <defs>
+        <linearGradient id='bgGrad' x1='0%' y1='0%' x2='100%' y2='100%'>
+          <stop offset='0%' style='stop-color:#f8f9fa;stop-opacity:1' />
+          <stop offset='100%' style='stop-color:#e9ecef;stop-opacity:1' />
+        </linearGradient>
+        <linearGradient id='iconGrad' x1='0%' y1='0%' x2='100%' y2='100%'>
+          <stop offset='0%' style='stop-color:#e67e22;stop-opacity:0.3' />
+          <stop offset='100%' style='stop-color:#f39c12;stop-opacity:0.3' />
+        </linearGradient>
+      </defs>
+      <rect width='100%' height='100%' fill='url(#bgGrad)'/>
+      <g transform='translate(${w/2-30}, ${h/2-30})'>
+        <rect x='0' y='15' width='60' height='45' rx='5' fill='url(#iconGrad)' stroke='#6c757d' stroke-width='2'/>
+        <circle cx='45' cy='25' r='5' fill='#6c757d'/>
+        <polygon points='10,45 25,30 40,40 50,35 50,50 10,50' fill='#6c757d'/>
+      </g>
+      <text x='50%' y='${h-20}' text-anchor='middle' font-family='Inter, -apple-system, sans-serif' font-size='14' fill='#6c757d' font-weight='600'>${text}</text>
+    </svg>`;
+    
+    el.src = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+    el.alt = text;
+    el.className += ' img-fallback';
+    
+    // Adicionar efeito de carregamento
+    el.style.opacity = '0.7';
+    setTimeout(() => {
+      el.style.opacity = '1';
+    }, 300);
   };
 }
+
+// Sistema de lazy loading melhorado
+document.addEventListener('DOMContentLoaded', function() {
+  // Intersection Observer para lazy loading
+  if ('IntersectionObserver' in window) {
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          if (img.dataset.src && !img.src) {
+            img.src = img.dataset.src;
+          }
+          observer.unobserve(img);
+        }
+      });
+    });
+
+    document.querySelectorAll('img[data-src]').forEach(img => {
+      imageObserver.observe(img);
+    });
+  }
+
+  // Animação de fade-in para produtos
+  const productCards = document.querySelectorAll('.produto-card');
+  productCards.forEach((card, index) => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
+    setTimeout(() => {
+      card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+    }, index * 100);
+  });
+});
 </script>
 
 <!-- Filter Section -->
@@ -167,42 +229,41 @@ if (!window.imgFallback) {
 
     {% if produtos %}
         <div class="products-grid" id="products-grid">
-            <!-- Atualize a seção do produto no index.html -->
+            <!-- Produtos com dados para filtros -->
             {% for produto in produtos %}
-                <!-- no card -->
-                <div class="product-card"
+                <div class="produto-card"
+                     data-product-id="{{ produto.id }}"
                      data-preco="{{ ('%.2f'|format(produto.preco|float)) }}"
                      data-categoria="{{ produto.categoria or '' }}"
                      data-nome="{{ produto.nome|e }}"
                      data-imagem="{{ produto.imagem or '' }}"
                      data-id="{{ produto.id }}">
                   <div class="product-image">
-                    <!-- Em cada card: troque o <img> para usar o fallback JS -->
-                    <img src="{{ produto.imagem or '' }}"
-                         alt="{{ produto.nome }}"
-                         loading="lazy"
-                         onerror="imgFallback(this, 800, 800, 'Sem Imagem')">
-                    <button class="qv-trigger" data-id="{{ produto.id }}">
-  <i class="fas fa-eye"></i> Visualização rápida
-</button>
+                    <a href="{{ url_for('produto_detalhes', produto_id=produto.id) }}">
+                        <img src="{{ produto.imagem if produto.imagem and produto.imagem.strip() else '' }}"
+                             alt="{{ produto.nome }}"
+                             loading="lazy"
+                             onload="this.style.opacity='1'"
+                             onerror="imgFallback(this, 400, 400, 'Produto')"
+                             style="opacity: 0; transition: opacity 0.3s ease;">
+                    </a>
                   </div>
                   
                   <div class="product-info">
-                      <h3 class="product-name">{{ produto.nome }}</h3>
+                      <h3 class="produto-nome">
+                          <a href="{{ url_for('produto_detalhes', produto_id=produto.id) }}">{{ produto.nome }}</a>
+                      </h3>
                       {% if produto.categoria %}
-                          <span class="product-category">{{ produto.categoria }}</span>
+                          <span class="produto-categoria" style="display: none;">{{ produto.categoria }}</span>
                       {% endif %}
-                      <div class="product-price">{{ produto.preco|currency }}</div>
+                      {% if produto.tamanhos %}
+                          <span class="produto-tamanhos" style="display: none;">{{ produto.tamanhos }}</span>
+                      {% endif %}
+                      <div class="produto-preco">R$ {{ "%.2f"|format(produto.preco|float) }}</div>
                       
-                      {% if session.user_id %}
-                          <button onclick="addToCart({{ produto.id }}, '{{ produto.nome }}')" class="btn-add-cart">
-                              <i class="fas fa-shopping-bag"></i> Adicionar ao Carrinho
-                          </button>
-                      {% else %}
-                          <a href="{{ url_for('login') }}" class="btn-add-cart">
-                              <i class="fas fa-sign-in-alt"></i> Fazer Login para Comprar
-                          </a>
-                      {% endif %}
+                      <a href="{{ url_for('carrinho_adicionar', produto_id=produto.id) }}" class="btn-add-cart">
+                          <i class="fas fa-shopping-bag"></i> Adicionar ao Carrinho
+                      </a>
                   </div>
                 </div>
             {% endfor %}
@@ -228,63 +289,7 @@ if (!window.imgFallback) {
     {% endif %}
 </section>
 
-<!-- Quick View Modal - Novo Estilo -->
-<div id="qv-modal" class="qv-modal" aria-hidden="true">
-  <div class="qv-backdrop" onclick="closeQuickView()"></div>
-  <div class="qv-dialog" role="dialog" aria-modal="true">
-    <button class="qv-close" onclick="closeQuickView()"><i class="fas fa-times"></i></button>
 
-    <div class="qv-content">
-      <!-- Galeria esquerda -->
-      <div class="qv-gallery">
-        <div id="qv-thumbs" class="qv-thumbs"></div>
-      </div>
-
-      <!-- Imagem grande -->
-      <div class="qv-main">
-        <img id="qv-main-img" src=""
-             alt="Produto"
-             onerror="imgFallback(this, 900, 900, 'Sem Imagem')">
-      </div>
-
-      <!-- Detalhes à direita -->
-      <div class="qv-side">
-        <h2 id="qv-title" class="qv-title">Nome do Produto</h2>
-
-        <div class="qv-prices">
-          <span id="qv-old" class="qv-old">R$ 0,00</span>
-          <span id="qv-price" class="qv-price">R$ 0,00</span>
-        </div>
-
-        <div class="qv-qty-row">
-          <div class="qv-qty">
-            <button type="button" class="qty-btn" onclick="decQty()">−</button>
-            <input id="qv-qty" type="number" min="1" max="99" value="1" inputmode="numeric">
-            <button type="button" class="qty-btn" onclick="incQty()">+</button>
-          </div>
-
-          {% if session.user_id %}
-          <button id="qv-buy" class="qv-buy"><i class="fas fa-shopping-bag"></i> Comprar</button>
-          {% else %}
-          <a class="qv-buy" href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Fazer login</a>
-          {% endif %}
-        </div>
-
-        <button id="qv-fav" class="qv-fav"><i class="far fa-heart"></i> Salvar como favorito</button>
-
-        <div class="qv-share">
-          <span>Compartilhar:</span>
-          <a id="share-fb" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-          <a id="share-tw" target="_blank" rel="noopener" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
-          <a id="share-wa" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-          <button id="share-copy" class="share-copy" onclick="copyShare()"><i class="fas fa-link"></i></button>
-        </div>
-
-        <p id="qv-desc" class="qv-desc"></p>
-      </div>
-    </div>
-  </div>
-</div>
 
 <style>
 /* Estilos para o sistema de filtros */
@@ -294,7 +299,7 @@ if (!window.imgFallback) {
     right: -400px;
     width: 400px;
     height: 100vh;
-    background: white;
+    background: rgb(255, 255, 255);
     box-shadow: -5px 0 20px rgba(0,0,0,0.1);
     z-index: 2000;
     transition: right 0.3s ease;
@@ -626,8 +631,28 @@ if (!window.imgFallback) {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
     display: block;
+    background: #f0f0f0;
+}
+
+/* Placeholder para imagens que não carregaram */
+.product-image img[src=""],
+.product-image img:not([src]) {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    position: relative;
+}
+
+.product-image img[src=""]:before,
+.product-image img:not([src]):before {
+    content: '📷 Carregando...';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #999;
+    font-size: 14px;
+    text-align: center;
 }
 
 .product-card:hover .product-image img {
@@ -690,25 +715,7 @@ if (!window.imgFallback) {
     visibility: visible;
 }
 
-/* Modal de Visualização Rápida */
-.quick-view-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 3000;
-    display: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
 
-.quick-view-modal.active {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 1;
-}
 
 .modal-overlay {
     position: absolute;
@@ -937,45 +944,6 @@ if (!window.imgFallback) {
 
 /* Grid simples */
 .products-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr)); gap: 20px; }
-.product-image { position: relative; height: 320px; border-radius: 12px; overflow: hidden; background: #f3f4f6; }
-.product-image img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
-.product-card:hover .product-image img { transform: scale(1.06); }
-.qv-trigger { position: absolute; inset: 0; margin: auto; height: 44px; width: 70%; max-width: 260px;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  background: rgba(0,0,0,.85); color: #fff; border: none; border-radius: 8px; opacity: 0; transform: translateY(12px);
-  transition: all .3s; cursor: pointer; }
-.product-image:hover .qv-trigger { opacity: 1; transform: translateY(0); }
-.qv-trigger:hover { background: #111; }
-
-/* Modal */
-.qv-modal { position: fixed; inset: 0; display: none; z-index: 3000; }
-.qv-modal.show { display: block; }
-.qv-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(3px); }
-.qv-dialog { position: relative; margin: 40px auto; max-width: 1100px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 70px rgba(0,0,0,.35); }
-.qv-close { position: absolute; right: 14px; top: 12px; background: #fff; border: 1px solid #eee; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
-.qv-close:hover { background: #000; color: #fff; }
-
-.qv-content { display: grid; grid-template-columns: 120px 1fr 420px; gap: 24px; padding: 28px; }
-.qv-gallery { padding-top: 8px; }
-.qv-thumbs { display: flex; flex-direction: column; gap: 10px; max-height: 540px; overflow: auto; }
-.qv-thumb { width: 100%; aspect-ratio: 1/1; border-radius: 8px; overflow: hidden; border: 2px solid transparent; cursor: pointer; background: #f3f4f6; }
-.qv-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.qv-thumb.active { border-color: #111; }
-
-.qv-main { display: flex; align-items: center; justify-content: center; background: #fafafa; border-radius: 12px; min-height: 540px; }
-.qv-main img { width: 100%; height: 100%; max-height: 620px; object-fit: contain; }
-
-.qv-side { display: flex; flex-direction: column; gap: 18px; }
-.qv-title { font-size: 28px; line-height: 1.2; margin: 0; }
-.qv-prices { display: flex; align-items: baseline; gap: 14px; }
-.qv-old { color: #a1a1a1; text-decoration: line-through; }
-.qv-price { font-size: 28px; font-weight: 700; }
-
-.qv-qty-row { display: flex; gap: 12px; align-items: center; }
-.qv-qty { display: inline-flex; align-items: center; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
-.qv-qty input { width: 60px; text-align: center; border: 0; padding: 10px 6px; outline: none; }
-.qty-btn { width: 40px; height: 40px; border: 0; background: #f3f4f6; cursor: pointer; font-size: 18px; }
-.qty-btn:hover { background: #e5e7eb; }
 
 .qv-buy { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
   background: #1a1a1a; color: #fff; border: 0; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; text-decoration: none; }
@@ -1002,113 +970,7 @@ if (!window.imgFallback) {
 }
 </style>
 
-<script>
-(() => {
-  if (window.__QV_INIT__) return;
-  window.__QV_INIT__ = true;
 
-  const QV = window.QV || { id:null, imgs:[], idx:0 };
-  window.QV = QV;
-
-  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
-  function formatBRL(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v); }
-
-  function htmlDecode(str){
-    if (!str) return '';
-    const t = document.createElement('textarea');
-    t.innerHTML = str;
-    return t.value;
-  }
-
-  function setMain(i){
-    QV.idx = i;
-    const img = document.querySelector('#qv-modal #qv-main-img'); // garante o modal novo
-    if (!img) return;
-    img.style.opacity = .6;
-    img.onload = ()=>img.style.opacity = 1;
-    img.onerror = ()=> window.imgFallback(img, 900, 900, 'Sem Imagem');
-    img.src = QV.imgs[i] || '';
-    document.querySelectorAll('#qv-modal .qv-thumb').forEach((t,idx)=>t.classList.toggle('active', idx===i));
-  }
-
-  function openQuickViewImpl(id){
-    const card = document.querySelector(`.product-card[data-id="${id}"]`);
-    if (!card) return;
-
-    // pega o src real do <img> do card (evita &amp;)
-    const imgEl = card.querySelector('.product-image img');
-    const imgFromImgTag = imgEl?.src || '';
-    const imgFromData = card.dataset.imagem ? htmlDecode(card.dataset.imagem) : '';
-
-    const nome = card.dataset.nome || 'Produto';
-    const preco = parseFloat(card.dataset.preco || '0');
-    const desc  = card.dataset.descricao || '';
-
-    // monta galeria com a melhor fonte disponível
-    const primeira = imgFromImgTag || imgFromData || '';
-    window.QV.imgs = primeira ? [primeira] : [''];
-    window.QV.idx  = 0;
-    window.QV.id   = id;
-
-    document.getElementById('qv-title').textContent = nome;
-    document.getElementById('qv-price').textContent = formatBRL(preco);
-    document.getElementById('qv-old').textContent   = formatBRL(Math.max(preco * 1.25, preco));
-    document.getElementById('qv-desc').textContent  = desc;
-    document.getElementById('qv-qty').value = 1;
-
-    // thumbs
-    const thumbs = document.getElementById('qv-thumbs');
-    thumbs.innerHTML = '';
-    window.QV.imgs.forEach((src, i) => {
-      const d = document.createElement('div');
-      d.className = 'qv-thumb' + (i===0?' active':'');
-      d.onclick = () => setMain(i);
-      d.innerHTML = `<img src="${src}" alt="thumb" onerror="imgFallback(this,100,100,'')">`;
-      thumbs.appendChild(d);
-    });
-
-    setMain(0);
-
-    // Comprar
-    const buy = document.getElementById('qv-buy');
-    if (buy && buy.tagName === 'BUTTON') {
-      buy.onclick = () => {
-        const q = clamp(parseInt(document.getElementById('qv-qty').value || '1', 10), 1, 99);
-        window.location.href = `/carrinho/adicionar/${id}?q=${q}`;
-      };
-    }
-
-    // Abrir modal
-    document.getElementById('qv-modal').classList.add('show');
-    document.body.style.overflow = 'hidden';
-  }
-
-  // expor APIs públicas e binds
-  window.openQuickView = (id) => {
-    const modal = document.getElementById('qv-modal');
-    if (!modal) { console.warn('qv-modal não encontrado'); return; }
-    openQuickViewImpl(id);
-  };
-
-  window.closeQuickView = () => {
-    const modal = document.getElementById('qv-modal');
-    if (!modal) return;
-    modal.classList.remove('show');
-    document.body.style.overflow = '';
-  };
-
-  // Delegação: aciona pelo botão com classe .qv-trigger
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('.qv-trigger');
-    if (!btn) return;
-    const id = btn.dataset.id || btn.closest('.product-card')?.dataset.id;
-    if (id) window.openQuickView(id);
-  });
-
-  // ESC fecha
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') window.closeQuickView(); });
-})();
-</script>
 
 <script>
 function imgFallback(el, w=800, h=800, text='Sem Imagem') {
@@ -1124,5 +986,446 @@ function imgFallback(el, w=800, h=800, text='Sem Imagem') {
   };
   test.src = url;
 }
+
+// =============== SISTEMA DE FILTROS ===============
+let allProducts = [];
+let filteredProducts = [];
+let activeFilters = {
+    categories: [],
+    sizes: [],
+    priceMin: null,
+    priceMax: null,
+    quickFilter: null
+};
+
+// Inicializar filtros quando a página carregar
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFilters();
+    loadProducts();
+});
+
+// Função para inicializar o sistema de filtros
+function initializeFilters() {
+    // Configurar eventos de filtros
+    setupFilterEvents();
+    
+    // Configurar checkbox "Todas as categorias"
+    const allCategoriesCheckbox = document.querySelector('input[value=""]:checked');
+    if (allCategoriesCheckbox) {
+        allCategoriesCheckbox.addEventListener('change', handleAllCategoriesChange);
+    }
+    
+    // Configurar checkbox "Todos os tamanhos"
+    const allSizesCheckbox = document.querySelector('.size-options input[value=""]:checked');
+    if (allSizesCheckbox) {
+        allSizesCheckbox.addEventListener('change', handleAllSizesChange);
+    }
+}
+
+// Carregar produtos da página
+function loadProducts() {
+    const productCards = document.querySelectorAll('.produto-card');
+    allProducts = Array.from(productCards).map(card => {
+        const nameEl = card.querySelector('.produto-nome');
+        const priceEl = card.querySelector('.produto-preco');
+        const categoryEl = card.querySelector('.produto-categoria');
+        const sizesEl = card.querySelector('.produto-tamanhos');
+        
+        return {
+            element: card,
+            name: nameEl ? nameEl.textContent.trim() : '',
+            price: priceEl ? parseFloat(priceEl.textContent.replace(/[R$\s.]/g, '').replace(',', '.')) : 0,
+            category: categoryEl ? categoryEl.textContent.trim() : '',
+            sizes: sizesEl ? sizesEl.textContent.split(',').map(s => s.trim()) : [],
+            id: card.dataset.productId || Math.random().toString()
+        };
+    });
+    
+    filteredProducts = [...allProducts];
+    updateProductCount();
+}
+
+// Configurar eventos dos filtros
+function setupFilterEvents() {
+    // Filtros de categoria
+    const categoryCheckboxes = document.querySelectorAll('.filter-options input[type="checkbox"]:not([value=""])');
+    categoryCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', handleCategoryFilter);
+    });
+    
+    // Filtros de tamanho
+    const sizeCheckboxes = document.querySelectorAll('.size-options input[type="checkbox"]:not([value=""])');
+    sizeCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', handleSizeFilter);
+    });
+    
+    // Filtros de preço
+    const minPriceInput = document.getElementById('min-price');
+    const maxPriceInput = document.getElementById('max-price');
+    
+    if (minPriceInput) {
+        minPriceInput.addEventListener('input', debounce(handlePriceFilter, 500));
+    }
+    if (maxPriceInput) {
+        maxPriceInput.addEventListener('input', debounce(handlePriceFilter, 500));
+    }
+    
+    // Filtros rápidos
+    const quickFilterButtons = document.querySelectorAll('.quick-filter');
+    quickFilterButtons.forEach(button => {
+        button.addEventListener('click', handleQuickFilter);
+    });
+}
+
+// Toggle do painel de filtros
+function toggleFilters() {
+    const filtersPanel = document.getElementById('filters-panel');
+    const isActive = filtersPanel.classList.contains('active');
+    
+    if (isActive) {
+        filtersPanel.classList.remove('active');
+        document.body.style.overflow = '';
+    } else {
+        filtersPanel.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+// Manipular filtro de categorias
+function handleCategoryFilter(event) {
+    const value = event.target.value;
+    const isChecked = event.target.checked;
+    
+    if (isChecked) {
+        if (!activeFilters.categories.includes(value)) {
+            activeFilters.categories.push(value);
+        }
+    } else {
+        activeFilters.categories = activeFilters.categories.filter(cat => cat !== value);
+    }
+    
+    // Desmarcar "Todas as categorias" se alguma categoria específica for selecionada
+    if (activeFilters.categories.length > 0) {
+        const allCategoriesCheckbox = document.querySelector('.filter-options input[value=""]');
+        if (allCategoriesCheckbox) {
+            allCategoriesCheckbox.checked = false;
+        }
+    }
+    
+    filterProducts();
+}
+
+// Manipular "Todas as categorias"
+function handleAllCategoriesChange(event) {
+    const isChecked = event.target.checked;
+    
+    if (isChecked) {
+        // Limpar filtros de categoria e desmarcar todos os checkboxes
+        activeFilters.categories = [];
+        const categoryCheckboxes = document.querySelectorAll('.filter-options input[type="checkbox"]:not([value=""])');
+        categoryCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+    }
+    
+    filterProducts();
+}
+
+// Manipular filtro de tamanhos
+function handleSizeFilter(event) {
+    const value = event.target.value;
+    const isChecked = event.target.checked;
+    
+    if (isChecked) {
+        if (!activeFilters.sizes.includes(value)) {
+            activeFilters.sizes.push(value);
+        }
+    } else {
+        activeFilters.sizes = activeFilters.sizes.filter(size => size !== value);
+    }
+    
+    // Desmarcar "Todos os tamanhos" se algum tamanho específico for selecionado
+    if (activeFilters.sizes.length > 0) {
+        const allSizesCheckbox = document.querySelector('.size-options input[value=""]');
+        if (allSizesCheckbox) {
+            allSizesCheckbox.checked = false;
+        }
+    }
+    
+    filterProducts();
+}
+
+// Manipular "Todos os tamanhos"
+function handleAllSizesChange(event) {
+    const isChecked = event.target.checked;
+    
+    if (isChecked) {
+        // Limpar filtros de tamanho e desmarcar todos os checkboxes
+        activeFilters.sizes = [];
+        const sizeCheckboxes = document.querySelectorAll('.size-options input[type="checkbox"]:not([value=""])');
+        sizeCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+    }
+    
+    filterProducts();
+}
+
+// Manipular filtro de preço
+function handlePriceFilter() {
+    const minPrice = document.getElementById('min-price');
+    const maxPrice = document.getElementById('max-price');
+    
+    activeFilters.priceMin = minPrice && minPrice.value ? parseFloat(minPrice.value) : null;
+    activeFilters.priceMax = maxPrice && maxPrice.value ? parseFloat(maxPrice.value) : null;
+    
+    filterProducts();
+}
+
+// Manipular filtros rápidos
+function handleQuickFilter(event) {
+    const filterType = event.target.dataset.filter || event.target.textContent.toLowerCase();
+    const button = event.target;
+    
+    // Toggle do filtro rápido
+    if (activeFilters.quickFilter === filterType) {
+        activeFilters.quickFilter = null;
+        button.classList.remove('active');
+    } else {
+        // Remover active de outros botões
+        document.querySelectorAll('.quick-filter').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        activeFilters.quickFilter = filterType;
+        button.classList.add('active');
+    }
+    
+    filterProducts();
+}
+
+// Definir filtro rápido (chamado pelos botões)
+function setQuickFilter(filterType) {
+    const button = document.querySelector(`[onclick*="${filterType}"]`);
+    if (button) {
+        handleQuickFilter({ target: button });
+    }
+}
+
+// Aplicar filtros aos produtos
+function filterProducts() {
+    filteredProducts = allProducts.filter(product => {
+        // Filtro por categoria
+        if (activeFilters.categories.length > 0) {
+            if (!activeFilters.categories.includes(product.category)) {
+                return false;
+            }
+        }
+        
+        // Filtro por tamanho
+        if (activeFilters.sizes.length > 0) {
+            const hasMatchingSize = activeFilters.sizes.some(size => 
+                product.sizes.includes(size)
+            );
+            if (!hasMatchingSize) {
+                return false;
+            }
+        }
+        
+        // Filtro por preço
+        if (activeFilters.priceMin !== null && product.price < activeFilters.priceMin) {
+            return false;
+        }
+        if (activeFilters.priceMax !== null && product.price > activeFilters.priceMax) {
+            return false;
+        }
+        
+        // Filtros rápidos
+        if (activeFilters.quickFilter) {
+            switch (activeFilters.quickFilter) {
+                case 'promocao':
+                    // Lógica para promoção (ex: produtos com desconto)
+                    // Por enquanto, mostrar produtos com preço menor que 100
+                    if (product.price >= 100) return false;
+                    break;
+                case 'lancamento':
+                    // Lógica para lançamentos (ex: produtos recentes)
+                    // Por enquanto, mostrar produtos que contenham "novo" no nome
+                    if (!product.name.toLowerCase().includes('novo')) return false;
+                    break;
+                case 'mais-vendidos':
+                    // Lógica para mais vendidos
+                    // Por enquanto, mostrar produtos com preço entre 50-200
+                    if (product.price < 50 || product.price > 200) return false;
+                    break;
+            }
+        }
+        
+        return true;
+    });
+    
+    updateProductDisplay();
+    updateProductCount();
+}
+
+// Atualizar exibição dos produtos
+function updateProductDisplay() {
+    // Esconder todos os produtos
+    allProducts.forEach(product => {
+        product.element.style.display = 'none';
+    });
+    
+    // Mostrar produtos filtrados
+    filteredProducts.forEach(product => {
+        product.element.style.display = 'block';
+    });
+    
+    // Adicionar animação suave
+    const productsGrid = document.querySelector('.produtos-grid');
+    if (productsGrid) {
+        productsGrid.style.opacity = '0.7';
+        setTimeout(() => {
+            productsGrid.style.opacity = '1';
+        }, 150);
+    }
+}
+
+// Atualizar contador de produtos
+function updateProductCount() {
+    const countElement = document.querySelector('.product-count');
+    if (countElement) {
+        const count = filteredProducts.length;
+        countElement.textContent = `${count} produto${count !== 1 ? 's' : ''}`;
+    }
+}
+
+// Ordenar produtos
+function sortProducts(sortType) {
+    let sortedProducts;
+    
+    switch (sortType) {
+        case 'menor-preco':
+            sortedProducts = [...filteredProducts].sort((a, b) => a.price - b.price);
+            break;
+        case 'maior-preco':
+            sortedProducts = [...filteredProducts].sort((a, b) => b.price - a.price);
+            break;
+        case 'nome-az':
+            sortedProducts = [...filteredProducts].sort((a, b) => a.name.localeCompare(b.name));
+            break;
+        case 'nome-za':
+            sortedProducts = [...filteredProducts].sort((a, b) => b.name.localeCompare(a.name));
+            break;
+        case 'mais-novos':
+            // Por enquanto, manter ordem original (ou implementar lógica de data)
+            sortedProducts = [...filteredProducts];
+            break;
+        default:
+            sortedProducts = [...filteredProducts];
+    }
+    
+    // Reordenar elementos no DOM
+    const productsGrid = document.querySelector('.produtos-grid');
+    if (productsGrid) {
+        // Criar um fragment para otimizar manipulação do DOM
+        const fragment = document.createDocumentFragment();
+        
+        sortedProducts.forEach(product => {
+            fragment.appendChild(product.element);
+        });
+        
+        // Limpar grid e adicionar produtos ordenados
+        productsGrid.innerHTML = '';
+        productsGrid.appendChild(fragment);
+        
+        // Adicionar produtos não filtrados no final (escondidos)
+        allProducts.forEach(product => {
+            if (!sortedProducts.includes(product)) {
+                productsGrid.appendChild(product.element);
+            }
+        });
+    }
+    
+    filteredProducts = sortedProducts;
+}
+
+// Limpar todos os filtros
+function clearAllFilters() {
+    // Resetar filtros ativos
+    activeFilters = {
+        categories: [],
+        sizes: [],
+        priceMin: null,
+        priceMax: null,
+        quickFilter: null
+    };
+    
+    // Resetar checkboxes de categoria
+    const categoryCheckboxes = document.querySelectorAll('.filter-options input[type="checkbox"]');
+    categoryCheckboxes.forEach(checkbox => {
+        checkbox.checked = checkbox.value === '';
+    });
+    
+    // Resetar checkboxes de tamanho
+    const sizeCheckboxes = document.querySelectorAll('.size-options input[type="checkbox"]');
+    sizeCheckboxes.forEach(checkbox => {
+        checkbox.checked = checkbox.value === '';
+    });
+    
+    // Resetar inputs de preço
+    const minPriceInput = document.getElementById('min-price');
+    const maxPriceInput = document.getElementById('max-price');
+    if (minPriceInput) minPriceInput.value = '';
+    if (maxPriceInput) maxPriceInput.value = '';
+    
+    // Resetar filtros rápidos
+    document.querySelectorAll('.quick-filter').forEach(button => {
+        button.classList.remove('active');
+    });
+    
+    // Resetar ordenação
+    const sortDropdown = document.querySelector('.sort-dropdown');
+    if (sortDropdown) {
+        sortDropdown.value = 'destaque';
+    }
+    
+    // Aplicar filtros (que agora estão vazios)
+    filterProducts();
+}
+
+// Função utilitária para debounce
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Fechar filtros ao clicar fora
+document.addEventListener('click', function(event) {
+    const filtersPanel = document.getElementById('filters-panel');
+    const filterToggle = document.querySelector('.filter-toggle');
+    
+    if (filtersPanel && filtersPanel.classList.contains('active')) {
+        if (!filtersPanel.contains(event.target) && !filterToggle.contains(event.target)) {
+            toggleFilters();
+        }
+    }
+});
+
+// Fechar filtros com tecla Escape
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const filtersPanel = document.getElementById('filters-panel');
+        if (filtersPanel && filtersPanel.classList.contains('active')) {
+            toggleFilters();
+        }
+    }
+});
 </script>
 {% endblock %}

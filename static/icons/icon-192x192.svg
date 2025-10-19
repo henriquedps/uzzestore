@@ -1,0 +1,32 @@
+<svg width="192" height="192" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#000000;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#720000;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="192" height="192" fill="#f8f9fa" rx="24"/>
+  
+  <!-- Logo Background Circle -->
+  <circle cx="96" cy="96" r="70" fill="url(#logoGradient)"/>
+  
+  <!-- Shopping Bag Icon -->
+  <g transform="translate(96,96)" fill="white">
+    <!-- Bag Body -->
+    <path d="M-20,5 L20,5 L18,35 L-18,35 Z" fill="white" opacity="0.9"/>
+    
+    <!-- Bag Handles -->
+    <path d="M-12,-5 C-12,-15 -8,-20 0,-20 C8,-20 12,-15 12,-5" 
+          stroke="white" stroke-width="3" fill="none" opacity="0.9"/>
+    
+    <!-- Decorative Lines -->
+    <line x1="-15" y1="12" x2="15" y2="12" stroke="white" stroke-width="2" opacity="0.6"/>
+    <line x1="-13" y1="20" x2="13" y2="20" stroke="white" stroke-width="2" opacity="0.6"/>
+    <line x1="-11" y1="28" x2="11" y2="28" stroke="white" stroke-width="2" opacity="0.6"/>
+  </g>
+  
+  <!-- Brand Initial -->
+  <text x="96" y="150" text-anchor="middle" font-family="serif" font-size="24" font-weight="bold" fill="#000000">U</text>
+</svg>
