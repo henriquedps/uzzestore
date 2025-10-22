@@ -1,29 +1,519 @@
 {% extends "base.html" %}
 
-{% block title %}Meus Pedidos - UzzerStore{% endblock %}
+{% block title %}Meus Pedidos - UzzeStore{% endblock %}
+
+{% block head %}
+<style>
+/* CSS para Histórico de Pedidos - UzzeStore */
+.orders-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    background: var(--bg-secondary);
+}
+
+.orders-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 30px;
+    background: var(--gradient-primary);
+    border-radius: var(--border-radius-large);
+    color: var(--text-light);
+    box-shadow: var(--shadow-heavy);
+}
+
+.orders-header h1 {
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.orders-header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.order-card {
+    background: var(--bg-primary);
+    border-radius: var(--border-radius-large);
+    padding: 30px;
+    box-shadow: var(--shadow-medium);
+    border: 1px solid var(--border-light);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.order-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-heavy);
+}
+
+.order-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--gradient-primary);
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.order-number {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.order-number i {
+    color: var(--accent-color);
+}
+
+.order-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+}
+
+.order-date {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.order-status {
+    padding: 6px 15px;
+    border-radius: var(--border-radius-small);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-pendente {
+    background: var(--warning-bg);
+    color: var(--warning-color);
+    border: 1px solid var(--warning-border);
+}
+
+.status-confirmado {
+    background: var(--success-bg);
+    color: var(--success-color);
+    border: 1px solid var(--success-border);
+}
+
+.status-processando {
+    background: var(--info-bg);
+    color: var(--info-color);
+    border: 1px solid var(--info-border);
+}
+
+.status-entregue {
+    background: var(--primary-bg);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-border);
+}
+
+.status-cancelado {
+    background: var(--error-bg);
+    color: var(--error-color);
+    border: 1px solid var(--error-border);
+}
+
+.order-details {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 25px;
+    align-items: start;
+}
+
+.order-items {
+    flex: 1;
+}
+
+.order-items h4 {
+    color: var(--text-primary);
+    font-size: 1rem;
+    margin-bottom: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.order-items h4 i {
+    color: var(--accent-color);
+    font-size: 0.9rem;
+}
+
+.items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius-small);
+    border: 1px solid var(--border-light);
+}
+
+.item-info {
+    flex: 1;
+}
+
+.item-name {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    line-height: 1.3;
+}
+
+.item-details {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.item-price {
+    font-weight: 600;
+    color: var(--accent-color);
+    font-size: 0.9rem;
+}
+
+.order-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 15px;
+}
+
+.payment-method {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 15px;
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius-small);
+    border: 1px solid var(--border-light);
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.payment-method i {
+    color: var(--accent-color);
+}
+
+.order-total {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    text-align: right;
+}
+
+.order-actions {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+}
+
+.btn-small {
+    padding: 10px 20px;
+    border-radius: var(--border-radius-small);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition-fast);
+    cursor: pointer;
+    border: none;
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 2px solid var(--border-light);
+}
+
+.btn-outline:hover {
+    background: var(--bg-secondary);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+.btn-primary-small {
+    background: var(--gradient-primary);
+    color: var(--text-light);
+    box-shadow: var(--shadow-small);
+}
+
+.btn-primary-small:hover {
+    background: var(--gradient-secondary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-medium);
+    text-decoration: none;
+    color: var(--text-light);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 40px;
+    background: var(--bg-primary);
+    border-radius: var(--border-radius-large);
+    box-shadow: var(--shadow-medium);
+    border: 1px solid var(--border-light);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+}
+
+.empty-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+.empty-text {
+    color: var(--text-secondary);
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+.btn-cta {
+    padding: 15px 30px;
+    background: var(--gradient-primary);
+    color: var(--text-light);
+    border: none;
+    border-radius: var(--border-radius-small);
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition);
+    cursor: pointer;
+    box-shadow: var(--shadow-colored);
+}
+
+.btn-cta:hover {
+    background: var(--gradient-secondary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-heavy);
+    text-decoration: none;
+    color: var(--text-light);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .orders-container {
+        padding: 20px 15px;
+    }
+    
+    .orders-header {
+        padding: 20px;
+    }
+    
+    .orders-header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .order-card {
+        padding: 20px;
+    }
+    
+    .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .order-meta {
+        align-items: flex-start;
+        width: 100%;
+    }
+    
+    .order-details {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .order-summary {
+        align-items: flex-start;
+    }
+    
+    .order-actions {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+    
+    .empty-state {
+        padding: 40px 20px;
+    }
+    
+    .empty-icon {
+        font-size: 3rem;
+    }
+    
+    .empty-title {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .order-number {
+        font-size: 1.1rem;
+    }
+    
+    .order-total {
+        font-size: 1.2rem;
+    }
+    
+    .btn-small,
+    .btn-cta {
+        padding: 12px 16px;
+        font-size: 0.85rem;
+    }
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div style="max-width: 900px; margin: 0 auto; padding: 40px 20px;">
-    <h1>Meus Pedidos</h1>
+<div class="orders-container">
+    <div class="orders-header">
+        <h1><i class="fas fa-box"></i> Meus Pedidos</h1>
+        <p>Acompanhe o status e histórico dos seus pedidos</p>
+    </div>
+    
     {% if pedidos %}
-        <table style="width:100%; border-collapse:collapse;">
-            <tr>
-                <th>ID</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Data</th>
-            </tr>
-            {% for pedido in pedidos %}
-            <tr>
-                <td>{{ pedido.id }}</td>
-                <td>{{ pedido.total|currency }}</td>
-                <td>{{ pedido.status }}</td>
-                <td>{{ pedido.data_pedido }}</td>
-            </tr>
-            {% endfor %}
-        </table>
+    <div class="orders-list">
+        {% for pedido in pedidos %}
+        <div class="order-card">
+            <div class="order-header">
+                <div class="order-number">
+                    <i class="fas fa-receipt"></i>
+                    Pedido #{{ pedido.id }}
+                </div>
+                
+                <div class="order-meta">
+                    <div class="order-date">
+                        <i class="fas fa-calendar"></i>
+                        {{ pedido.created_at.strftime('%d/%m/%Y às %H:%M') }}
+                    </div>
+                    <div class="order-status status-{{ pedido.status.lower() }}">
+                        {{ pedido.status }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="order-details">
+                <div class="order-items">
+                    <h4><i class="fas fa-shopping-bag"></i> Itens do Pedido</h4>
+                    <div class="items-list">
+                        {% for item in pedido.itens_json %}
+                        <div class="order-item">
+                            <div class="item-info">
+                                <div class="item-name">{{ item.nome }}</div>
+                                <div class="item-details">
+                                    {% if item.tamanho %}Tamanho: {{ item.tamanho }}{% endif %}
+                                    {% if item.cor %}{% if item.tamanho %} | {% endif %}Cor: {{ item.cor }}{% endif %}
+                                    | Qtd: {{ item.quantidade }}
+                                </div>
+                            </div>
+                            <div class="item-price">{{ item.preco_unitario|currency }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="order-summary">
+                    <div class="payment-method">
+                        {% if pedido.metodo_pagamento == 'PIX' %}
+                            <i class="fas fa-qrcode"></i>
+                        {% elif pedido.metodo_pagamento == 'Cartão' %}
+                            <i class="fas fa-credit-card"></i>
+                        {% elif pedido.metodo_pagamento == 'Boleto' %}
+                            <i class="fas fa-barcode"></i>
+                        {% else %}
+                            <i class="fas fa-money-bill"></i>
+                        {% endif %}
+                        {{ pedido.metodo_pagamento }}
+                    </div>
+                    
+                    <div class="order-total">
+                        Total: {{ pedido.total|currency }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="order-actions">
+                <a href="#" class="btn-small btn-outline">
+                    <i class="fas fa-eye"></i>
+                    Ver Detalhes
+                </a>
+                
+                {% if pedido.status in ['Pendente', 'Confirmado'] %}
+                <a href="#" class="btn-small btn-primary-small">
+                    <i class="fas fa-truck"></i>
+                    Rastrear Pedido
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
     {% else %}
-        <p>Você ainda não fez nenhum pedido.</p>
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="fas fa-shopping-cart"></i>
+        </div>
+        <h2 class="empty-title">Nenhum pedido encontrado</h2>
+        <p class="empty-text">
+            Você ainda não fez nenhum pedido em nossa loja. 
+            Que tal começar a explorar nossos produtos?
+        </p>
+        <a href="{{ url_for('index') }}" class="btn-cta">
+            <i class="fas fa-shopping-bag"></i>
+            Começar a Comprar
+        </a>
+    </div>
     {% endif %}
 </div>
 {% endblock %}

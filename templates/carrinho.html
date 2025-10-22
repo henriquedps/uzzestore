@@ -1,159 +1,314 @@
-{% extends "base.html" %}
+{% extends "base.html" %}{% extends "base.html" %}
 
-{% block title %}Carrinho - UzzerStore{% endblock %}
 
-{% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/cart.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/modern-cart.css') }}">
-{% endblock %}
 
-{% block content %}
-<!-- Header do Carrinho -->
-<div class="cart-header">
-    <h1>🛒 Minha Sacola</h1>
-    <div class="cart-breadcrumb">
-        <a href="{{ url_for('index') }}">Início</a> > 
-        <a href="{{ url_for('index') }}">Produtos</a> > 
-        <span>Carrinho</span>
-    </div>
-</div>
+{% block title %}Carrinho - UzzerStore{% endblock %}{% block title %}Carrinho - UzzerStore{% endblock %}
 
-<div class="carrinho-container">
-    
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
 
-    {% if itens %}
-        <div class="carrinho-content">
-            <div class="itens-carrinho">
-                {% for item in itens %}
-                    <div class="item-carrinho">
-                        <div class="item-imagem-container">
-                            {% if item.produto.imagem %}
-                                <img src="{{ item.produto.imagem }}" alt="{{ item.produto.nome }}" class="item-imagem"
-                                     onerror="imgFallback(this, 120, 120, 'Produto')">
-                            {% else %}
-                                <div class="item-sem-imagem">👕</div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="item-info">
-                            <h3>{{ item.produto.nome }}</h3>
-                            <p class="item-preco">{{ item.produto.preco|currency }}</p>
-                            <div class="item-detalhes">
-                                <span class="item-tamanho">Tam: P</span>
-                                <span class="item-cor">Cor: Marinho</span>
-                            </div>
-                        </div>
-                        
-                        <div class="item-quantidade-container">
-                            <div class="quantidade-controls">
-                                <button class="btn-quantidade" onclick="updateQuantity({{ item.produto.id }}, -1)">−</button>
-                                <span class="quantidade-display">{{ item.quantidade }}</span>
-                                <button class="btn-quantidade" onclick="updateQuantity({{ item.produto.id }}, 1)">+</button>
-                            </div>
-                        </div>
-                        
-                        <div class="item-subtotal">
-                            <p class="subtotal-valor">{{ item.subtotal|currency }}</p>
-                            <button class="btn-remover" onclick="removeItem({{ item.produto.id }})">
-                                🗑️ Remover
-                            </button>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-            
-            <div class="carrinho-resumo">
-                <div class="resumo-card">
-                    <h3>📋 Resumo do Pedido</h3>
-                    
-                    <!-- Cupom de Desconto -->
-                    <div class="cupom-section">
-                        <h4>🎫 Cupom de Desconto</h4>
-                        <div class="cupom-input-group">
-                            <input type="text" class="cupom-input" placeholder="Digite seu cupom" id="cupom-input">
-                            <button class="btn-cupom" onclick="aplicarCupom()">Aplicar</button>
-                        </div>
-                    </div>
-                    
-                    <div class="resumo-linha">
-                        <span>Subtotal ({{ itens|length }} {{ 'item' if itens|length == 1 else 'itens' }}):</span>
-                        <span>{{ total|currency }}</span>
-                    </div>
-                    <div class="resumo-linha">
-                        <span>Frete:</span>
-                        <span class="resumo-frete">GRÁTIS</span>
-                    </div>
-                    <div class="resumo-linha" style="display: none;" id="desconto-linha">
-                        <span>Desconto:</span>
-                        <span id="desconto-valor">R$ 0,00</span>
-                    </div>
-                    
-                    <div class="resumo-total">
-                        <div class="resumo-linha">
-                            <span>Total:</span>
-                            <span id="total-final">{{ total|currency }}</span>
-                        </div>
-                    </div>
-                    
-                    {% if session.user_id %}
-                        <a href="{{ url_for('checkout') }}" class="btn-checkout">
-                            💳 Finalizar Compra
-                        </a>
-                    {% else %}
-                        <div class="login-necessario">
-                            <p>Faça login para finalizar a compra</p>
-                            <a href="{{ url_for('login') }}" class="btn-login-checkout">
-                                🔐 Fazer Login
-                            </a>
-                            <p style="font-size: 0.9rem; margin-top: 10px; color: #666;">
-                                Não tem conta? <a href="{{ url_for('cadastro') }}" style="color: #e67e22; text-decoration: none;">Cadastre-se aqui</a>
-                            </p>
-                        </div>
-                    {% endif %}
-                    
-                    <button class="btn-limpar" onclick="limparCarrinho()">
-                        🗑️ Limpar Carrinho
-                    </button>
+
+{% block content %}{% block head %}
+
+<div class="container" style="padding: 40px 20px; max-width: 1200px; margin: 0 auto;"><link rel="stylesheet" href="{{ url_for('static', filename='css/modern-cart.css') }}">
+
+    <h1 style="text-align: center; color: #fff; margin-bottom: 40px; font-size: 2.5rem;">{% endblock %}
+
+        🛒 Seu Carrinho
+
+    </h1>{% block content %}
+
+    <!-- Header do Carrinho -->
+
+    {% if itens and itens|length > 0 %}<div class="cart-header">
+
+        <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; border: 1px solid rgba(255,255,255,0.2);">    <h1>🛒 Minha Sacola</h1>
+
+            {% for item in itens %}    <div class="cart-breadcrumb">
+
+            <div style="display: flex; align-items: center; gap: 20px; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;">        <a href="{{ url_for('index') }}">Início</a> > 
+
+                <div style="width: 100px; height: 100px; border-radius: 12px; overflow: hidden; background: rgba(255,255,255,0.1);">        <a href="{{ url_for('index') }}">Produtos</a> > 
+
+                    <img src="{{ item.produto.imagem }}" alt="{{ item.produto.nome }}"         <span>Carrinho</span>
+
+                         style="width: 100%; height: 100%; object-fit: cover;"    </div>
+
+                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjMUExQTFBIi8+CjxwYXRoIGQ9Ik00MCA0MEg2MFY2MEg0MFY0MFoiIGZpbGw9IiM0NDRENEY0Ii8+Cjwvc3ZnPgo=';"></div>
+
                 </div>
-            </div>
-        </div>
-    {% else %}
-        <div class="carrinho-vazio">
-            <h2>😔 Sua sacola está vazia</h2>
-            <p>Que tal adicionar alguns produtos incríveis?</p>
-            <a href="{{ url_for('index') }}" class="btn-comprar">🛍️ Ver Produtos</a>
-        </div>
-    {% endif %}
-</div>
 
-<script>
-// Função para atualizar quantidade
-function updateQuantity(produtoId, change) {
-    const quantidadeElement = document.querySelector(`[data-produto-id="${produtoId}"] .quantidade-display`);
-    if (!quantidadeElement) return;
-    
-    let quantidade = parseInt(quantidadeElement.textContent) + change;
-    if (quantidade < 1) quantidade = 1;
-    
-    // Aqui você faria uma requisição AJAX para atualizar no servidor
-    // Por enquanto, apenas atualiza visualmente
-    quantidadeElement.textContent = quantidade;
-    
-    // Atualizar subtotal do item
-    updateItemSubtotal(produtoId, quantidade);
-}
+                <div class="carrinho-container">
 
-// Função para remover item
-function removeItem(produtoId) {
-    if (confirm('Tem certeza que deseja remover este item?')) {
-        window.location.href = `/carrinho/remover/${produtoId}`;
+                <div style="flex: 1;">    
+
+                    <h3 style="color: #fff; margin: 0 0 10px 0; font-size: 1.2rem;">{{ item.produto.nome }}</h3>    {% with messages = get_flashed_messages(with_categories=true) %}
+
+                    <p style="color: rgba(255,255,255,0.7); margin: 5px 0;">        {% if messages %}
+
+                        Tamanho: {{ item.tamanho }} | Cor: {{ item.cor }}            {% for category, message in messages %}
+
+                    </p>                <div class="alert alert-{{ category }}">{{ message }}</div>
+
+                    <p style="color: var(--primary-color); font-weight: 600; font-size: 1.1rem; margin: 10px 0;">            {% endfor %}
+
+                        R$ {{ "%.2f"|format(item.produto.preco) }}        {% endif %}
+
+                    </p>    {% endwith %}
+
+                </div>
+
+                    {% if itens %}
+
+                <div style="display: flex; align-items: center; gap: 15px;">        <div class="carrinho-content">
+
+                    <div style="display: flex; align-items: center; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden;">            <div class="itens-carrinho">
+
+                        <button onclick="alterarQuantidade({{ item.produto.id }}, '{{ item.tamanho }}', '{{ item.cor }}', -1)"                {% for item in itens %}
+
+                                style="width: 40px; height: 40px; background: none; border: none; color: #fff; cursor: pointer; font-size: 18px;">-</button>                    <div class="item-carrinho" data-produto-id="{{ item.produto.id }}" data-tamanho="{{ item.tamanho }}" data-cor="{{ item.cor }}">
+
+                        <span style="padding: 0 15px; color: #fff; font-weight: 600;">{{ item.quantidade }}</span>                        <div class="item-imagem-container">
+
+                        <button onclick="alterarQuantidade({{ item.produto.id }}, '{{ item.tamanho }}', '{{ item.cor }}', 1)"                            {% if item.produto.imagem %}
+
+                                style="width: 40px; height: 40px; background: none; border: none; color: #fff; cursor: pointer; font-size: 18px;">+</button>                                <img src="{{ item.produto.imagem }}" alt="{{ item.produto.nome }}" class="item-imagem"
+
+                    </div>                                     onerror="imgFallback(this, 120, 120, 'Produto')">
+
+                                                {% else %}
+
+                    <button onclick="removerItem({{ item.produto.id }}, '{{ item.tamanho }}', '{{ item.cor }}')"                                <div class="item-sem-imagem">👕</div>
+
+                            style="width: 40px; height: 40px; background: rgba(255,0,0,0.2); border: 1px solid rgba(255,0,0,0.5); border-radius: 8px; color: #ff4757; cursor: pointer;">                            {% endif %}
+
+                        🗑️                        </div>
+
+                    </button>                        
+
+                </div>                        <div class="item-info">
+
+                                            <h3>{{ item.produto.nome }}</h3>
+
+                <div style="text-align: right; min-width: 100px;">                            <p class="item-preco">{{ item.produto.preco|currency }}</p>
+
+                    <p style="color: #fff; font-weight: 700; font-size: 1.2rem; margin: 0;">                            <div class="item-detalhes">
+
+                        R$ {{ "%.2f"|format(item.produto.preco * item.quantidade) }}                                <span class="item-tamanho">Tam: {{ item.tamanho or 'M' }}</span>
+
+                    </p>                                <span class="item-cor">Cor: {{ item.cor or 'Padrão' }}</span>
+
+                </div>                            </div>
+
+            </div>                        </div>
+
+            {% endfor %}                        
+
+                                    <div class="item-quantidade-container">
+
+            <div style="text-align: right; padding: 20px 0; border-top: 2px solid rgba(255,255,255,0.2);">                            <div class="quantidade-controls">
+
+                <h2 style="color: #fff; margin: 0; font-size: 2rem;">                                <button class="btn-quantidade" data-delta="-1">−</button>
+
+                    Total: <span style="color: var(--primary-color);">R$ {{ "%.2f"|format(total) }}</span>                                <span class="quantidade-display">{{ item.quantidade }}</span>
+
+                </h2>                                <button class="btn-quantidade" data-delta="1">+</button>
+
+            </div>                            </div>
+
+                                    </div>
+
+            <div style="display: flex; gap: 20px; justify-content: center; margin-top: 30px;">                        
+
+                <a href="{{ url_for('index') }}"                         <div class="item-subtotal">
+
+                   style="padding: 15px 30px; background: rgba(255,255,255,0.1); color: #fff; text-decoration: none; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); transition: all 0.3s ease;">                            <p class="subtotal-valor">{{ item.subtotal|currency }}</p>
+
+                    ← Continuar Comprando                            <button class="btn-remover">
+
+                </a>                                🗑️ Remover
+
+                                            </button>
+
+                <a href="{{ url_for('checkout') }}"                         </div>
+
+                   style="padding: 15px 30px; background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); color: #000; text-decoration: none; border-radius: 12px; font-weight: 600; transition: all 0.3s ease;">                    </div>
+
+                    Finalizar Compra →                {% endfor %}
+
+                </a>            </div>
+
+                            
+
+                <button onclick="limparCarrinho()"            <div class="carrinho-resumo">
+
+                        style="padding: 15px 30px; background: rgba(255,0,0,0.2); color: #ff4757; border: 1px solid rgba(255,0,0,0.5); border-radius: 12px; cursor: pointer; transition: all 0.3s ease;">                <div class="resumo-card">
+
+                    Limpar Carrinho                    <h3>📋 Resumo do Pedido</h3>
+
+                </button>                    
+
+            </div>                    <!-- Cupom de Desconto -->
+
+        </div>                    <div class="cupom-section">
+
+    {% else %}                        <h4>🎫 Cupom de Desconto</h4>
+
+        <div style="text-align: center; padding: 80px 20px; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.2);">                        <div class="cupom-input-group">
+
+            <div style="font-size: 4rem; margin-bottom: 20px; opacity: 0.5;">🛒</div>                            <input type="text" class="cupom-input" placeholder="Digite seu cupom" id="cupom-input">
+
+            <h2 style="color: #fff; margin-bottom: 15px;">Seu carrinho está vazio</h2>                            <button class="btn-cupom" onclick="aplicarCupom()">Aplicar</button>
+
+            <p style="color: rgba(255,255,255,0.7); margin-bottom: 30px;">                        </div>
+
+                Adicione produtos incríveis e volte aqui para finalizar sua compra!                    </div>
+
+            </p>                    
+
+            <a href="{{ url_for('index') }}"                     <div class="resumo-linha">
+
+               style="padding: 15px 30px; background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); color: #000; text-decoration: none; border-radius: 12px; font-weight: 600; display: inline-block;">                        <span>Subtotal ({{ itens|length }} {{ 'item' if itens|length == 1 else 'itens' }}):</span>
+
+                Ver Produtos                        <span>{{ total|currency }}</span>
+
+            </a>                    </div>
+
+        </div>                    <div class="resumo-linha">
+
+    {% endif %}                        <span>Frete:</span>
+
+</div>                        <span class="resumo-frete">GRÁTIS</span>
+
+                    </div>
+
+<script>                    <div class="resumo-linha" style="display: none;" id="desconto-linha">
+
+function alterarQuantidade(produtoId, tamanho, cor, delta) {                        <span>Desconto:</span>
+
+    fetch(`/carrinho/alterar-quantidade/${produtoId}`, {                        <span id="desconto-valor">R$ 0,00</span>
+
+        method: 'POST',                    </div>
+
+        headers: {                    
+
+            'Content-Type': 'application/json',                    <div class="resumo-total">
+
+        },                        <div class="resumo-linha">
+
+        body: JSON.stringify({                            <span>Total:</span>
+
+            tamanho: tamanho,                            <span id="total-final">{{ total|currency }}</span>
+
+            cor: cor,                        </div>
+
+            delta: delta                    </div>
+
+        })                    
+
+    })                    {% if session.user_id %}
+
+    .then(response => response.json())                        <a href="{{ url_for('checkout') }}" class="btn-checkout">
+
+    .then(data => {                            � Ir para a Entrega
+
+        if (data.success) {                        </a>
+
+            location.reload();                    {% else %}
+
+        } else {                        <div class="login-necessario">
+
+            alert('Erro ao alterar quantidade');                            <p>Faça login para finalizar a compra</p>
+
+        }                            <a href="{{ url_for('login') }}" class="btn-login-checkout">
+
+    })                                🔐 Fazer Login
+
+    .catch(error => {                            </a>
+
+        console.error('Erro:', error);                            <p style="font-size: 0.9rem; margin-top: 10px; color: #666;">
+
+        alert('Erro ao alterar quantidade');                                Não tem conta? <a href="{{ url_for('cadastro') }}" style="color: #e67e22; text-decoration: none;">Cadastre-se aqui</a>
+
+    });                            </p>
+
+}                        </div>
+
+                    {% endif %}
+
+function removerItem(produtoId, tamanho, cor) {                    
+
+    if (confirm('Remover este item do carrinho?')) {                    <button class="btn-limpar" onclick="limparCarrinho()">
+
+        fetch(`/carrinho/remover/${produtoId}`, {                        🗑️ Limpar Carrinho
+
+            method: 'POST',                    </button>
+
+            headers: {                </div>
+
+                'Content-Type': 'application/json',            </div>
+
+            },        </div>
+
+            body: JSON.stringify({    {% else %}
+
+                tamanho: tamanho,        <div class="carrinho-vazio">
+
+                cor: cor            <h2>😔 Sua sacola está vazia</h2>
+
+            })            <p>Que tal adicionar alguns produtos incríveis?</p>
+
+        })            <a href="{{ url_for('index') }}" class="btn-comprar">🛍️ Ver Produtos</a>
+
+        .then(response => response.json())        </div>
+
+        .then(data => {    {% endif %}
+
+            if (data.success) {</div>
+
+                location.reload();
+
+            } else {<script>
+
+                alert('Erro ao remover item');// Atualiza quantidade via endpoint, considerando variações
+
+            }async function updateQuantity(produtoId, tamanho, cor, delta) {
+
+        })    try {
+
+        .catch(error => {        const params = new URLSearchParams({ delta: String(delta), tamanho: tamanho || 'M', cor: cor || 'Padrão', ajax: '1' });
+
+            console.error('Erro:', error);        const resp = await fetch(`/carrinho/alterar-quantidade/${produtoId}?${params.toString()}`, { headers: { 'Content-Type': 'application/json' } });
+
+            alert('Erro ao remover item');        if (!resp.ok) throw new Error('Falha ao atualizar quantidade');
+
+        });        // Recarrega a página para refletir totais e itens
+
+    }        location.reload();
+
+}    } catch (e) {
+
+        alert('Erro ao atualizar quantidade.');
+
+function limparCarrinho() {        console.error(e);
+
+    if (confirm('Limpar todo o carrinho?')) {    }
+
+        window.location.href = '{{ url_for("carrinho_limpar") }}';}
+
+    }
+
+}// Remove item considerando variações
+
+</script>async function removeItem(produtoId, tamanho, cor) {
+
+{% endblock %}    if (!confirm('Tem certeza que deseja remover este item?')) return;
+    try {
+        const params = new URLSearchParams({ tamanho: tamanho || 'M', cor: cor || 'Padrão', ajax: '1' });
+        const resp = await fetch(`/carrinho/remover/${produtoId}?${params.toString()}`, { headers: { 'Content-Type': 'application/json' } });
+        if (!resp.ok) throw new Error('Falha ao remover item');
+        location.reload();
+    } catch (e) {
+        alert('Erro ao remover item.');
+        console.error(e);
     }
 }
 
@@ -211,11 +366,8 @@ function aplicarCupom() {
     }
 }
 
-// Função para atualizar subtotal do item
-function updateItemSubtotal(produtoId, quantidade) {
-    // Esta função seria implementada com a lógica real do seu backend
-    console.log(`Atualizando quantidade do produto ${produtoId} para ${quantidade}`);
-}
+// Mantido apenas para compatibilidade visual, não usado pois recarregamos a página
+function updateItemSubtotal() {}
 
 // Animações na entrada da página
 document.addEventListener('DOMContentLoaded', function() {
@@ -242,6 +394,23 @@ document.addEventListener('DOMContentLoaded', function() {
             resumo.style.transform = 'translateX(0)';
         }, 300);
     }
+
+    // Adiciona eventos aos botões de quantidade e remover sem usar inline handlers
+    document.querySelectorAll('.item-carrinho').forEach((card) => {
+        const produtoId = card.getAttribute('data-produto-id');
+        const tamanho = card.getAttribute('data-tamanho') || 'M';
+        const cor = card.getAttribute('data-cor') || 'Padrão';
+
+        card.querySelectorAll('.btn-quantidade').forEach((btn) => {
+            const delta = parseInt(btn.getAttribute('data-delta') || '0');
+            btn.addEventListener('click', () => updateQuantity(produtoId, tamanho, cor, delta));
+        });
+
+        const btnRemover = card.querySelector('.btn-remover');
+        if (btnRemover) {
+            btnRemover.addEventListener('click', () => removeItem(produtoId, tamanho, cor));
+        }
+    });
 });
 
 // Função de fallback para imagens

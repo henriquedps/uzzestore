@@ -3,12 +3,11 @@ import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from decimal import Decimal
 from werkzeug.security import generate_password_hash, check_password_hash
-import os
 import json
 from datetime import datetime
 import uuid
 import click
-from werkzeug.security import generate_password_hash
+import urllib.parse
 from dotenv import load_dotenv
 
 try:
@@ -25,14 +24,14 @@ db_dir = os.path.dirname(DB_PATH)
 if db_dir:
     os.makedirs(db_dir, exist_ok=True)
 
+# Configurações do WhatsApp da loja
+WHATSAPP_LOJA = "5566996979066"  # Número padrão - altere aqui ou use variável de ambiente
+WHATSAPP_NUMERO = os.getenv('WHATSAPP_NUMERO', WHATSAPP_LOJA)
+
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
-
-def _conn_rw():
-    # usa sua função existente
-    return get_db_connection()
 
 def ensure_is_admin_column(conn):
     cols = [r['name'] for r in conn.execute("PRAGMA table_info(usuarios)").fetchall()]
@@ -59,8 +58,35 @@ def ensure_tamanhos_column(conn):
         conn.commit()
         print("✅ Coluna 'tamanhos' adicionada à tabela produtos")
 
+def ensure_estoque_column(conn):
+    """Garante que a coluna estoque existe na tabela produtos"""
+    cols = [r['name'] for r in conn.execute("PRAGMA table_info(produtos)").fetchall()]
+    if 'estoque' not in cols:
+        conn.execute("ALTER TABLE produtos ADD COLUMN estoque INTEGER DEFAULT 0")
+        conn.commit()
+        print("✅ Coluna 'estoque' adicionada à tabela produtos")
+
+def ensure_imagens_adicionais_column(conn):
+    """Garante que a coluna imagens_adicionais existe na tabela produtos"""
+    cols = [r['name'] for r in conn.execute("PRAGMA table_info(produtos)").fetchall()]
+    if 'imagens_adicionais' not in cols:
+        conn.execute("ALTER TABLE produtos ADD COLUMN imagens_adicionais TEXT")
+        conn.commit()
+        print("✅ Coluna 'imagens_adicionais' adicionada à tabela produtos")
+
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'uzzer-store-secret-key-2024')
+
+# 🧹 Middleware para FORÇAR limpeza de cache
+@app.after_request
+def add_no_cache_headers(response):
+    """Força o navegador a não fazer cache das páginas"""
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    response.headers['Last-Modified'] = datetime.now().strftime('%a, %d %b %Y %H:%M:%S GMT')
+    response.headers['ETag'] = str(uuid.uuid4())
+    return response
 
 # Configurações para produção
 if os.environ.get('VERCEL'):
@@ -79,6 +105,75 @@ def currency_filter(value):
     except:
         return value
 
+def gerar_mensagem_whatsapp(pedido, itens):
+    """Gera mensagem formatada para WhatsApp com dados do pedido"""
+    try:
+        # Cabeçalho da mensagem
+        mensagem = f"🛒 *NOVO PEDIDO - UZZER STORE*\n\n"
+        mensagem += f"📋 *Pedido:* #{pedido['id']}\n"
+        mensagem += f"📅 *Data:* {pedido['created_at']}\n\n"
+        
+        # Dados do cliente
+        mensagem += f"👤 *DADOS DO CLIENTE*\n"
+        mensagem += f"Nome: {pedido['nome_cliente']}\n"
+        mensagem += f"Email: {pedido['email_cliente']}\n"
+        if pedido['telefone']:
+            mensagem += f"Telefone: {pedido['telefone']}\n"
+        mensagem += "\n"
+        
+        # Endereço de entrega
+        mensagem += f"📍 *ENDEREÇO DE ENTREGA*\n"
+        mensagem += f"{pedido['endereco']}, {pedido['numero']}\n"
+        if pedido['complemento']:
+            mensagem += f"Complemento: {pedido['complemento']}\n"
+        mensagem += f"{pedido['bairro']}, {pedido['cidade']} - {pedido['estado']}\n"
+        mensagem += f"CEP: {pedido['cep']}\n\n"
+        
+        # Itens do pedido
+        mensagem += f"🛍️ *ITENS DO PEDIDO*\n"
+        for item in itens:
+            mensagem += f"• {item['nome']}\n"
+            mensagem += f"  Qtd: {item['quantidade']} | "
+            if item.get('tamanho'):
+                mensagem += f"Tamanho: {item['tamanho']} | "
+            if item.get('cor'):
+                mensagem += f"Cor: {item['cor']}\n"
+            mensagem += f"  Valor: {currency_filter(item['preco'])} cada\n"
+            mensagem += f"  Subtotal: {currency_filter(item['subtotal'])}\n\n"
+        
+        # Pagamento e total
+        mensagem += f"💳 *PAGAMENTO*\n"
+        mensagem += f"Método: {pedido['metodo_pagamento']}\n"
+        mensagem += f"*Total: {currency_filter(pedido['total'])}*\n\n"
+        
+        mensagem += f"✅ Pedido confirmado e aguardando processamento!"
+        
+        return mensagem
+    except Exception as e:
+        print(f"Erro ao gerar mensagem WhatsApp: {e}")
+        return f"Novo pedido #{pedido.get('id', '?')} - {pedido.get('nome_cliente', 'Cliente')} - Total: {currency_filter(pedido.get('total', 0))}"
+
+def gerar_url_whatsapp(numero_whatsapp, mensagem):
+    """Gera URL do WhatsApp com mensagem pré-formatada"""
+    try:
+        # Remove caracteres especiais do número
+        numero = ''.join(filter(str.isdigit, numero_whatsapp))
+        
+        # Adiciona código do país se não tiver
+        if not numero.startswith('55'):
+            numero = '55' + numero
+        
+        # Codifica a mensagem para URL
+        mensagem_codificada = urllib.parse.quote(mensagem)
+        
+        # Gera URL do WhatsApp
+        url = f"https://wa.me/{numero}?text={mensagem_codificada}"
+        
+        return url
+    except Exception as e:
+        print(f"Erro ao gerar URL WhatsApp: {e}")
+        return None
+
 @app.template_filter('from_json')
 def from_json_filter(value):
     try:
@@ -89,10 +184,65 @@ def from_json_filter(value):
     except (json.JSONDecodeError, TypeError):
         return []
 
+def safe_parse_json(value, default=None):
+    """Função helper para parsing seguro de JSON"""
+    try:
+        if isinstance(value, str) and value.strip():
+            return json.loads(value)
+        return default or []
+    except (json.JSONDecodeError, TypeError, AttributeError):
+        return default or []
+
+def get_imagens_adicionais(produto):
+    """Extrai imagens adicionais de um produto de forma segura"""
+    if not produto or not produto.get('imagens_adicionais'):
+        return []
+    return safe_parse_json(produto['imagens_adicionais'])
+
+def validate_form_field(form, field_name, max_length=255, required=True):
+    """Valida campo de formulário de forma segura"""
+    try:
+        value = form.get(field_name, '').strip()
+        if required and not value:
+            raise ValueError(f'Campo {field_name} é obrigatório')
+        if len(value) > max_length:
+            raise ValueError(f'Campo {field_name} muito longo (máximo {max_length} caracteres)')
+        return value
+    except Exception:
+        if required:
+            raise ValueError(f'Campo {field_name} inválido')
+        return ''
+
+def validate_numeric_field(form, field_name, min_val=0, max_val=None, required=True):
+    """Valida campo numérico de forma segura"""
+    try:
+        value_str = form.get(field_name, '').strip()
+        if not value_str and not required:
+            return 0
+        value = float(value_str)
+        if value < min_val:
+            raise ValueError(f'Campo {field_name} deve ser maior que {min_val}')
+        if max_val is not None and value > max_val:
+            raise ValueError(f'Campo {field_name} deve ser menor que {max_val}')
+        return value
+    except (ValueError, TypeError):
+        if required:
+            raise ValueError(f'Campo {field_name} deve ser um número válido')
+        return 0
+
 def init_db():
     """Inicializar banco de dados"""
     try:
         conn = get_db_connection()
+        
+        # Verificar se já foi inicializado (tabela produtos existe e tem dados)
+        try:
+            result = conn.execute('SELECT COUNT(*) FROM produtos').fetchone()
+            if result and result[0] > 0:
+                conn.close()
+                return  # Já inicializado
+        except:
+            pass  # Tabela não existe, continuar inicialização
 
         # Tabelas
         conn.execute('''
@@ -116,11 +266,38 @@ def init_db():
             )
         ''')
 
+        # Tabela de pedidos
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS pedidos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                usuario_id INTEGER,
+                nome_cliente TEXT NOT NULL,
+                email_cliente TEXT NOT NULL,
+                telefone TEXT,
+                cep TEXT NOT NULL,
+                endereco TEXT NOT NULL,
+                numero TEXT NOT NULL,
+                complemento TEXT,
+                bairro TEXT NOT NULL,
+                cidade TEXT NOT NULL,
+                estado TEXT NOT NULL,
+                metodo_pagamento TEXT NOT NULL,
+                total REAL NOT NULL,
+                status TEXT DEFAULT 'Pendente',
+                itens TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
+            )
+        ''')
+
         # Garante coluna is_admin (se faltar, cria)
         ensure_is_admin_column(conn)
         
         # Garante coluna tamanhos (se faltar, cria)
         ensure_tamanhos_column(conn)
+        
+        # Garante coluna estoque (se faltar, cria)
+        ensure_estoque_column(conn)
 
         # Admin padrão (com is_admin=1)
         admin_exists = conn.execute('SELECT COUNT(*) FROM usuarios WHERE email = ?', ('admin@uzzerstore.com',)).fetchone()[0]
@@ -141,33 +318,40 @@ def init_db():
         print(f"❌ Erro ao inicializar banco: {e}")
 
 def is_admin():
+    """Verifica se usuário atual é administrador (otimizado)"""
     if 'user_id' not in session:
         return False
+    
+    # Cache na sessão para evitar consultas repetidas
+    if 'is_admin_cached' in session:
+        return session['is_admin_cached']
+    
     try:
         conn = get_db_connection()
-        user = conn.execute('SELECT * FROM usuarios WHERE id = ?', (session['user_id'],)).fetchone()
-
-        # verifica se a coluna existe
-        cols = [r['name'] for r in conn.execute("PRAGMA table_info(usuarios)").fetchall()]
+        user = conn.execute('SELECT id, email, is_admin FROM usuarios WHERE id = ?', 
+                           (session['user_id'],)).fetchone()
         conn.close()
 
-        db_admin = False
-        if user:
-            if 'is_admin' in cols:
-                try:
-                    db_admin = bool(user['is_admin'])
-                except Exception:
-                    db_admin = False
+        if not user:
+            session['is_admin_cached'] = False
+            return False
 
-            # Fallbacks antigos
-            is_first_user = user['id'] == 1
-            is_admin_email = user['email'] in ['admin@uzzerstore.com', 'administrador@uzzerstore.com']
-            is_session_admin = session.get('is_admin', False)
-
-            return db_admin or is_first_user or is_admin_email or is_session_admin
+        # Verificação unificada de admin
+        is_admin_user = (
+            bool(user.get('is_admin', False)) or  # Coluna is_admin
+            user['id'] == 1 or  # Primeiro usuário
+            user['email'] in ['admin@uzzerstore.com', 'administrador@uzzerstore.com']  # Emails admin
+        )
+        
+        # Cache o resultado na sessão
+        session['is_admin_cached'] = is_admin_user
+        session.permanent = True
+        
+        return is_admin_user
+        
     except Exception as e:
         print(f"Erro ao verificar admin: {e}")
-    return False
+        return False
 
 # ROTAS DO CARRINHO
 @app.route('/carrinho')
@@ -192,6 +376,8 @@ def carrinho():
                 itens_detalhados.append({
                     'produto': produto,
                     'quantidade': item['quantidade'],
+                    'tamanho': item.get('tamanho', 'M'),
+                    'cor': item.get('cor', 'Padrão'),
                     'subtotal': item_total
                 })
                 total += item_total
@@ -203,6 +389,22 @@ def carrinho():
     except Exception as e:
         print(f"Erro no carrinho: {e}")
         return render_template('carrinho.html', itens=[], total=0)
+
+# 🧹 Rota para limpeza forçada de cache
+@app.route('/limpar-cache')
+def limpar_cache():
+    """Força limpeza completa de cache"""
+    from flask import jsonify
+    return jsonify({
+        'status': 'success',
+        'message': 'Cache limpo com sucesso!',
+        'timestamp': datetime.now().isoformat(),
+        'cache_headers': {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        }
+    })
 
 # API para sacola lateral
 @app.route('/api/carrinho')
@@ -367,7 +569,14 @@ def carrinho_alterar_quantidade(produto_id):
     """Altera a quantidade de um item específico no carrinho"""
     tamanho = request.args.get('tamanho')
     cor = request.args.get('cor')
-    delta = int(request.args.get('delta', 0))  # +1 ou -1
+    
+    # Validação segura do delta
+    try:
+        delta = int(request.args.get('delta', 0))
+        # Limitar delta a valores seguros
+        delta = max(-10, min(10, delta))
+    except (ValueError, TypeError):
+        delta = 0
     
     if 'carrinho' in session and delta != 0:
         carrinho = session['carrinho']
@@ -415,12 +624,217 @@ def carrinho_limpar():
     
     return redirect(url_for('carrinho'))
 
+# ROTAS DE CHECKOUT
+@app.route('/checkout')
+def checkout():
+    # Verificar se há itens no carrinho
+    carrinho_itens = session.get('carrinho', [])
+    
+    if not carrinho_itens:
+        flash('Seu carrinho está vazio! Adicione produtos antes de finalizar a compra.', 'warning')
+        return redirect(url_for('index'))
+    
+    try:
+        conn = get_db_connection()
+        itens_detalhados = []
+        total = 0
+        
+        for item in carrinho_itens:
+            produto = conn.execute('SELECT * FROM produtos WHERE id = ?', (item['produto_id'],)).fetchone()
+            if produto:
+                item_total = float(produto['preco']) * item['quantidade']
+                itens_detalhados.append({
+                    'produto': produto,
+                    'quantidade': item['quantidade'],
+                    'tamanho': item.get('tamanho', 'M'),
+                    'cor': item.get('cor', 'Padrão'),
+                    'subtotal': item_total
+                })
+                total += item_total
+        
+        conn.close()
+        
+        # Dados do usuário logado (se houver)
+        user_data = {}
+        if 'user_id' in session:
+            conn = get_db_connection()
+            user = conn.execute('SELECT * FROM usuarios WHERE id = ?', (session['user_id'],)).fetchone()
+            if user:
+                user_data = {
+                    'nome': user['nome'],
+                    'email': user['email']
+                }
+            conn.close()
+        
+        return render_template('checkout.html', 
+                             itens=itens_detalhados, 
+                             total=total,
+                             user_data=user_data)
+    except Exception as e:
+        print(f"Erro no checkout: {e}")
+        flash('Erro ao carregar página de checkout!', 'error')
+        return redirect(url_for('carrinho'))
+
+@app.route('/processar-pedido', methods=['POST'])
+def processar_pedido():
+    try:
+        # Verificar se há itens no carrinho
+        carrinho_itens = session.get('carrinho', [])
+        
+        if not carrinho_itens:
+            flash('Seu carrinho está vazio!', 'error')
+            return redirect(url_for('index'))
+        
+        # Validação segura dos dados do formulário
+        try:
+            nome_cliente = validate_form_field(request.form, 'nome', max_length=100)
+            email_cliente = validate_form_field(request.form, 'email', max_length=100)
+            telefone = validate_form_field(request.form, 'telefone', max_length=20, required=False)
+            cep = validate_form_field(request.form, 'cep', max_length=10)
+            endereco = validate_form_field(request.form, 'endereco', max_length=200)
+            numero = validate_form_field(request.form, 'numero', max_length=10)
+            complemento = validate_form_field(request.form, 'complemento', max_length=100, required=False)
+            bairro = validate_form_field(request.form, 'bairro', max_length=100)
+            cidade = validate_form_field(request.form, 'cidade', max_length=100)
+            estado = validate_form_field(request.form, 'estado', max_length=2)
+            metodo_pagamento = validate_form_field(request.form, 'metodo_pagamento', max_length=50)
+            
+            # Validação de email básica
+            if '@' not in email_cliente or '.' not in email_cliente:
+                raise ValueError('Email inválido')
+                
+        except ValueError as e:
+            flash(f'Erro nos dados: {str(e)}', 'error')
+            return redirect(url_for('checkout'))
+        
+        # Calcular total e preparar itens
+        conn = get_db_connection()
+        itens_pedido = []
+        total = 0
+        
+        for item in carrinho_itens:
+            produto = conn.execute('SELECT * FROM produtos WHERE id = ?', (item['produto_id'],)).fetchone()
+            if produto:
+                item_total = float(produto['preco']) * item['quantidade']
+                itens_pedido.append({
+                    'produto_id': produto['id'],
+                    'nome': produto['nome'],
+                    'preco': float(produto['preco']),
+                    'quantidade': item['quantidade'],
+                    'tamanho': item.get('tamanho', 'M'),
+                    'cor': item.get('cor', 'Padrão'),
+                    'subtotal': item_total
+                })
+                total += item_total
+        
+        # Salvar pedido no banco
+        usuario_id = session.get('user_id')
+        itens_json = json.dumps(itens_pedido)
+        
+        cursor = conn.execute('''
+            INSERT INTO pedidos (
+                usuario_id, nome_cliente, email_cliente, telefone,
+                cep, endereco, numero, complemento, bairro, cidade, estado,
+                metodo_pagamento, total, itens
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            usuario_id, nome_cliente, email_cliente, telefone,
+            cep, endereco, numero, complemento, bairro, cidade, estado,
+            metodo_pagamento, total, itens_json
+        ))
+        
+        pedido_id = cursor.lastrowid
+        conn.commit()
+        
+        # Buscar o pedido criado para gerar mensagem WhatsApp
+        pedido = conn.execute('SELECT * FROM pedidos WHERE id = ?', (pedido_id,)).fetchone()
+        conn.close()
+        
+        # Limpar carrinho
+        session['carrinho'] = []
+        session.permanent = True
+        
+        # Gerar mensagem e URL do WhatsApp
+        mensagem_whatsapp = gerar_mensagem_whatsapp(pedido, itens_pedido)
+        url_whatsapp = gerar_url_whatsapp(WHATSAPP_NUMERO, mensagem_whatsapp)
+        
+        # Salvar URL do WhatsApp na sessão para usar na página de sucesso
+        session['whatsapp_url'] = url_whatsapp
+        session['pedido_mensagem'] = mensagem_whatsapp
+        
+        flash('Pedido realizado com sucesso!', 'success')
+        return redirect(url_for('pedido_sucesso', pedido_id=pedido_id))
+    
+    except Exception as e:
+        print(f"Erro ao processar pedido: {e}")
+        flash('Erro ao processar pedido. Tente novamente.', 'error')
+        return redirect(url_for('checkout'))
+
+@app.route('/pedido-sucesso/<int:pedido_id>')
+def pedido_sucesso(pedido_id):
+    try:
+        conn = get_db_connection()
+        pedido = conn.execute('SELECT * FROM pedidos WHERE id = ?', (pedido_id,)).fetchone()
+        conn.close()
+        
+        if not pedido:
+            flash('Pedido não encontrado!', 'error')
+            return redirect(url_for('index'))
+        
+        # Parse dos itens do pedido
+        itens = json.loads(pedido['itens'])
+        
+        # Obter dados do WhatsApp da sessão
+        whatsapp_url = session.get('whatsapp_url')
+        pedido_mensagem = session.get('pedido_mensagem')
+        
+        # Limpar dados da sessão após usar
+        session.pop('whatsapp_url', None)
+        session.pop('pedido_mensagem', None)
+        
+        return render_template('pedido_sucesso.html', 
+                             pedido=pedido, 
+                             itens_pedido=itens,
+                             whatsapp_url=whatsapp_url,
+                             pedido_mensagem=pedido_mensagem)
+    
+    except Exception as e:
+        print(f"Erro ao carregar pedido: {e}")
+        flash('Erro ao carregar detalhes do pedido!', 'error')
+        return redirect(url_for('index'))
+
+@app.route('/meus-pedidos')
+def meus_pedidos():
+    if 'user_id' not in session:
+        flash('Faça login para ver seus pedidos!', 'warning')
+        return redirect(url_for('login'))
+    
+    try:
+        conn = get_db_connection()
+        pedidos = conn.execute(
+            'SELECT * FROM pedidos WHERE usuario_id = ? ORDER BY created_at DESC',
+            (session['user_id'],)
+        ).fetchall()
+        conn.close()
+        
+        # Parse dos itens de cada pedido
+        pedidos_com_itens = []
+        for pedido in pedidos:
+            pedido_dict = dict(pedido)
+            pedido_dict['itens'] = json.loads(pedido['itens'])
+            pedidos_com_itens.append(pedido_dict)
+        
+        return render_template('pedidos_usuario.html', pedidos=pedidos_com_itens)
+    
+    except Exception as e:
+        print(f"Erro ao carregar pedidos: {e}")
+        flash('Erro ao carregar seus pedidos!', 'error')
+        return redirect(url_for('index'))
+
 # ROTA PRINCIPAL
 @app.route('/')
 def index():
     try:
-        init_db()  # Garantir que o DB existe
-        
         categoria_selecionada = request.args.get('categoria')
         
         conn = get_db_connection()
@@ -453,12 +867,42 @@ def index():
         </style>
         """
 
+# ROTA PRODUTO INDIVIDUAL
+@app.route('/produto/<int:produto_id>')
+def produto_individual(produto_id):
+    try:
+        conn = get_db_connection()
+        produto = conn.execute('SELECT * FROM produtos WHERE id = ?', (produto_id,)).fetchone()
+        
+        if not produto:
+            conn.close()
+            flash('Produto não encontrado!', 'error')
+            return redirect(url_for('index'))
+        
+        # Processar imagens adicionais
+        imagens_adicionais = get_imagens_adicionais(produto)
+        
+        # Buscar produtos relacionados da mesma categoria
+        produtos_relacionados = conn.execute(
+            'SELECT * FROM produtos WHERE categoria = ? AND id != ? ORDER BY RANDOM() LIMIT 4',
+            (produto['categoria'], produto_id)
+        ).fetchall()
+        
+        conn.close()
+        
+        return render_template('produto_individual.html', 
+                             produto=produto,
+                             imagens_adicionais=imagens_adicionais,
+                             produtos_relacionados=produtos_relacionados)
+    except Exception as e:
+        print(f"Erro ao carregar produto: {e}")
+        flash('Erro ao carregar produto!', 'error')
+        return redirect(url_for('index'))
+
 # ROTA MOBILE
 @app.route('/mobile')
 def mobile_index():
     try:
-        init_db()  # Garantir que o DB existe
-        
         categoria_selecionada = request.args.get('categoria')
         
         conn = get_db_connection()
@@ -475,10 +919,11 @@ def mobile_index():
         
         conn.close()
         
-        return render_template('mobile_index.html', 
+        return render_template('index.html', 
                              produtos=produtos, 
                              categorias=categorias,
-                             categoria_selecionada=categoria_selecionada)
+                             categoria_selecionada=categoria_selecionada,
+                             mobile_view=True)
     except Exception as e:
         print(f"Erro na rota mobile: {e}")
         return f"""
@@ -490,34 +935,6 @@ def mobile_index():
             h1 {{ color: #00d4aa; }}
         </style>
         """
-
-# ROTA DO PRODUTO INDIVIDUAL
-@app.route('/produto/<int:produto_id>')
-def produto_detalhes(produto_id):
-    try:
-        conn = get_db_connection()
-        produto = conn.execute('SELECT * FROM produtos WHERE id = ?', (produto_id,)).fetchone()
-        
-        if not produto:
-            conn.close()
-            flash('Produto não encontrado!', 'error')
-            return redirect(url_for('index'))
-        
-        # Buscar produtos relacionados da mesma categoria
-        produtos_relacionados = conn.execute(
-            'SELECT * FROM produtos WHERE categoria = ? AND id != ? ORDER BY RANDOM() LIMIT 4',
-            (produto['categoria'], produto_id)
-        ).fetchall()
-        
-        conn.close()
-        
-        return render_template('produto_detalhes.html', 
-                             produto=produto, 
-                             produtos_relacionados=produtos_relacionados)
-    except Exception as e:
-        print(f"Erro na página do produto: {e}")
-        flash('Erro ao carregar produto!', 'error')
-        return redirect(url_for('index'))
 
 # PWA Routes
 @app.route('/sw.js')
@@ -679,21 +1096,33 @@ def admin_novo_produto():
         preco = float(request.form['preco'])
         categoria = request.form['categoria']
         descricao = request.form['descricao']
-        imagem = request.form['imagem']
+        imagem = request.form['imagem']  # Imagem principal
+        estoque = int(request.form.get('estoque', 0))
         
         # Processar tamanhos selecionados
         tamanhos_selecionados = request.form.getlist('tamanhos[]')
         tamanhos_str = ','.join(tamanhos_selecionados) if tamanhos_selecionados else ''
         
+        # Processar imagens adicionais
+        imagens_adicionais = []
+        for i in range(1, 10):  # Imagens adicionais de 1 a 9 (total 10 com a principal)
+            imagem_adicional = request.form.get(f'imagem_adicional_{i}')
+            if imagem_adicional and imagem_adicional.strip():
+                imagens_adicionais.append(imagem_adicional.strip())
+        
+        imagens_adicionais_str = ','.join(imagens_adicionais) if imagens_adicionais else ''
+        
         try:
             conn = get_db_connection()
-            # Garantir que a coluna tamanhos existe
+            # Garantir que as colunas existem
             ensure_tamanhos_column(conn)
+            ensure_estoque_column(conn)
+            ensure_imagens_adicionais_column(conn)
             
             conn.execute('''
-                INSERT INTO produtos (nome, preco, categoria, descricao, imagem, tamanhos)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', (nome, preco, categoria, descricao, imagem, tamanhos_str))
+                INSERT INTO produtos (nome, preco, categoria, descricao, imagem, imagens_adicionais, tamanhos, estoque)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (nome, preco, categoria, descricao, imagem, imagens_adicionais_json, tamanhos_str, estoque))
             conn.commit()
             conn.close()
             
@@ -722,21 +1151,33 @@ def admin_editar_produto(produto_id):
         preco = float(request.form['preco'])
         categoria = request.form['categoria']
         descricao = request.form['descricao']
-        imagem = request.form['imagem']
+        imagem = request.form['imagem']  # Imagem principal
+        estoque = int(request.form.get('estoque', 0))
         
         # Processar tamanhos selecionados
         tamanhos_selecionados = request.form.getlist('tamanhos[]')
         tamanhos_str = ','.join(tamanhos_selecionados) if tamanhos_selecionados else ''
         
+        # Processar imagens adicionais
+        imagens_adicionais = []
+        for i in range(1, 10):  # Imagens adicionais de 1 a 9 (total 10 com a principal)
+            imagem_adicional = request.form.get(f'imagem_adicional_{i}')
+            if imagem_adicional and imagem_adicional.strip():
+                imagens_adicionais.append(imagem_adicional.strip())
+        
+        imagens_adicionais_str = ','.join(imagens_adicionais) if imagens_adicionais else ''
+        
         try:
-            # Garantir que a coluna tamanhos existe
+            # Garantir que as colunas existem
             ensure_tamanhos_column(conn)
+            ensure_estoque_column(conn)
+            ensure_imagens_adicionais_column(conn)
             
             conn.execute('''
                 UPDATE produtos 
-                SET nome = ?, preco = ?, categoria = ?, descricao = ?, imagem = ?, tamanhos = ?
+                SET nome = ?, preco = ?, categoria = ?, descricao = ?, imagem = ?, imagens_adicionais = ?, tamanhos = ?, estoque = ?
                 WHERE id = ?
-            ''', (nome, preco, categoria, descricao, imagem, tamanhos_str, produto_id))
+            ''', (nome, preco, categoria, descricao, imagem, imagens_adicionais_str, tamanhos_str, estoque, produto_id))
             conn.commit()
             conn.close()
             
@@ -881,11 +1322,11 @@ def upgrade_db():
 # O app será executado automaticamente
 print("🚀 UzzerStore inicializado para produção!")
 
-# Inicializar DB na primeira execução
-init_db()
-
+# Inicializar DB apenas uma vez (evita duplicação no debug mode)
+import os
+if not os.environ.get('WERKZEUG_RUN_MAIN'):
+    init_db()
 
 if __name__ == "__main__":
-    init_db()
-    app.run(debug=True, host='192.168.100.24')
+    app.run(debug=True)
 

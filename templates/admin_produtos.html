@@ -2,8 +2,273 @@
 
 {% block title %}Gerenciar Produtos - Admin{% endblock %}
 
-{% block content %}
+{% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<style>
+/* CSS Backup para garantir que o admin tenha estilo */
+.admin-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    background: #f8fafc;
+    min-height: 100vh;
+}
+
+.admin-header {
+    background: linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%);
+    padding: 30px 40px;
+    border-radius: 16px;
+    margin-bottom: 40px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-header h1 {
+    color: white;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.admin-nav {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.admin-nav-btn {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    padding: 12px 24px;
+    text-decoration: none;
+    border-radius: 25px;
+    font-weight: 500;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.admin-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.admin-nav-btn.primary {
+    background: #f59e0b;
+    border-color: #f59e0b;
+}
+
+.admin-nav-btn.primary:hover {
+    background: #d4af37;
+    border-color: #d4af37;
+}
+
+.products-table-container {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+}
+
+.products-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.products-table thead {
+    background: linear-gradient(135deg, #7c3aed, #06b6d4);
+}
+
+.products-table th {
+    padding: 20px 15px;
+    text-align: left;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.products-table tbody tr {
+    border-bottom: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.products-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.products-table td {
+    padding: 20px 15px;
+    vertical-align: middle;
+}
+
+.product-img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.product-img-placeholder {
+    width: 70px;
+    height: 70px;
+    background: #f8fafc;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #9ca3af;
+}
+
+.product-name {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 1rem;
+}
+
+.product-price {
+    font-weight: 700;
+    color: #f59e0b;
+    font-size: 1.1rem;
+}
+
+.product-category {
+    background: #f8fafc;
+    color: #64748b;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.btn-action {
+    padding: 10px 16px;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-edit {
+    background: #06b6d4;
+    color: white;
+}
+
+.btn-edit:hover {
+    background: #0891b2;
+    transform: translateY(-2px);
+}
+
+.btn-delete {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 80px 40px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.empty-state .empty-icon {
+    font-size: 4rem;
+    color: #9ca3af;
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    color: #1e293b;
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+}
+
+.empty-state p {
+    color: #64748b;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+}
+
+.btn-primary-large {
+    background: linear-gradient(135deg, #f59e0b, #d4af37);
+    color: white;
+    padding: 18px 35px;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+}
+
+.btn-primary-large:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(245, 158, 11, 0.4);
+}
+
+@media (max-width: 768px) {
+    .admin-container {
+        padding: 20px 15px;
+    }
+    
+    .admin-header {
+        padding: 25px 20px;
+        text-align: center;
+    }
+    
+    .admin-header h1 {
+        font-size: 2rem;
+        justify-content: center;
+    }
+    
+    .admin-nav {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .products-table-container {
+        overflow-x: auto;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
 
 <div class="admin-container">
     <div class="admin-header">
@@ -20,6 +285,10 @@
                 <i class="fas fa-plus"></i>
                 Novo Produto
             </a>
+            <button id="toggleEstoque" class="admin-nav-btn" onclick="toggleProdutosSemEstoque()">
+                <i class="fas fa-eye-slash"></i>
+                <span id="toggleText">Ocultar Sem Estoque</span>
+            </button>
             <a href="{{ url_for('logout') }}" class="admin-nav-btn">
                 <i class="fas fa-sign-out-alt"></i>
                 Sair
@@ -47,6 +316,10 @@
                         <th>
                             <i class="fas fa-folder"></i>
                             Categoria
+                        </th>
+                        <th>
+                            <i class="fas fa-boxes"></i>
+                            Estoque
                         </th>
                         <th style="text-align: center;">
                             <i class="fas fa-cogs"></i>
@@ -79,6 +352,17 @@
                         </td>
                         <td>
                             <span class="product-category">{{ produto.categoria or 'Sem categoria' }}</span>
+                        </td>
+                        <td>
+                            <div class="estoque-container" style="display: flex; align-items: center; gap: 8px;">
+                                <span class="product-estoque {{ 'sem-estoque' if (produto.estoque or 0) == 0 else 'com-estoque' }}" 
+                                      data-estoque="{{ produto.estoque or 0 }}">
+                                    {{ produto.estoque or 0 }}
+                                </span>
+                                {% if (produto.estoque or 0) == 0 %}
+                                    <i class="fas fa-exclamation-triangle" style="color: #e74c3c;" title="Produto sem estoque"></i>
+                                {% endif %}
+                            </div>
                         </td>
                         <td>
                             <div class="action-buttons">
@@ -114,4 +398,151 @@
         </div>
     {% endif %}
 </div>
+
+<style>
+/* Estilos para indicadores de estoque */
+.estoque-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.product-estoque {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.product-estoque.sem-estoque {
+    background: #ffeaea;
+    color: #e74c3c;
+    border: 1px solid #f5c6cb;
+}
+
+.product-estoque.com-estoque {
+    background: #eafaf1;
+    color: #27ae60;
+    border: 1px solid #c3e6cb;
+}
+
+/* Estilo para o botão de toggle */
+#toggleEstoque {
+    transition: all 0.3s ease;
+}
+
+#toggleEstoque:hover {
+    background: #f8f9fa;
+    color: #495057;
+}
+
+#toggleEstoque.active {
+    background: #e74c3c;
+    color: white;
+}
+
+#toggleEstoque.active:hover {
+    background: #c0392b;
+}
+
+/* Linhas de produtos sem estoque */
+.produto-sem-estoque {
+    opacity: 0.6;
+    background: #f8f9fa;
+}
+
+.produto-sem-estoque.hidden {
+    display: none;
+}
+</style>
+
+<script>
+let produtosSemEstoqueOcultos = false;
+
+function toggleProdutosSemEstoque() {
+    const button = document.getElementById('toggleEstoque');
+    const buttonText = document.getElementById('toggleText');
+    const icon = button.querySelector('i');
+    const rows = document.querySelectorAll('tbody tr');
+    
+    produtosSemEstoqueOcultos = !produtosSemEstoqueOcultos;
+    
+    rows.forEach(row => {
+        const estoqueElement = row.querySelector('.product-estoque');
+        if (estoqueElement) {
+            const estoque = parseInt(estoqueElement.getAttribute('data-estoque') || '0');
+            
+            if (estoque === 0) {
+                if (produtosSemEstoqueOcultos) {
+                    row.classList.add('hidden');
+                } else {
+                    row.classList.remove('hidden');
+                }
+            }
+        }
+    });
+    
+    // Atualizar o botão
+    if (produtosSemEstoqueOcultos) {
+        button.classList.add('active');
+        buttonText.textContent = 'Mostrar Sem Estoque';
+        icon.className = 'fas fa-eye';
+    } else {
+        button.classList.remove('active');
+        buttonText.textContent = 'Ocultar Sem Estoque';
+        icon.className = 'fas fa-eye-slash';
+    }
+    
+    // Mostrar contador
+    updateContadorProdutos();
+}
+
+function updateContadorProdutos() {
+    const totalRows = document.querySelectorAll('tbody tr').length;
+    const hiddenRows = document.querySelectorAll('tbody tr.hidden').length;
+    const visibleRows = totalRows - hiddenRows;
+    
+    // Criar ou atualizar contador se não existir
+    let contador = document.getElementById('contador-produtos');
+    if (!contador) {
+        contador = document.createElement('div');
+        contador.id = 'contador-produtos';
+        contador.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #007bff;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 10px rgba(0,123,255,0.3);
+            z-index: 1000;
+        `;
+        document.body.appendChild(contador);
+    }
+    
+    if (hiddenRows > 0) {
+        contador.textContent = `${visibleRows} de ${totalRows} produtos visíveis`;
+        contador.style.display = 'block';
+    } else {
+        contador.style.display = 'none';
+    }
+}
+
+// Marcar visualmente produtos sem estoque
+document.addEventListener('DOMContentLoaded', function() {
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const estoqueElement = row.querySelector('.product-estoque');
+        if (estoqueElement) {
+            const estoque = parseInt(estoqueElement.getAttribute('data-estoque') || '0');
+            if (estoque === 0) {
+                row.classList.add('produto-sem-estoque');
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

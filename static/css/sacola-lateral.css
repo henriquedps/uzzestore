@@ -1,8 +1,8 @@
-/* 🛍️ Sacola Lateral - Estilo da Imagem */
+/* 🛍️ Sacola Lateral - Cores Padronizadas UzzeStore */
 
 .cart-toggle {
     cursor: pointer !important;
-    transition: all 0.3s ease;
+    transition: var(--transition);
 }
 
 .cart-toggle:hover {
@@ -20,7 +20,7 @@
     z-index: 9999;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s ease;
+    transition: var(--transition);
 }
 
 .sacola-overlay.active {
@@ -35,8 +35,8 @@
     right: 0;
     width: 400px;
     height: 100vh;
-    background: #ffffff;
-    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.1);
+    background: var(--bg-primary);
+    box-shadow: var(--shadow-heavy);
     transform: translateX(100%);
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
@@ -53,8 +53,8 @@
     justify-content: space-between;
     align-items: center;
     padding: 24px;
-    border-bottom: 1px solid #f0f0f0;
-    background: #ffffff;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--bg-primary);
     min-height: 72px;
 }
 
@@ -62,7 +62,7 @@
     font-family: 'Inter', sans-serif;
     font-size: 14px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--text-primary);
     margin: 0;
     letter-spacing: 1px;
     text-transform: uppercase;
@@ -72,11 +72,11 @@
     background: none;
     border: none;
     font-size: 20px;
-    color: #666;
+    color: var(--text-muted);
     cursor: pointer;
     padding: 8px;
-    border-radius: 50%;
-    transition: all 0.2s ease;
+    border-radius: var(--border-radius-round);
+    transition: var(--transition-fast);
     width: 36px;
     height: 36px;
     display: flex;
@@ -85,8 +85,8 @@
 }
 
 .sacola-close:hover {
-    background: #f5f5f5;
-    color: #1a1a1a;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
 }
 
 /* Conteúdo da Sacola */
@@ -94,30 +94,30 @@
     flex: 1;
     overflow-y: auto;
     padding: 0;
-    background: #ffffff;
+    background: var(--bg-primary);
 }
 
-/* Item da Sacola - Layout da Imagem */
+/* Item da Sacola */
 .sacola-item {
     display: flex;
     align-items: flex-start;
     padding: 24px;
-    border-bottom: 1px solid #f8f8f8;
+    border-bottom: 1px solid var(--bg-secondary);
     gap: 16px;
-    transition: background 0.2s ease;
+    transition: var(--transition-fast);
     position: relative;
 }
 
 .sacola-item:hover {
-    background: #fafafa;
+    background: var(--bg-secondary);
 }
 
 .sacola-item-image {
     width: 80px;
     height: 100px;
-    border-radius: 6px;
+    border-radius: var(--border-radius-small);
     overflow: hidden;
-    background: #f8f8f8;
+    background: var(--bg-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -132,7 +132,7 @@
 
 .sacola-item-placeholder {
     font-size: 32px;
-    color: #ddd;
+    color: var(--border-medium);
 }
 
 .sacola-item-details {
@@ -145,19 +145,20 @@
     font-family: 'Inter', sans-serif;
     font-size: 14px;
     font-weight: 500;
-    color: #1a1a1a;
+    color: var(--text-primary);
     margin: 0 0 8px 0;
     line-height: 1.3;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
 }
 
 .sacola-item-details p {
     font-family: 'Inter', sans-serif;
     font-size: 12px;
-    color: #888;
+    color: var(--text-muted);
     margin: 0 0 12px 0;
     line-height: 1.3;
 }
@@ -166,11 +167,11 @@
     font-family: 'Inter', sans-serif;
     font-size: 16px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--accent-color);
     margin-bottom: 12px;
 }
 
-/* Controles de Quantidade - Layout da Imagem */
+/* Controles de Quantidade */
 .sacola-item-quantity {
     display: flex;
     align-items: center;
@@ -181,57 +182,57 @@
 .sacola-item-quantity button {
     width: 28px;
     height: 28px;
-    border: 1px solid #e0e0e0;
-    background: #ffffff;
-    border-radius: 2px;
+    border: 1px solid var(--border-light);
+    background: var(--bg-primary);
+    border-radius: var(--border-radius-small);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 14px;
     font-weight: 400;
-    color: #666;
+    color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: var(--transition-fast);
 }
 
 .sacola-item-quantity button:hover {
-    border-color: #1a1a1a;
-    color: #1a1a1a;
+    border-color: var(--accent-color);
+    color: var(--accent-color);
 }
 
 .sacola-item-quantity span {
     font-family: 'Inter', sans-serif;
     font-size: 14px;
     font-weight: 500;
-    color: #1a1a1a;
+    color: var(--text-primary);
     min-width: 24px;
     text-align: center;
 }
 
-/* Botão Remover - Posição absoluta como na imagem */
+/* Botão Remover */
 .sacola-item-remove {
     position: absolute;
     top: 20px;
     right: 20px;
     background: none;
     border: none;
-    color: #ccc;
+    color: var(--border-medium);
     cursor: pointer;
     padding: 4px;
-    border-radius: 2px;
-    transition: all 0.2s ease;
+    border-radius: var(--border-radius-small);
+    transition: var(--transition-fast);
     font-size: 12px;
 }
 
 .sacola-item-remove:hover {
-    color: #999;
+    color: var(--error-color);
 }
 
 /* Footer da Sacola */
 .sacola-footer {
     padding: 24px;
-    border-top: 1px solid #f0f0f0;
-    background: #ffffff;
+    border-top: 1px solid var(--border-light);
+    background: var(--bg-primary);
 }
 
 .sacola-subtotal {
@@ -241,39 +242,39 @@
     margin-bottom: 24px;
     font-family: 'Inter', sans-serif;
     padding-bottom: 12px;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--border-light);
 }
 
 .sacola-subtotal span:first-child {
     font-size: 14px;
-    color: #888;
+    color: var(--text-muted);
     font-weight: 400;
 }
 
 .sacola-subtotal span:last-child {
     font-size: 18px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--text-primary);
 }
 
 .sacola-finalizar {
     width: 100%;
     padding: 16px;
-    background: #1a1a1a;
-    color: #ffffff;
+    background: var(--primary-color);
+    color: var(--text-light);
     border: none;
-    border-radius: 2px;
+    border-radius: var(--border-radius-small);
     font-family: 'Inter', sans-serif;
     font-size: 14px;
     font-weight: 500;
     letter-spacing: 0.5px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     text-transform: uppercase;
 }
 
 .sacola-finalizar:hover {
-    background: #333;
+    background: var(--hover-primary);
     transform: translateY(-1px);
 }
 
@@ -290,35 +291,35 @@
 
 .sacola-empty i {
     font-size: 56px;
-    color: #e8e8e8;
+    color: var(--border-light);
     margin-bottom: 20px;
 }
 
 .sacola-empty p {
     font-family: 'Inter', sans-serif;
     font-size: 16px;
-    color: #888;
+    color: var(--text-muted);
     margin: 0 0 28px 0;
     font-weight: 400;
 }
 
 .sacola-empty button {
     padding: 14px 28px;
-    background: #1a1a1a;
-    color: #ffffff;
+    background: var(--primary-color);
+    color: var(--text-light);
     border: none;
-    border-radius: 2px;
+    border-radius: var(--border-radius-small);
     font-family: 'Inter', sans-serif;
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .sacola-empty button:hover {
-    background: #333;
+    background: var(--hover-primary);
     transform: translateY(-1px);
 }
 
@@ -357,12 +358,12 @@
 }
 
 .sacola-content::-webkit-scrollbar-thumb {
-    background: #e8e8e8;
-    border-radius: 1px;
+    background: var(--border-light);
+    border-radius: var(--border-radius-small);
 }
 
 .sacola-content::-webkit-scrollbar-thumb:hover {
-    background: #ddd;
+    background: var(--border-medium);
 }
 
 /* Animação suave */

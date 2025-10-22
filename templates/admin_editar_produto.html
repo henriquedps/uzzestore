@@ -4,10 +4,42 @@
 
 {% block head %}
 <style>
+/* Variáveis CSS aprimoradas */
+:root {
+    --primary-color: #2c3e50;
+    --accent-color: #d4af37;
+    --success-color: #27ae60;
+    --danger-color: #e74c3c;
+    --warning-color: #f39c12;
+    --info-color: #3498db;
+    --text-primary: #2c3e50;
+    --text-secondary: #7f8c8d;
+    --text-light: #95a5a6;
+    --border-light: #ddd;
+    --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 4px 20px rgba(0, 0, 0, 0.15);
+    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-accent: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+    --bg-light: #f8f9fa;
+    --bg-medium: #e9ecef;
+}
+
+/* Background da página */
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 .admin-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 0;
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    position: relative;
 }
 
 .admin-header {
@@ -107,6 +139,165 @@
         flex-direction: column;
     }
 }
+
+/* Estilos customizados para melhorar o visual */
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    min-height: 100vh !important;
+}
+
+.admin-container {
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.admin-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 150px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    z-index: 1;
+}
+
+.admin-header {
+    position: relative !important;
+    z-index: 2 !important;
+    background: transparent !important;
+    color: white !important;
+    box-shadow: none !important;
+    margin-bottom: 0 !important;
+    padding: 50px 20px 30px !important;
+}
+
+.admin-header h1 {
+    color: white !important;
+    font-size: 2.5rem !important;
+    font-weight: 700 !important;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3) !important;
+}
+
+.admin-header p {
+    color: rgba(255,255,255,0.9) !important;
+    font-size: 1.1rem !important;
+}
+
+.admin-form {
+    position: relative !important;
+    z-index: 2 !important;
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+    margin: 0 20px 20px !important;
+    border-radius: 15px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+    border: 2px solid #ddd !important;
+    border-radius: 12px !important;
+    padding: 15px 20px !important;
+    transition: all 0.3s ease !important;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #d4af37 !important;
+    background: white !important;
+    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1) !important;
+    transform: translateY(-2px) !important;
+}
+
+.form-group label {
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    color: #2c3e50 !important;
+    position: relative !important;
+}
+
+.form-group label::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 30px;
+    height: 2px;
+    background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+    border-radius: 1px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+    padding: 18px 50px !important;
+    border-radius: 50px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.2) !important;
+}
+
+.btn-secondary {
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+    border: 2px solid #ddd !important;
+    color: #2c3e50 !important;
+    padding: 16px 40px !important;
+    border-radius: 50px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-secondary:hover {
+    background: #e9ecef !important;
+    border-color: #d4af37 !important;
+    transform: translateY(-2px) !important;
+    color: #2c3e50 !important;
+}
+
+.tamanho-checkbox-edit {
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+    border: 2px solid transparent !important;
+    border-radius: 10px !important;
+    transition: all 0.3s ease !important;
+}
+
+.tamanho-checkbox-edit:hover {
+    background: linear-gradient(145deg, #f1f3f4 0%, #e9ecef 100%) !important;
+    border-color: #ddd !important;
+    transform: translateY(-1px) !important;
+}
+
+@media (max-width: 768px) {
+    .admin-container {
+        margin: 10px !important;
+        border-radius: 15px !important;
+    }
+    
+    .admin-header h1 {
+        font-size: 2rem !important;
+    }
+    
+    .admin-form {
+        margin: 0 10px 10px !important;
+        padding: 30px 20px !important;
+    }
+}
 </style>
 {% endblock %}
 
@@ -129,6 +320,7 @@
                 <option value="">Selecione uma categoria</option>
                 <option value="Camisetas" {{ 'selected' if produto.categoria == 'Camisetas' else '' }}>👕 Camisetas</option>
                 <option value="Calças" {{ 'selected' if produto.categoria == 'Calças' else '' }}>👖 Calças</option>
+                <option value="Bermuda" {{ 'selected' if produto.categoria == 'Bermuda' else '' }}>🩳 Bermuda</option>
                 <option value="Blusas" {{ 'selected' if produto.categoria == 'Blusas' else '' }}>👚 Blusas</option>
                 <option value="Vestidos" {{ 'selected' if produto.categoria == 'Vestidos' else '' }}>👗 Vestidos</option>
                 <option value="Camisas" {{ 'selected' if produto.categoria == 'Camisas' else '' }}>👔 Camisas</option>
@@ -207,16 +399,69 @@
         </div>
         
         <div class="form-group">
+            <label for="estoque">Estoque:</label>
+            <input type="number" min="0" id="estoque" name="estoque" value="{{ produto.estoque or 0 }}" required>
+        </div>
+        
+        <div class="form-group">
             <label for="preco">Preço (R$):</label>
             <input type="number" step="0.01" id="preco" name="preco" value="{{ produto.preco }}" required>
         </div>
         
+        <!-- URLs das Imagens -->
         <div class="form-group">
-            <label for="imagem">URL da Imagem:</label>
-            <input type="url" id="imagem" name="imagem" value="{{ produto.imagem or '' }}" placeholder="https://exemplo.com/imagem.jpg">
-            {% if produto.imagem %}
-                <img src="{{ produto.imagem }}" alt="Preview" class="preview-imagem" id="preview">
-            {% endif %}
+            <label style="display: block; font-weight: 600; margin-bottom: 15px;">📷 Imagens do Produto</label>
+            
+            <div id="imagens-container">
+                <!-- Primeira imagem (principal) -->
+                <div class="imagem-item" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 2px dashed #ddd;">
+                    <label style="font-weight: 600; color: #333; font-size: 13px; display: block; margin-bottom: 8px;">
+                        🌟 Imagem Principal *
+                    </label>
+                    <input type="url" name="imagem" class="imagem-url-input" data-index="0"
+                           value="{{ produto.imagem or '' }}" placeholder="https://exemplo.com/imagem1.jpg"
+                           style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 8px;"
+                           onchange="previewImagem(this, 0)" required>
+                    <div class="preview-container" style="{% if produto.imagem %}display: block;{% else %}display: none;{% endif %}">
+                        <img class="preview-imagem" src="{{ produto.imagem or '' }}" alt="Preview" 
+                             style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 2px solid #007bff;">
+                    </div>
+                </div>
+                
+                <!-- Imagens adicionais existentes -->
+                {% if produto.imagens_adicionais %}
+                    {% set imagens_adicionais = produto.imagens_adicionais.split(',') %}
+                    {% for imagem_adicional in imagens_adicionais %}
+                        {% if imagem_adicional.strip() %}
+                        <div class="imagem-item" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 2px dashed #ddd;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                <label style="font-weight: 600; color: #333; font-size: 13px;">
+                                    📸 Imagem {{ loop.index + 1 }}
+                                </label>
+                                <button type="button" onclick="removerImagem(this)" 
+                                        style="background: #dc3545; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer;">
+                                    🗑️ Remover
+                                </button>
+                            </div>
+                            <input type="url" name="imagem_adicional_{{ loop.index }}" class="imagem-url-input" data-index="{{ loop.index }}"
+                                   value="{{ imagem_adicional.strip() }}" placeholder="https://exemplo.com/imagem{{ loop.index + 1 }}.jpg"
+                                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 8px;"
+                                   onchange="previewImagem(this, {{ loop.index }})">
+                            <div class="preview-container" style="display: block;">
+                                <img class="preview-imagem" src="{{ imagem_adicional.strip() }}" alt="Preview" 
+                                     style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 2px solid #17a2b8;">
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <!-- Botão para adicionar mais imagens -->
+            <button type="button" onclick="adicionarImagem()" 
+                    style="width: 100%; padding: 12px; background: #17a2b8; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 10px;">
+                ➕ Adicionar Mais Imagens
+            </button>
         </div>
         
         <div class="form-group">
@@ -232,22 +477,84 @@
 </div>
 
 <script>
-// Preview da imagem
-document.getElementById('imagem').addEventListener('input', function(e) {
-    const url = e.target.value;
-    const preview = document.getElementById('preview');
+let contadorImagens = {{ (produto.imagens_adicionais.split(',') | length) if produto.imagens_adicionais else 0 }};
+const maxImagens = 10;
+
+function previewImagem(input, index) {
+    const url = input.value;
+    const imagemItem = input.closest('.imagem-item');
+    const preview = imagemItem.querySelector('.preview-imagem');
+    const container = imagemItem.querySelector('.preview-container');
     
     if (url) {
-        if (!preview) {
-            const img = document.createElement('img');
-            img.id = 'preview';
-            img.className = 'preview-imagem';
-            e.target.parentNode.appendChild(img);
-        }
-        document.getElementById('preview').src = url;
-    } else if (preview) {
-        preview.remove();
+        preview.src = url;
+        preview.onload = function() {
+            container.style.display = 'block';
+        };
+        preview.onerror = function() {
+            container.style.display = 'none';
+            alert('Não foi possível carregar a imagem. Verifique se a URL está correta.');
+        };
+    } else {
+        container.style.display = 'none';
     }
-});
+}
+
+function adicionarImagem() {
+    if (contadorImagens >= maxImagens - 1) { // -1 porque já temos a imagem principal
+        alert(`Você pode adicionar no máximo ${maxImagens} imagens por produto.`);
+        return;
+    }
+    
+    contadorImagens++;
+    const container = document.getElementById('imagens-container');
+    const novaImagem = document.createElement('div');
+    novaImagem.className = 'imagem-item';
+    novaImagem.style.cssText = 'margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 2px dashed #ddd;';
+    
+    novaImagem.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <label style="font-weight: 600; color: #333; font-size: 13px;">
+                📸 Imagem ${contadorImagens + 1}
+            </label>
+            <button type="button" onclick="removerImagem(this)" 
+                    style="background: #dc3545; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer;">
+                🗑️ Remover
+            </button>
+        </div>
+        <input type="url" name="imagem_adicional_${contadorImagens}" class="imagem-url-input" data-index="${contadorImagens}"
+               placeholder="https://exemplo.com/imagem${contadorImagens + 1}.jpg"
+               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 8px;"
+               onchange="previewImagem(this, ${contadorImagens})">
+        <div class="preview-container" style="display: none;">
+            <img class="preview-imagem" src="" alt="Preview" 
+                 style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 2px solid #17a2b8;">
+        </div>
+    `;
+    
+    container.appendChild(novaImagem);
+    
+    // Atualizar o botão se chegou no limite
+    if (contadorImagens >= maxImagens - 1) {
+        const botaoAdicionar = document.querySelector('button[onclick="adicionarImagem()"]');
+        botaoAdicionar.disabled = true;
+        botaoAdicionar.style.opacity = '0.5';
+        botaoAdicionar.innerHTML = '✅ Limite Máximo Atingido';
+    }
+}
+
+function removerImagem(botao) {
+    const imagemItem = botao.closest('.imagem-item');
+    imagemItem.remove();
+    contadorImagens--;
+    
+    // Reabilitar o botão de adicionar se estava desabilitado
+    const botaoAdicionar = document.querySelector('button[onclick="adicionarImagem()"]');
+    if (botaoAdicionar.disabled) {
+        botaoAdicionar.disabled = false;
+        botaoAdicionar.style.opacity = '1';
+        botaoAdicionar.innerHTML = '➕ Adicionar Mais Imagens';
+    }
+}
 </script>
 {% endblock %}

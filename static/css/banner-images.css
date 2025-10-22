@@ -1,0 +1,87 @@
+/* Banner Images Fallback Styles */
+.product-item {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+/* Estilo base das imagens */
+.product-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 10px;
+}
+
+/* Fallback quando imagem não carrega - usando ::before para ícones */
+.product-item[data-type="camiseta"]:not(:has(img[style*="display: none"])):not(:has(img))::before,
+.product-item[data-type="camiseta"]:has(img[style*="display: none"])::before {
+    content: "👕";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    z-index: 10;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.product-item[data-type="camisa"]:not(:has(img[style*="display: none"])):not(:has(img))::before,
+.product-item[data-type="camisa"]:has(img[style*="display: none"])::before {
+    content: "👔";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    z-index: 10;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.product-item[data-type="calca"]:not(:has(img[style*="display: none"])):not(:has(img))::before,
+.product-item[data-type="calca"]:has(img[style*="display: none"])::before {
+    content: "👖";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    z-index: 10;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Melhor fallback cross-browser */
+.product-item[data-type="camiseta"]:empty::after {
+    content: "👕";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.product-item[data-type="camisa"]:empty::after {
+    content: "👔";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.product-item[data-type="calca"]:empty::after {
+    content: "👖";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}

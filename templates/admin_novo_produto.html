@@ -2,8 +2,282 @@
 
 {% block title %}Adicionar Novo Produto - Admin{% endblock %}
 
+{% block head %}
+<style>
+/* Variáveis CSS aprimoradas */
+:root {
+    --primary-color: #2c3e50;
+    --accent-color: #d4af37;
+    --success-color: #27ae60;
+    --danger-color: #e74c3c;
+    --warning-color: #f39c12;
+    --info-color: #3498db;
+    --text-primary: #2c3e50;
+    --text-secondary: #7f8c8d;
+    --text-light: #95a5a6;
+    --border-light: #ddd;
+    --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 4px 20px rgba(0, 0, 0, 0.15);
+    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-accent: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+    --bg-light: #f8f9fa;
+    --bg-medium: #e9ecef;
+}
+
+/* Background da página */
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Container principal com design aprimorado */
+.products-container {
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    margin: 20px auto;
+    max-width: 900px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Header com gradiente */
+.products-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 150px;
+    background: var(--gradient-primary);
+    z-index: 1;
+}
+
+.products-container h1 {
+    position: relative;
+    z-index: 2;
+    color: white;
+    text-align: center;
+    padding: 50px 20px 30px;
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+/* Formulário com background melhorado */
+.products-container form {
+    position: relative;
+    z-index: 2;
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+    margin: 0 20px 20px;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* Inputs e selects aprimorados */
+input, select, textarea {
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+    border: 2px solid var(--border-light) !important;
+    border-radius: 12px !important;
+    padding: 15px 20px !important;
+    transition: all 0.3s ease !important;
+    font-size: 16px !important;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none !important;
+    border-color: var(--accent-color) !important;
+    background: white !important;
+    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Labels aprimorados */
+label {
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+    font-size: 14px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-bottom: 8px !important;
+    display: block !important;
+    position: relative !important;
+}
+
+label::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 30px;
+    height: 2px;
+    background: var(--gradient-accent);
+    border-radius: 1px;
+}
+
+/* Checkboxes de tamanho melhorados */
+.tamanho-checkbox {
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+    border: 2px solid transparent !important;
+    border-radius: 10px !important;
+    padding: 12px 16px !important;
+    transition: all 0.3s ease !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.tamanho-checkbox::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.tamanho-checkbox:hover::before {
+    left: 100%;
+}
+
+.tamanho-checkbox:hover {
+    background: linear-gradient(145deg, #f1f3f4 0%, #e9ecef 100%) !important;
+    border-color: var(--border-light) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Botões aprimorados */
+button[type="submit"] {
+    background: var(--gradient-primary) !important;
+    color: white !important;
+    border: none !important;
+    padding: 18px 50px !important;
+    border-radius: 50px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+button[type="submit"]::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.5s ease;
+}
+
+button[type="submit"]:hover::before {
+    left: 100%;
+}
+
+button[type="submit"]:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.2) !important;
+}
+
+/* Link de cancelar aprimorado */
+a[href*="admin_produtos"] {
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+    color: var(--text-primary) !important;
+    border: 2px solid var(--border-light) !important;
+    padding: 16px 40px !important;
+    border-radius: 50px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    transition: all 0.3s ease !important;
+    display: inline-block !important;
+}
+
+a[href*="admin_produtos"]:hover {
+    background: var(--bg-medium) !important;
+    border-color: var(--accent-color) !important;
+    transform: translateY(-2px) !important;
+    text-decoration: none !important;
+    color: var(--text-primary) !important;
+}
+
+/* Seção de dicas aprimorada */
+div[style*="linear-gradient"][style*="f8f9fa"] {
+    background: var(--gradient-primary) !important;
+    color: white !important;
+    border-left: none !important;
+    border-radius: 16px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+div[style*="linear-gradient"][style*="f8f9fa"] h3 {
+    color: white !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+}
+
+div[style*="linear-gradient"][style*="f8f9fa"] li {
+    color: rgba(255,255,255,0.95) !important;
+}
+
+/* Preview de imagem aprimorado */
+#preview-container {
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+    border: 2px dashed var(--border-light) !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    transition: all 0.3s ease !important;
+}
+
+#preview-container:hover {
+    border-color: var(--accent-color) !important;
+    background: white !important;
+}
+
+/* Textos pequenos */
+small {
+    color: var(--text-light) !important;
+    font-size: 12px !important;
+    font-style: italic !important;
+}
+
+/* Responsividade aprimorada */
+@media (max-width: 768px) {
+    .products-container {
+        margin: 10px !important;
+        border-radius: 15px !important;
+    }
+    
+    .products-container h1 {
+        font-size: 2rem !important;
+        padding: 40px 20px 20px !important;
+    }
+    
+    .products-container form {
+        margin: 0 10px 10px !important;
+        padding: 30px 20px !important;
+    }
+    
+    button[type="submit"] {
+        width: 100% !important;
+        margin-bottom: 15px !important;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="products-container">
     <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
         <div>
@@ -47,6 +321,7 @@
                     <option value="Camisetas">👕 Camisetas</option>
                     <option value="Camisas">👔 Camisas</option>
                     <option value="Calças">👖 Calças</option>
+                    <option value="Bermuda">🩳 Bermuda</option>
                     <option value="Vestidos">👗 Vestidos</option>
                     <option value="Saias">🩱 Saias</option>
                     <option value="Jaquetas">🧥 Jaquetas</option>
@@ -120,15 +395,31 @@
                 </small>
             </div>
 
+            <!-- Estoque -->
+            <div style="margin-bottom: 30px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    Estoque *
+                </label>
+                <div style="position: relative;">
+                    <span style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-weight: 600;">📦</span>
+                    <input type="number" name="estoque" min="0" required
+                           placeholder="0"
+                           style="width: 100%; padding: 15px 20px 15px 50px; border: 1px solid var(--border-light); border-radius: 10px; font-size: 16px; transition: all 0.3s ease; background: #fafafa; font-weight: 600;">
+                </div>
+                <small style="color: var(--text-light); font-size: 12px; display: block; margin-top: 5px;">
+                    📊 Quantidade de produtos disponíveis em estoque
+                </small>
+            </div>
+
             <!-- Preço -->
             <div style="margin-bottom: 30px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
-                    Preço (R$) *
+                    Preço (R$) 
                 </label>
                 <div style="position: relative;">
                     <span style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-weight: 600;">R$</span>
                     <input type="number" name="preco" step="0.01" min="0" required
-                           placeholder="0,00"
+                           placeholder=""
                            style="width: 100%; padding: 15px 20px 15px 50px; border: 1px solid var(--border-light); border-radius: 10px; font-size: 16px; transition: all 0.3s ease; background: #fafafa; font-weight: 600;">
                 </div>
                 <small style="color: var(--text-light); font-size: 12px; display: block; margin-top: 5px;">
@@ -136,25 +427,41 @@
                 </small>
             </div>
 
-            <!-- URL da Imagem -->
+            <!-- URLs das Imagens -->
             <div style="margin-bottom: 30px;">
-                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
-                    URL da Imagem
+                <label style="display: block; font-weight: 600; margin-bottom: 15px; color: var(--text-primary); font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    📷 Imagens do Produto
                 </label>
-                <input type="url" name="imagem" id="imagem-url"
-                       placeholder="https://exemplo.com/imagem.jpg"
-                       style="width: 100%; padding: 15px 20px; border: 1px solid var(--border-light); border-radius: 10px; font-size: 16px; transition: all 0.3s ease; background: #fafafa;"
-                       onchange="previewImagem()">
-                <small style="color: var(--text-light); font-size: 12px; display: block; margin-top: 5px;">
-                    📸 Cole a URL de uma imagem ou deixe vazio para usar placeholder
-                </small>
                 
-                <!-- Preview da Imagem -->
-                <div id="preview-container" style="margin-top: 15px; display: none;">
-                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 10px;">Preview:</p>
-                    <img id="preview-imagem" src="" alt="Preview" 
-                         style="width: 150px; height: 150px; object-fit: cover; border-radius: 10px; border: 2px solid var(--border-light);">
+                <!-- Container das imagens -->
+                <div id="imagens-container">
+                    <!-- Primeira imagem (principal) -->
+                    <div class="imagem-item" style="margin-bottom: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px; border: 2px dashed var(--border-light);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                            <label style="font-weight: 600; color: var(--text-primary); font-size: 13px;">
+                                🌟 Imagem Principal *
+                            </label>
+                        </div>
+                        <input type="url" name="imagem" class="imagem-url-input" data-index="0"
+                               placeholder="https://exemplo.com/imagem1.jpg"
+                               style="width: 100%; padding: 12px 15px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 14px; margin-bottom: 10px; background: white;"
+                               onchange="previewImagem(this, 0)" required>
+                        <div class="preview-container" style="display: none;">
+                            <img class="preview-imagem" src="" alt="Preview" 
+                                 style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 2px solid var(--accent-color);">
+                        </div>
+                    </div>
                 </div>
+                
+                <!-- Botão para adicionar mais imagens -->
+                <button type="button" onclick="adicionarImagem()" 
+                        style="width: 100%; padding: 15px; background: linear-gradient(135deg, var(--info-color), #2980b9); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.5px;">
+                    ➕ Adicionar Mais Imagens
+                </button>
+                
+                <small style="color: var(--text-light); font-size: 12px; display: block; margin-top: 10px;">
+                    💡 A primeira imagem será a principal. Você pode adicionar até 10 imagens por produto.
+                </small>
             </div>
 
             <!-- Descrição -->
@@ -199,10 +506,14 @@
 </div>
 
 <script>
-function previewImagem() {
-    const url = document.getElementById('imagem-url').value;
-    const preview = document.getElementById('preview-imagem');
-    const container = document.getElementById('preview-container');
+let contadorImagens = 1;
+const maxImagens = 10;
+
+function previewImagem(input, index) {
+    const url = input.value;
+    const imagemItem = input.closest('.imagem-item');
+    const preview = imagemItem.querySelector('.preview-imagem');
+    const container = imagemItem.querySelector('.preview-container');
     
     if (url) {
         preview.src = url;
@@ -216,6 +527,72 @@ function previewImagem() {
     } else {
         container.style.display = 'none';
     }
+}
+
+function adicionarImagem() {
+    if (contadorImagens >= maxImagens) {
+        alert(`Você pode adicionar no máximo ${maxImagens} imagens por produto.`);
+        return;
+    }
+    
+    const container = document.getElementById('imagens-container');
+    const novaImagem = document.createElement('div');
+    novaImagem.className = 'imagem-item';
+    novaImagem.style.cssText = 'margin-bottom: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px; border: 2px dashed var(--border-light);';
+    
+    novaImagem.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <label style="font-weight: 600; color: var(--text-primary); font-size: 13px;">
+                📸 Imagem ${contadorImagens + 1}
+            </label>
+            <button type="button" onclick="removerImagem(this)" 
+                    style="background: var(--danger-color); color: white; border: none; border-radius: 5px; padding: 5px 10px; font-size: 12px; cursor: pointer;">
+                🗑️ Remover
+            </button>
+        </div>
+        <input type="url" name="imagem_adicional_${contadorImagens}" class="imagem-url-input" data-index="${contadorImagens}"
+               placeholder="https://exemplo.com/imagem${contadorImagens + 1}.jpg"
+               style="width: 100%; padding: 12px 15px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 14px; margin-bottom: 10px; background: white;"
+               onchange="previewImagem(this, ${contadorImagens})">
+        <div class="preview-container" style="display: none;">
+            <img class="preview-imagem" src="" alt="Preview" 
+                 style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 2px solid var(--info-color);">
+        </div>
+    `;
+    
+    container.appendChild(novaImagem);
+    contadorImagens++;
+    
+    // Atualizar o botão se chegou no limite
+    if (contadorImagens >= maxImagens) {
+        const botaoAdicionar = document.querySelector('button[onclick="adicionarImagem()"]');
+        botaoAdicionar.disabled = true;
+        botaoAdicionar.style.opacity = '0.5';
+        botaoAdicionar.innerHTML = '✅ Limite Máximo Atingido';
+    }
+}
+
+function removerImagem(botao) {
+    const imagemItem = botao.closest('.imagem-item');
+    imagemItem.remove();
+    contadorImagens--;
+    
+    // Reabilitar o botão de adicionar se estava desabilitado
+    const botaoAdicionar = document.querySelector('button[onclick="adicionarImagem()"]');
+    if (botaoAdicionar.disabled) {
+        botaoAdicionar.disabled = false;
+        botaoAdicionar.style.opacity = '1';
+        botaoAdicionar.innerHTML = '➕ Adicionar Mais Imagens';
+    }
+    
+    // Renumerar as imagens restantes
+    const imagensItems = document.querySelectorAll('.imagem-item');
+    imagensItems.forEach((item, index) => {
+        if (index > 0) { // Pular a primeira (principal)
+            const label = item.querySelector('label');
+            label.innerHTML = `📸 Imagem ${index + 1}`;
+        }
+    });
 }
 
 // Adicionar efeitos de foco nos inputs
