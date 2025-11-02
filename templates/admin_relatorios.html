@@ -1,0 +1,898 @@
+{% extends "base.html" %}
+
+{% block title %}Relatórios - Admin UzzerStore{% endblock %}
+
+{% block head %}
+<style>
+    .relatorios-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .relatorios-header {
+        background: linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%);
+        padding: 30px 40px;
+        border-radius: 16px;
+        margin-bottom: 40px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+
+    .relatorios-header h1 {
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .relatorios-breadcrumb {
+        margin-top: 15px;
+        opacity: 0.9;
+    }
+
+    .relatorios-breadcrumb a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .relatorios-breadcrumb a:hover {
+        color: white;
+    }
+
+    .filtros-container {
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .filtros-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .filtro-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filtro-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .filtro-input {
+        padding: 10px 15px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .filtro-input:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .btn-filtrar {
+        background: linear-gradient(135deg, #7c3aed, #06b6d4);
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-filtrar:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-exportar {
+        background: #10b981;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 16px;
+        margin-left: 15px;
+    }
+
+    .btn-exportar:hover {
+        background: #059669;
+        transform: translateY(-2px);
+    }
+
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+        margin-bottom: 40px;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, #7c3aed, #06b6d4);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+        color: #7c3aed;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 10px;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 14px;
+    }
+
+    .stat-change {
+        font-size: 12px;
+        margin-top: 8px;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-weight: 600;
+    }
+
+    .stat-change.positive {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .stat-change.negative {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    .relatorios-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+        margin-bottom: 40px;
+    }
+
+    .relatorio-card {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .chart-container {
+        height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8fafc;
+        border-radius: 12px;
+        position: relative;
+    }
+
+    .chart-placeholder {
+        color: #64748b;
+        font-size: 18px;
+        text-align: center;
+    }
+
+    .tabela-container {
+        overflow-x: auto;
+        margin-top: 20px;
+    }
+
+    .tabela {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .tabela th {
+        background: linear-gradient(135deg, #7c3aed, #06b6d4);
+        color: white;
+        padding: 15px 20px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .tabela td {
+        padding: 15px 20px;
+        border-bottom: 1px solid #e5e7eb;
+        color: #374151;
+    }
+
+    .tabela tr:hover {
+        background: #f8fafc;
+    }
+
+    .tabela tr:last-child td {
+        border-bottom: none;
+    }
+
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-pendente {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    .status-concluido {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-cancelado {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    .top-produtos {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+    }
+
+    .produto-item {
+        display: flex;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .produto-item:last-child {
+        border-bottom: none;
+    }
+
+    .produto-rank {
+        width: 30px;
+        height: 30px;
+        background: linear-gradient(135deg, #7c3aed, #06b6d4);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+    .produto-info {
+        flex: 1;
+    }
+
+    .produto-nome {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 5px;
+    }
+
+    .produto-vendas {
+        font-size: 14px;
+        color: #64748b;
+    }
+
+    .produto-valor {
+        font-weight: 700;
+        color: #10b981;
+        font-size: 18px;
+    }
+
+    .loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+        color: #64748b;
+    }
+
+    .spinner {
+        border: 3px solid #f3f4f6;
+        border-top: 3px solid #7c3aed;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        margin-right: 15px;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Responsividade */
+    @media (max-width: 1200px) {
+        .relatorios-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .relatorios-container {
+            padding: 20px 15px;
+        }
+
+        .relatorios-header {
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        .relatorios-header h1 {
+            font-size: 2rem;
+            justify-content: center;
+        }
+
+        .filtros-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-cards {
+            grid-template-columns: 1fr;
+        }
+
+        .filtros-container {
+            padding: 20px;
+        }
+
+        .btn-filtrar,
+        .btn-exportar {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .tabela-container {
+            font-size: 14px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="relatorios-container">
+    <div class="relatorios-header">
+        <h1>
+            <i class="fas fa-chart-bar"></i>
+            Relatórios e Análises
+        </h1>
+        <div class="relatorios-breadcrumb">
+            <a href="{{ url_for('admin_dashboard') }}">Dashboard</a> / Relatórios
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filtros-container">
+        <div class="filtros-grid">
+            <div class="filtro-group">
+                <label class="filtro-label">Período</label>
+                <select class="filtro-input" id="periodo">
+                    <option value="hoje">Hoje</option>
+                    <option value="semana">Esta Semana</option>
+                    <option value="mes" selected>Este Mês</option>
+                    <option value="trimestre">Este Trimestre</option>
+                    <option value="ano">Este Ano</option>
+                    <option value="personalizado">Personalizado</option>
+                </select>
+            </div>
+            
+            <div class="filtro-group">
+                <label class="filtro-label">Data Início</label>
+                <input type="date" class="filtro-input" id="dataInicio">
+            </div>
+            
+            <div class="filtro-group">
+                <label class="filtro-label">Data Fim</label>
+                <input type="date" class="filtro-input" id="dataFim">
+            </div>
+            
+            <div class="filtro-group">
+                <label class="filtro-label">Categoria</label>
+                <select class="filtro-input" id="categoria">
+                    <option value="">Todas</option>
+                    <option value="Feminino">Feminino</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Infantil">Infantil</option>
+                    <option value="Calçados">Calçados</option>
+                    <option value="Acessórios">Acessórios</option>
+                </select>
+            </div>
+            
+            <div class="filtro-group">
+                <label class="filtro-label">Status</label>
+                <select class="filtro-input" id="status">
+                    <option value="">Todos</option>
+                    <option value="Pendente">Pendente</option>
+                    <option value="Concluído">Concluído</option>
+                    <option value="Cancelado">Cancelado</option>
+                </select>
+            </div>
+        </div>
+        
+        <div style="text-align: right; margin-top: 20px;">
+            <button class="btn-filtrar" onclick="aplicarFiltros()">
+                <i class="fas fa-filter"></i>
+                Aplicar Filtros
+            </button>
+            <button class="btn-exportar" onclick="exportarRelatorio()">
+                <i class="fas fa-download"></i>
+                Exportar
+            </button>
+        </div>
+    </div>
+
+    <!-- Cards de Estatísticas -->
+    <div class="stats-cards">
+        <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value" id="vendasTotal">R$ {{ stats.vendas_total or '0,00' }}</div>
+            <div class="stat-label">Vendas Totais</div>
+            <div class="stat-change positive">+12% vs mês anterior</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-value" id="pedidosTotal">{{ stats.total_pedidos or 0 }}</div>
+            <div class="stat-label">Pedidos</div>
+            <div class="stat-change positive">+8% vs mês anterior</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-value" id="clientesTotal">{{ stats.total_usuarios or 0 }}</div>
+            <div class="stat-label">Clientes</div>
+            <div class="stat-change positive">+15% vs mês anterior</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-value" id="ticketMedio">R$ 127,50</div>
+            <div class="stat-label">Ticket Médio</div>
+            <div class="stat-change negative">-3% vs mês anterior</div>
+        </div>
+    </div>
+
+    <!-- Grid Principal de Relatórios -->
+    <div class="relatorios-grid">
+        <!-- Gráfico de Vendas -->
+        <div class="relatorio-card">
+            <h3 class="card-title">
+                <i class="fas fa-line-chart"></i>
+                Vendas por Período
+            </h3>
+            <div class="chart-container" id="chartVendas">
+                <div class="chart-placeholder">
+                    📈 Gráfico de vendas será exibido aqui<br>
+                    <small>Integre com Chart.js ou similar</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Produtos -->
+        <div class="top-produtos">
+            <h3 class="card-title">
+                <i class="fas fa-trophy"></i>
+                Top Produtos
+            </h3>
+            
+            <div id="topProdutosList">
+                <div class="produto-item">
+                    <div class="produto-rank">1</div>
+                    <div class="produto-info">
+                        <div class="produto-nome">Vestido Floral Primavera</div>
+                        <div class="produto-vendas">25 vendas</div>
+                    </div>
+                    <div class="produto-valor">R$ 4.747,50</div>
+                </div>
+                
+                <div class="produto-item">
+                    <div class="produto-rank">2</div>
+                    <div class="produto-info">
+                        <div class="produto-nome">Calça Jeans Skinny</div>
+                        <div class="produto-vendas">18 vendas</div>
+                    </div>
+                    <div class="produto-valor">R$ 2.338,20</div>
+                </div>
+                
+                <div class="produto-item">
+                    <div class="produto-rank">3</div>
+                    <div class="produto-info">
+                        <div class="produto-nome">Blusa Básica Algodão</div>
+                        <div class="produto-vendas">32 vendas</div>
+                    </div>
+                    <div class="produto-valor">R$ 1.596,80</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico de Categorias -->
+    <div class="relatorio-card">
+        <h3 class="card-title">
+            <i class="fas fa-pie-chart"></i>
+            Vendas por Categoria
+        </h3>
+        <div class="chart-container" id="chartCategorias">
+            <div class="chart-placeholder">
+                🥧 Gráfico de pizza das categorias<br>
+                <small>Feminino: 45% | Masculino: 30% | Infantil: 15% | Outros: 10%</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Pedidos Recentes -->
+    <div class="relatorio-card">
+        <h3 class="card-title">
+            <i class="fas fa-list"></i>
+            Pedidos Recentes
+        </h3>
+        
+        <div class="tabela-container">
+            <table class="tabela">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Data</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaPedidos">
+                    <tr>
+                        <td>#001</td>
+                        <td>Maria Silva</td>
+                        <td>27/10/2025</td>
+                        <td>R$ 189,90</td>
+                        <td><span class="status-badge status-concluido">Concluído</span></td>
+                        <td>
+                            <button onclick="verPedido(1)" style="background: #7c3aed; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                                Ver
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>#002</td>
+                        <td>João Santos</td>
+                        <td>27/10/2025</td>
+                        <td>R$ 129,90</td>
+                        <td><span class="status-badge status-pendente">Pendente</span></td>
+                        <td>
+                            <button onclick="verPedido(2)" style="background: #7c3aed; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                                Ver
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>#003</td>
+                        <td>Ana Costa</td>
+                        <td>26/10/2025</td>
+                        <td>R$ 299,90</td>
+                        <td><span class="status-badge status-concluido">Concluído</span></td>
+                        <td>
+                            <button onclick="verPedido(3)" style="background: #7c3aed; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                                Ver
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Variáveis globais
+let dadosRelatorio = {};
+
+// Inicializar página
+document.addEventListener('DOMContentLoaded', function() {
+    definirDatasPadrao();
+    carregarDados();
+    configurarEventos();
+});
+
+function definirDatasPadrao() {
+    const hoje = new Date();
+    const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    
+    document.getElementById('dataInicio').value = primeiroDiaMes.toISOString().split('T')[0];
+    document.getElementById('dataFim').value = hoje.toISOString().split('T')[0];
+}
+
+function configurarEventos() {
+    // Evento para mudança de período
+    document.getElementById('periodo').addEventListener('change', function(e) {
+        const periodo = e.target.value;
+        const hoje = new Date();
+        let dataInicio, dataFim;
+        
+        switch(periodo) {
+            case 'hoje':
+                dataInicio = dataFim = hoje;
+                break;
+            case 'semana':
+                dataInicio = new Date(hoje.setDate(hoje.getDate() - 7));
+                dataFim = new Date();
+                break;
+            case 'mes':
+                dataInicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+                dataFim = new Date();
+                break;
+            case 'trimestre':
+                dataInicio = new Date(hoje.getFullYear(), hoje.getMonth() - 3, 1);
+                dataFim = new Date();
+                break;
+            case 'ano':
+                dataInicio = new Date(hoje.getFullYear(), 0, 1);
+                dataFim = new Date();
+                break;
+            default:
+                return; // Para período personalizado, deixar o usuário escolher
+        }
+        
+        if (periodo !== 'personalizado') {
+            document.getElementById('dataInicio').value = dataInicio.toISOString().split('T')[0];
+            document.getElementById('dataFim').value = dataFim.toISOString().split('T')[0];
+            aplicarFiltros();
+        }
+    });
+}
+
+function carregarDados() {
+    // Simular carregamento de dados
+    mostrarLoading(true);
+    
+    setTimeout(() => {
+        // Simular dados recebidos do servidor
+        dadosRelatorio = {
+            vendas: {
+                total: 15750.80,
+                periodo: [
+                    { data: '2025-10-01', valor: 1200.50 },
+                    { data: '2025-10-02', valor: 890.00 },
+                    { data: '2025-10-03', valor: 1450.30 },
+                    // ... mais dados
+                ]
+            },
+            pedidos: {
+                total: 127,
+                concluidos: 95,
+                pendentes: 22,
+                cancelados: 10
+            },
+            produtos: [
+                { nome: 'Vestido Floral', vendas: 25, valor: 4747.50 },
+                { nome: 'Calça Jeans', vendas: 18, valor: 2338.20 },
+                { nome: 'Blusa Básica', vendas: 32, valor: 1596.80 }
+            ]
+        };
+        
+        atualizarInterface();
+        mostrarLoading(false);
+    }, 1500);
+}
+
+function aplicarFiltros() {
+    const filtros = {
+        periodo: document.getElementById('periodo').value,
+        dataInicio: document.getElementById('dataInicio').value,
+        dataFim: document.getElementById('dataFim').value,
+        categoria: document.getElementById('categoria').value,
+        status: document.getElementById('status').value
+    };
+    
+    console.log('Aplicando filtros:', filtros);
+    
+    // Aqui você faria a requisição para o servidor com os filtros
+    fetch('/admin/relatorios/dados', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(filtros)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            dadosRelatorio = data.dados;
+            atualizarInterface();
+        }
+    })
+    .catch(error => {
+        console.error('Erro ao carregar dados:', error);
+    });
+}
+
+function atualizarInterface() {
+    // Atualizar cards de estatísticas
+    if (dadosRelatorio.vendas) {
+        document.getElementById('vendasTotal').textContent = 
+            'R$ ' + dadosRelatorio.vendas.total.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+    }
+    
+    if (dadosRelatorio.pedidos) {
+        document.getElementById('pedidosTotal').textContent = dadosRelatorio.pedidos.total;
+    }
+    
+    // Atualizar top produtos
+    if (dadosRelatorio.produtos) {
+        atualizarTopProdutos(dadosRelatorio.produtos);
+    }
+    
+    // Atualizar gráficos (aqui você integraria com Chart.js ou similar)
+    atualizarGraficos();
+}
+
+function atualizarTopProdutos(produtos) {
+    const container = document.getElementById('topProdutosList');
+    container.innerHTML = '';
+    
+    produtos.forEach((produto, index) => {
+        const item = document.createElement('div');
+        item.className = 'produto-item';
+        item.innerHTML = `
+            <div class="produto-rank">${index + 1}</div>
+            <div class="produto-info">
+                <div class="produto-nome">${produto.nome}</div>
+                <div class="produto-vendas">${produto.vendas} vendas</div>
+            </div>
+            <div class="produto-valor">R$ ${produto.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+        `;
+        container.appendChild(item);
+    });
+}
+
+function atualizarGraficos() {
+    // Aqui você integraria com Chart.js ou outra biblioteca de gráficos
+    console.log('Atualizando gráficos com dados:', dadosRelatorio);
+}
+
+function exportarRelatorio() {
+    const dados = {
+        periodo: {
+            inicio: document.getElementById('dataInicio').value,
+            fim: document.getElementById('dataFim').value
+        },
+        dados: dadosRelatorio,
+        geradoEm: new Date().toISOString()
+    };
+    
+    // Criar arquivo JSON para download
+    const dataStr = JSON.stringify(dados, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(dataBlob);
+    link.download = `relatorio_uzzerstore_${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    
+    // Alternativa: exportar como CSV
+    // exportarCSV(dados);
+}
+
+function exportarCSV(dados) {
+    // Converter dados para CSV
+    let csv = 'Data,Vendas,Pedidos\n';
+    
+    if (dados.dados.vendas && dados.dados.vendas.periodo) {
+        dados.dados.vendas.periodo.forEach(item => {
+            csv += `${item.data},${item.valor},1\n`;
+        });
+    }
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `relatorio_vendas_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+}
+
+function verPedido(id) {
+    // Redirecionar para detalhes do pedido ou abrir modal
+    window.location.href = `/admin/pedido/${id}`;
+}
+
+function mostrarLoading(mostrar) {
+    const containers = document.querySelectorAll('.chart-container');
+    containers.forEach(container => {
+        if (mostrar) {
+            container.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Carregando dados...
+                </div>
+            `;
+        }
+    });
+}
+
+// Simular dados em tempo real (opcional)
+function atualizarDadosTempoReal() {
+    // Atualizar alguns números aleatoriamente para simular tempo real
+    const vendasElement = document.getElementById('vendasTotal');
+    if (vendasElement && dadosRelatorio.vendas) {
+        const novoValor = dadosRelatorio.vendas.total + (Math.random() * 100 - 50);
+        dadosRelatorio.vendas.total = Math.max(0, novoValor);
+        vendasElement.textContent = 'R$ ' + dadosRelatorio.vendas.total.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+    }
+}
+
+// Atualizar dados a cada 30 segundos (opcional)
+// setInterval(atualizarDadosTempoReal, 30000);
+</script>
+{% endblock %}

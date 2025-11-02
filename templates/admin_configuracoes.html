@@ -1,0 +1,988 @@
+{% extends "base.html" %}
+
+{% block title %}Configurações - Admin UzzerStore{% endblock %}
+
+{% block head %}
+<style>
+    /* Variáveis CSS dinâmicas baseadas nas configurações */
+    :root {
+        --cor-principal: {{ global_config.get('corPrincipal', '#7c3aed') }};
+        --cor-secundaria: {{ global_config.get('corSecundaria', '#06b6d4') }};
+    }
+    
+    .config-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .config-header {
+        background: linear-gradient(135deg, var(--cor-principal) 0%, var(--cor-secundaria) 100%);
+        padding: 30px 40px;
+        border-radius: 16px;
+        margin-bottom: 40px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+
+    .config-header h1 {
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .config-breadcrumb {
+        margin-top: 15px;
+        opacity: 0.9;
+    }
+
+    .config-breadcrumb a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .config-breadcrumb a:hover {
+        color: white;
+    }
+
+    .config-tabs {
+        display: flex;
+        gap: 5px;
+        margin-bottom: 30px;
+        background: white;
+        padding: 8px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        overflow-x: auto;
+    }
+
+    .config-tab {
+        padding: 12px 24px;
+        border: none;
+        background: transparent;
+        color: #64748b;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .config-tab.active {
+        background: linear-gradient(135deg, var(--cor-principal), var(--cor-secundaria));
+        color: white;
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    }
+
+    .config-tab:hover:not(.active) {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .config-content {
+        background: white;
+        border-radius: 16px;
+        padding: 40px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+    }
+
+    .config-section {
+        display: none;
+    }
+
+    .config-section.active {
+        display: block;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background: #fafafa;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--cor-principal);
+        background: white;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .form-textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .form-select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 12px center;
+        background-repeat: no-repeat;
+        background-size: 16px;
+        padding-right: 40px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .switch-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px;
+        background: #f8fafc;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        border: 2px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+
+    .switch-container:hover {
+        border-color: var(--cor-principal);
+        background: #faf7ff;
+    }
+
+    .switch-info {
+        flex: 1;
+    }
+
+    .switch-title {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 5px;
+    }
+
+    .switch-description {
+        font-size: 14px;
+        color: #64748b;
+    }
+
+    .switch {
+        position: relative;
+        width: 60px;
+        height: 34px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked + .slider {
+        background-color: var(--cor-principal);
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+
+    .color-picker-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .color-picker {
+        width: 60px;
+        height: 40px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--cor-principal), var(--cor-secundaria));
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 16px;
+        margin-right: 15px;
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+        transform: translateY(-2px);
+    }
+
+    .success-message {
+        background: #dcfce7;
+        border: 1px solid #bbf7d0;
+        color: #166534;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: none;
+    }
+
+    .success-message.show {
+        display: block;
+    }
+
+    .stats-preview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .stat-preview {
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        border: 2px solid #e5e7eb;
+    }
+
+    .stat-preview-icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+
+    .stat-preview-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #7c3aed;
+    }
+
+    .stat-preview-label {
+        font-size: 14px;
+        color: #64748b;
+        margin-top: 5px;
+    }
+
+    /* Estilos para prévia do PIX */
+    .config-preview {
+        background: #f8fafc;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+
+    .config-preview h4 {
+        margin-bottom: 15px;
+        color: #1f2937;
+        font-size: 1.1rem;
+    }
+
+    .pix-preview {
+        background: white;
+        border: 2px solid #7c3aed;
+        border-radius: 8px;
+        padding: 15px;
+        font-family: monospace;
+        font-size: 14px;
+    }
+
+    .pix-info {
+        color: #374151;
+        line-height: 1.6;
+    }
+
+    .pix-info strong {
+        color: #7c3aed;
+    }
+
+    .form-help {
+        display: block;
+        margin-top: 5px;
+        font-size: 12px;
+        color: #6b7280;
+        font-style: italic;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .config-container {
+            padding: 20px 15px;
+        }
+
+        .config-header {
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        .config-header h1 {
+            font-size: 2rem;
+            justify-content: center;
+        }
+
+        .config-content {
+            padding: 25px 20px;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .config-tabs {
+            justify-content: flex-start;
+        }
+
+        .switch-container {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="config-container">
+    <div class="config-header">
+        <h1>
+            <i class="fas fa-cog"></i>
+            Configurações da Loja
+        </h1>
+        <div class="config-breadcrumb">
+            <a href="{{ url_for('admin_dashboard') }}">Dashboard</a> / Configurações
+        </div>
+    </div>
+
+    <div id="successMessage" class="success-message">
+        Configurações salvas com sucesso!
+    </div>
+
+    <div class="config-tabs">
+        <button class="config-tab active" onclick="showSection('geral')">
+            <i class="fas fa-store"></i> Geral
+        </button>
+        <button class="config-tab" onclick="showSection('aparencia')">
+            <i class="fas fa-palette"></i> Aparência
+        </button>
+        <button class="config-tab" onclick="showSection('pagamento')">
+            <i class="fas fa-credit-card"></i> Pagamento
+        </button>
+        <button class="config-tab" onclick="showSection('entrega')">
+            <i class="fas fa-shipping-fast"></i> Entrega
+        </button>
+        <button class="config-tab" onclick="showSection('notificacoes')">
+            <i class="fas fa-bell"></i> Notificações
+        </button>
+        <button class="config-tab" onclick="showSection('backup')">
+            <i class="fas fa-database"></i> Backup
+        </button>
+    </div>
+
+    <div class="config-content">
+        <!-- Seção Geral -->
+        <div id="geral" class="config-section active">
+            <h2 class="section-title">
+                <i class="fas fa-store"></i>
+                Informações Gerais da Loja
+            </h2>
+            
+            <form id="formGeral">
+                <div class="form-group">
+                    <label class="form-label" for="nomeLoja">Nome da Loja</label>
+                    <input type="text" id="nomeLoja" name="nomeLoja" class="form-input" value="UzzerStore" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="emailLoja">E-mail da Loja</label>
+                        <input type="email" id="emailLoja" name="emailLoja" class="form-input" value="contato@uzzerstore.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="telefoneLoja">Telefone</label>
+                        <input type="tel" id="telefoneLoja" name="telefoneLoja" class="form-input" value="(11) 99999-9999" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="descricaoLoja">Descrição da Loja</label>
+                    <textarea id="descricaoLoja" name="descricaoLoja" class="form-input form-textarea" placeholder="Descreva sua loja...">A UzzerStore é especializada em moda moderna e tendências fashion.</textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="cnpj">CNPJ</label>
+                        <input type="text" id="cnpj" name="cnpj" class="form-input" placeholder="00.000.000/0000-00">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="enderecoLoja">Endereço</label>
+                        <input type="text" id="enderecoLoja" name="enderecoLoja" class="form-input" placeholder="Rua, número, bairro, cidade">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">Salvar Configurações Gerais</button>
+            </form>
+        </div>
+
+        <!-- Seção Aparência -->
+        <div id="aparencia" class="config-section">
+            <h2 class="section-title">
+                <i class="fas fa-palette"></i>
+                Personalização Visual
+            </h2>
+
+            <form id="formAparencia">
+                <div class="form-group">
+                    <label class="form-label">Cor Principal da Loja</label>
+                    <div class="color-picker-container">
+                        <input type="color" id="corPrincipal" name="corPrincipal" class="color-picker" value="{{ global_config.get('corPrincipal', '#e91e63') }}">
+                        <span>Cor usada em botões, links e destaques</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Cor Secundária</label>
+                    <div class="color-picker-container">
+                        <input type="color" id="corSecundaria" name="corSecundaria" class="color-picker" value="{{ global_config.get('corSecundaria', '#7c3aed') }}">
+                        <span>Cor para elementos complementares</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="logoUrl">URL do Logo</label>
+                    <input type="url" id="logoUrl" name="logoUrl" class="form-input" placeholder="https://exemplo.com/logo.png">
+                </div>
+
+                <div class="switch-container">
+                    <div class="switch-info">
+                        <div class="switch-title">Modo Escuro</div>
+                        <div class="switch-description">Ativar tema escuro para a loja</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="modoEscuro" name="modoEscuro">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="switch-container">
+                    <div class="switch-info">
+                        <div class="switch-title">Animações</div>
+                        <div class="switch-description">Habilitar animações na interface</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="animacoes" name="animacoes" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-primary">Aplicar Mudanças Visuais</button>
+            </form>
+        </div>
+
+        <!-- Seção Pagamento -->
+        <div id="pagamento" class="config-section">
+            <h2 class="section-title">
+                <i class="fas fa-credit-card"></i>
+                Métodos de Pagamento
+            </h2>
+
+            <form id="formPagamento">
+                <div class="switch-container">
+                    <div class="switch-info">
+                        <div class="switch-title">PIX</div>
+                        <div class="switch-description">Aceitar pagamentos via PIX</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="pixAtivo" name="pixAtivo" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="chavePix">Chave PIX</label>
+                    <select id="tipoChavePix" name="tipoChavePix" class="form-input" style="margin-bottom: 10px;">
+                        <option value="email" {{ 'selected' if config.get('tipoChavePix') == 'email' else '' }}>E-mail</option>
+                        <option value="cpf" {{ 'selected' if config.get('tipoChavePix') == 'cpf' else '' }}>CPF</option>
+                        <option value="cnpj" {{ 'selected' if config.get('tipoChavePix') == 'cnpj' else '' }}>CNPJ</option>
+                        <option value="telefone" {{ 'selected' if config.get('tipoChavePix') == 'telefone' else '' }}>Telefone</option>
+                        <option value="aleatoria" {{ 'selected' if config.get('tipoChavePix') == 'aleatoria' else '' }}>Chave Aleatória</option>
+                    </select>
+                    <input type="text" id="chavePix" name="chavePix" class="form-input" placeholder="contato@uzzerstore.com" value="{{ config.get('chavePix', 'contato@uzzerstore.com') }}">
+                    <small class="form-help">Digite sua chave PIX cadastrada no banco</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="nomeBeneficiarioPix">Nome do Beneficiário</label>
+                    <input type="text" id="nomeBeneficiarioPix" name="nomeBeneficiarioPix" class="form-input" placeholder="UZZERSTORE LTDA" value="{{ config.get('nomeBeneficiarioPix', 'UZZERSTORE LTDA') }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="cidadeBeneficiario">Cidade do Beneficiário</label>
+                    <input type="text" id="cidadeBeneficiario" name="cidadeBeneficiario" class="form-input" placeholder="SAO PAULO" value="{{ config.get('cidadeBeneficiario', 'SAO PAULO') }}">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="tempoPagamentoPix">Tempo para Pagamento (minutos)</label>
+                        <input type="number" id="tempoPagamentoPix" name="tempoPagamentoPix" class="form-input" value="{{ config.get('tempoPagamentoPix', '30') }}" min="5" max="1440">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="verificacaoAutomatica">Verificação Automática (segundos)</label>
+                        <input type="number" id="verificacaoAutomatica" name="verificacaoAutomatica" class="form-input" value="{{ config.get('verificacaoAutomatica', '30') }}" min="10" max="300">
+                    </div>
+                </div>
+
+                <div class="config-preview">
+                    <h4>🔍 Prévia do PIX</h4>
+                    <div class="pix-preview">
+                        <div class="pix-info">
+                            <strong>Beneficiário:</strong> <span id="previewNomeBeneficiario">{{ config.get('nomeBeneficiarioPix', 'UZZERSTORE LTDA') }}</span><br>
+                            <strong>Chave PIX:</strong> <span id="previewChavePix">{{ config.get('chavePix', 'contato@uzzerstore.com') }}</span><br>
+                            <strong>Cidade:</strong> <span id="previewCidade">{{ config.get('cidadeBeneficiario', 'SAO PAULO') }}</span><br>
+                            <strong>Tempo de expiração:</strong> <span id="previewTempo">{{ config.get('tempoPagamentoPix', '30') }}</span> minutos
+                        </div>
+                    </div>
+                </div>
+
+                <div class="switch-container">
+                    <div class="switch-info">
+                        <div class="switch-title">Cartão de Crédito</div>
+                        <div class="switch-description">Aceitar cartões de crédito</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="cartaoAtivo" name="cartaoAtivo" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="switch-container">
+                    <div class="switch-info">
+                        <div class="switch-title">Boleto Bancário</div>
+                        <div class="switch-description">Aceitar pagamento por boleto</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="boletoAtivo" name="boletoAtivo" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="taxaEntrega">Taxa de Entrega (R$)</label>
+                    <input type="number" id="taxaEntrega" name="taxaEntrega" class="form-input" value="15.00" step="0.01" min="0">
+                </div>
+
+                <button type="submit" class="btn-primary">Salvar Configurações de Pagamento</button>
+            </form>
+        </div>
+
+        <!-- Seção Entrega -->
+        <div id="entrega" class="config-section">
+            <h2 class="section-title">
+                <i class="fas fa-shipping-fast"></i>
+                Configurações de Entrega
+            </h2>
+
+            <form id="formEntrega">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="prazoEntrega">Prazo de Entrega (dias)</label>
+                        <input type="number" id="prazoEntrega" name="prazoEntrega" class="form-input" value="7" min="1" max="30">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="faixaCep">Faixa de CEP Atendida</label>
+                        <input type="text" id="faixaCep" name="faixaCep" class="form-input" placeholder="01000-000 até 99999-999">
+                    </div>
+                </div>
+
+                <div class="switch-container">
+                    <div class="switch-info">
+                        <div class="switch-title">Frete Grátis</div>
+                        <div class="switch-description">Oferecer frete grátis para compras acima de um valor</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="freteGratis" name="freteGratis" onchange="toggleFreteGratis()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="form-group" id="valorFreteGratis" style="display: none;">
+                    <label class="form-label" for="valorMinimoFrete">Valor Mínimo para Frete Grátis (R$)</label>
+                    <input type="number" id="valorMinimoFrete" name="valorMinimoFrete" class="form-input" value="100.00" step="0.01" min="0">
+                </div>
+
+                <button type="submit" class="btn-primary">Salvar Configurações de Entrega</button>
+            </form>
+        </div>
+
+        <!-- Seção Notificações -->
+        <div id="notificacoes" class="config-section">
+            <h2 class="section-title">
+                <i class="fas fa-bell"></i>
+                Notificações e Comunicação
+            </h2>
+
+            <form id="formNotificacoes">
+                <div class="switch-container">
+                    <div class="switch-info">
+                        <div class="switch-title">E-mail de Pedidos</div>
+                        <div class="switch-description">Enviar e-mail quando um pedido for realizado</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="emailPedidos" name="emailPedidos" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="switch-container">
+                    <div class="switch-info">
+                        <div class="switch-title">WhatsApp</div>
+                        <div class="switch-description">Notificações via WhatsApp</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="whatsappAtivo" name="whatsappAtivo" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="whatsappNumero">Número do WhatsApp</label>
+                    <input type="tel" id="whatsappNumero" name="whatsappNumero" class="form-input" placeholder="5511999999999" value="5511999999999">
+                </div>
+
+                <button type="submit" class="btn-primary">Salvar Configurações de Notificação</button>
+            </form>
+        </div>
+
+        <!-- Seção Backup -->
+        <div id="backup" class="config-section">
+            <h2 class="section-title">
+                <i class="fas fa-database"></i>
+                Backup e Dados
+            </h2>
+
+            <div class="stats-preview">
+                <div class="stat-preview">
+                    <div class="stat-preview-icon">📊</div>
+                    <div class="stat-preview-value" id="totalProdutos">{{ stats.total_produtos or 0 }}</div>
+                    <div class="stat-preview-label">Produtos</div>
+                </div>
+                <div class="stat-preview">
+                    <div class="stat-preview-icon">👥</div>
+                    <div class="stat-preview-value" id="totalUsuarios">{{ stats.total_usuarios or 0 }}</div>
+                    <div class="stat-preview-label">Usuários</div>
+                </div>
+                <div class="stat-preview">
+                    <div class="stat-preview-icon">📦</div>
+                    <div class="stat-preview-value" id="totalPedidos">{{ stats.total_pedidos or 0 }}</div>
+                    <div class="stat-preview-label">Pedidos</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <button type="button" class="btn-primary" onclick="gerarBackup()">
+                    <i class="fas fa-download"></i>
+                    Baixar Backup
+                </button>
+                
+                <button type="button" class="btn-secondary" onclick="limparCache()">
+                    <i class="fas fa-broom"></i>
+                    Limpar Cache
+                </button>
+            </div>
+
+            <div class="switch-container" style="margin-top: 20px;">
+                <div class="switch-info">
+                    <div class="switch-title">Backup Automático</div>
+                    <div class="switch-description">Gerar backup automático semanalmente</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="backupAutomatico" name="backupAutomatico">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showSection(sectionId) {
+    // Remover classe active de todas as seções e tabs
+    document.querySelectorAll('.config-section').forEach(section => {
+        section.classList.remove('active');
+    });
+    document.querySelectorAll('.config-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Adicionar classe active na seção e tab selecionadas
+    document.getElementById(sectionId).classList.add('active');
+    event.target.classList.add('active');
+}
+
+function toggleFreteGratis() {
+    const checkbox = document.getElementById('freteGratis');
+    const valorField = document.getElementById('valorFreteGratis');
+    
+    if (checkbox.checked) {
+        valorField.style.display = 'block';
+    } else {
+        valorField.style.display = 'none';
+    }
+}
+
+function salvarConfiguracoes(form, mensagem) {
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+    
+    // Incluir dados dos switches (checkboxes)
+    const switches = form.querySelectorAll('input[type="checkbox"]');
+    switches.forEach(checkbox => {
+        data[checkbox.name] = checkbox.checked;
+    });
+    
+    // Enviar para o servidor
+    fetch('/admin/configuracoes/salvar', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            const successMessage = document.getElementById('successMessage');
+            successMessage.textContent = mensagem || result.message;
+            successMessage.classList.add('show');
+            
+            setTimeout(() => {
+                successMessage.classList.remove('show');
+            }, 3000);
+        } else {
+            alert('Erro ao salvar: ' + result.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro de conexão ao salvar configurações');
+    });
+    
+    return false;
+}
+
+function gerarBackup() {
+    // Simular geração de backup
+    const data = {
+        timestamp: new Date().toISOString(),
+        produtos: parseInt(document.getElementById('totalProdutos').textContent),
+        usuarios: parseInt(document.getElementById('totalUsuarios').textContent),
+        pedidos: parseInt(document.getElementById('totalPedidos').textContent)
+    };
+    
+    const dataStr = JSON.stringify(data, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(dataBlob);
+    link.download = `uzzerstore_backup_${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    
+    salvarConfiguracoes({}, 'Backup gerado e baixado com sucesso!');
+}
+
+function limparCache() {
+    // Simular limpeza de cache
+    if (confirm('Tem certeza que deseja limpar o cache? Esta ação não pode ser desfeita.')) {
+        localStorage.clear();
+        sessionStorage.clear();
+        salvarConfiguracoes({}, 'Cache limpo com sucesso!');
+    }
+}
+
+// Event listeners para formulários
+document.getElementById('formGeral').addEventListener('submit', function(e) {
+    e.preventDefault();
+    salvarConfiguracoes(this, 'Configurações gerais salvas!');
+});
+
+document.getElementById('formAparencia').addEventListener('submit', function(e) {
+    e.preventDefault();
+    salvarConfiguracoes(this, 'Configurações de aparência aplicadas!');
+});
+
+document.getElementById('formPagamento').addEventListener('submit', function(e) {
+    e.preventDefault();
+    salvarConfiguracoes(this, 'Configurações de pagamento salvas!');
+});
+
+document.getElementById('formEntrega').addEventListener('submit', function(e) {
+    e.preventDefault();
+    salvarConfiguracoes(this, 'Configurações de entrega salvas!');
+});
+
+document.getElementById('formNotificacoes').addEventListener('submit', function(e) {
+    e.preventDefault();
+    salvarConfiguracoes(this, 'Configurações de notificação salvas!');
+});
+
+// Aplicar mudanças de cor em tempo real
+document.getElementById('corPrincipal').addEventListener('change', function(e) {
+    document.documentElement.style.setProperty('--cor-principal', e.target.value);
+    document.documentElement.style.setProperty('--cor-principal-config', e.target.value);
+    document.documentElement.style.setProperty('--primary-color', e.target.value);
+});
+
+document.getElementById('corSecundaria').addEventListener('change', function(e) {
+    document.documentElement.style.setProperty('--cor-secundaria', e.target.value);
+    document.documentElement.style.setProperty('--cor-secundaria-config', e.target.value);
+    document.documentElement.style.setProperty('--secondary-color', e.target.value);
+});
+
+// Funções para atualizar prévia PIX em tempo real
+function atualizarPreviaPix() {
+    const nomeBeneficiario = document.getElementById('nomeBeneficiarioPix').value || 'UZZERSTORE LTDA';
+    const chavePix = document.getElementById('chavePix').value || 'contato@uzzerstore.com';
+    const cidade = document.getElementById('cidadeBeneficiario').value || 'SAO PAULO';
+    const tempo = document.getElementById('tempoPagamentoPix').value || '30';
+    
+    document.getElementById('previewNomeBeneficiario').textContent = nomeBeneficiario;
+    document.getElementById('previewChavePix').textContent = chavePix;
+    document.getElementById('previewCidade').textContent = cidade;
+    document.getElementById('previewTempo').textContent = tempo;
+}
+
+// Event listeners para campos PIX
+document.getElementById('nomeBeneficiarioPix').addEventListener('input', atualizarPreviaPix);
+document.getElementById('chavePix').addEventListener('input', atualizarPreviaPix);
+document.getElementById('cidadeBeneficiario').addEventListener('input', atualizarPreviaPix);
+document.getElementById('tempoPagamentoPix').addEventListener('input', atualizarPreviaPix);
+
+// Validação de chave PIX baseada no tipo
+document.getElementById('tipoChavePix').addEventListener('change', function(e) {
+    const tipo = e.target.value;
+    const campoChave = document.getElementById('chavePix');
+    
+    switch(tipo) {
+        case 'email':
+            campoChave.placeholder = 'exemplo@email.com';
+            campoChave.type = 'email';
+            break;
+        case 'cpf':
+            campoChave.placeholder = '000.000.000-00';
+            campoChave.type = 'text';
+            break;
+        case 'cnpj':
+            campoChave.placeholder = '00.000.000/0000-00';
+            campoChave.type = 'text';
+            break;
+        case 'telefone':
+            campoChave.placeholder = '+5511999999999';
+            campoChave.type = 'tel';
+            break;
+        case 'aleatoria':
+            campoChave.placeholder = 'chave-aleatoria-uuid';
+            campoChave.type = 'text';
+            break;
+    }
+    
+    atualizarPreviaPix();
+});
+
+// Máscara para CPF e CNPJ
+document.getElementById('chavePix').addEventListener('input', function(e) {
+    const tipo = document.getElementById('tipoChavePix').value;
+    let valor = e.target.value.replace(/\D/g, '');
+    
+    if (tipo === 'cpf' && valor.length <= 11) {
+        valor = valor.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        e.target.value = valor;
+    } else if (tipo === 'cnpj' && valor.length <= 14) {
+        valor = valor.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+        e.target.value = valor;
+    }
+    
+    atualizarPreviaPix();
+});
+
+// Inicializar prévia ao carregar a página
+document.addEventListener('DOMContentLoaded', atualizarPreviaPix);
+</script>
+{% endblock %}

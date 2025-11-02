@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from decimal import Decimal
 from werkzeug.security import generate_password_hash, check_password_hash
 import json
@@ -76,6 +76,24 @@ def ensure_imagens_adicionais_column(conn):
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'uzzer-store-secret-key-2024')
+
+# Filtro personalizado para converter JSON no template
+@app.template_filter('fromjson')
+def fromjson_filter(value):
+    try:
+        return json.loads(value) if value else []
+    except:
+        return []
+
+# Disponibilizar configurações globalmente para todos os templates
+@app.context_processor
+def inject_config():
+    """Injeta as configurações em todos os templates"""
+    try:
+        config = carregar_configuracoes()
+        return dict(global_config=config)
+    except:
+        return dict(global_config={})
 
 # 🧹 Middleware para FORÇAR limpeza de cache
 @app.after_request
@@ -184,6 +202,13 @@ def from_json_filter(value):
     except (json.JSONDecodeError, TypeError):
         return []
 
+@app.context_processor
+def inject_admin_status():
+    """Injeta o status de admin em todos os templates"""
+    return {
+        'is_admin': is_admin
+    }
+
 def safe_parse_json(value, default=None):
     """Função helper para parsing seguro de JSON"""
     try:
@@ -195,9 +220,17 @@ def safe_parse_json(value, default=None):
 
 def get_imagens_adicionais(produto):
     """Extrai imagens adicionais de um produto de forma segura"""
-    if not produto or not produto.get('imagens_adicionais'):
+    if not produto:
         return []
-    return safe_parse_json(produto['imagens_adicionais'])
+    
+    # Converter sqlite3.Row para dict para acesso seguro
+    produto_dict = dict(produto) if hasattr(produto, 'keys') else produto
+    imagens_adicionais = produto_dict.get('imagens_adicionais', '') if isinstance(produto_dict, dict) else getattr(produto, 'imagens_adicionais', '')
+    
+    if not imagens_adicionais:
+        return []
+    
+    return safe_parse_json(imagens_adicionais)
 
 def validate_form_field(form, field_name, max_length=255, required=True):
     """Valida campo de formulário de forma segura"""
@@ -336,11 +369,14 @@ def is_admin():
             session['is_admin_cached'] = False
             return False
 
+        # Converter sqlite3.Row para dict para acesso seguro
+        user_dict = dict(user)
+        
         # Verificação unificada de admin
         is_admin_user = (
-            bool(user.get('is_admin', False)) or  # Coluna is_admin
-            user['id'] == 1 or  # Primeiro usuário
-            user['email'] in ['admin@uzzerstore.com', 'administrador@uzzerstore.com']  # Emails admin
+            bool(user_dict.get('is_admin', False)) or  # Coluna is_admin
+            user_dict['id'] == 1 or  # Primeiro usuário
+            user_dict['email'] in ['admin@uzzerstore.com', 'administrador@uzzerstore.com']  # Emails admin
         )
         
         # Cache o resultado na sessão
@@ -352,6 +388,8 @@ def is_admin():
     except Exception as e:
         print(f"Erro ao verificar admin: {e}")
         return False
+
+
 
 # ROTAS DO CARRINHO
 @app.route('/carrinho')
@@ -883,9 +921,13 @@ def produto_individual(produto_id):
         imagens_adicionais = get_imagens_adicionais(produto)
         
         # Buscar produtos relacionados da mesma categoria
+        # Converter sqlite3.Row para dict para acesso seguro
+        produto_dict = dict(produto)
+        categoria = produto_dict.get('categoria', '')
+        
         produtos_relacionados = conn.execute(
             'SELECT * FROM produtos WHERE categoria = ? AND id != ? ORDER BY RANDOM() LIMIT 4',
-            (produto['categoria'], produto_id)
+            (categoria, produto_id)
         ).fetchall()
         
         conn.close()
@@ -898,6 +940,197 @@ def produto_individual(produto_id):
         print(f"Erro ao carregar produto: {e}")
         flash('Erro ao carregar produto!', 'error')
         return redirect(url_for('index'))
+
+# ROTA COMPRAR AGORA
+@app.route('/comprar-agora')
+def comprar_agora():
+    """Página para finalizar compra direta de um produto"""
+    try:
+        # Verificar se há produto selecionado via parâmetros
+        produto_id = request.args.get('produto')
+        tamanho = request.args.get('tamanho')
+        quantidade = request.args.get('quantidade', 1, type=int)
+        
+        produto = None
+        
+        if produto_id:
+            conn = get_db_connection()
+            produto = conn.execute('SELECT * FROM produtos WHERE id = ?', (produto_id,)).fetchone()
+            conn.close()
+            
+            if not produto:
+                flash('Produto não encontrado!', 'error')
+                return redirect(url_for('index'))
+        
+        return render_template('comprar_agora.html', 
+                             produto=produto,
+                             tamanho=tamanho,
+                             quantidade=quantidade)
+    except Exception as e:
+        print(f"Erro ao carregar página de compra: {e}")
+        flash('Erro ao carregar página!', 'error')
+        return redirect(url_for('index'))
+
+@app.route('/processar-compra', methods=['POST'])
+def processar_compra():
+    """Processar dados da compra e criar pedido"""
+    try:
+        data = request.get_json()
+        
+        # Validar dados recebidos
+        if not data or 'cliente' not in data or 'produto' not in data:
+            return {'success': False, 'message': 'Dados incompletos'}, 400
+        
+        conn = get_db_connection()
+        
+        # Calcular total
+        produto = data['produto']
+        subtotal = produto['preco'] * produto['quantidade']
+        frete = 15.00  # Frete fixo por enquanto
+        total = subtotal + frete
+        
+        # Inserir pedido na base de dados
+        itens_json = json.dumps([{
+            'produto_id': produto['id'],
+            'nome': produto['nome'],
+            'preco': produto['preco'],
+            'quantidade': produto['quantidade'],
+            'tamanho': produto.get('tamanho', ''),
+            'imagem': produto.get('imagem', '')
+        }])
+        
+        cursor = conn.execute('''
+            INSERT INTO pedidos (
+                nome_cliente, email_cliente, telefone, 
+                cep, endereco, numero, complemento, bairro, cidade, estado,
+                metodo_pagamento, total, itens, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            data['cliente']['nome'],
+            data['cliente']['email'], 
+            data['cliente']['telefone'],
+            data['endereco']['cep'],
+            data['endereco']['endereco'],
+            data['endereco']['numero'],
+            data['endereco'].get('complemento', ''),
+            data['endereco']['bairro'],
+            data['endereco']['cidade'],
+            data['endereco']['estado'],
+            data['pagamento'],
+            total,
+            itens_json,
+            'Pendente'
+        ))
+        
+        pedido_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+        
+        # Se for pagamento PIX, redirecionar para página específica
+        if data['pagamento'] == 'pix':
+            return {
+                'success': True, 
+                'pedido_id': pedido_id,
+                'redirect_pix': True,
+                'message': 'Pedido criado! Redirecionando para pagamento PIX...'
+            }
+        
+        return {
+            'success': True, 
+            'pedido_id': pedido_id,
+            'message': 'Pedido criado com sucesso!'
+        }
+        
+    except Exception as e:
+        print(f"Erro ao processar compra: {e}")
+        return {'success': False, 'message': 'Erro interno do servidor'}, 500
+
+@app.route('/pagamento-pix/<int:pedido_id>')
+def pagamento_pix(pedido_id):
+    """Página de pagamento PIX"""
+    try:
+        conn = get_db_connection()
+        pedido = conn.execute('SELECT * FROM pedidos WHERE id = ?', (pedido_id,)).fetchone()
+        conn.close()
+        
+        if not pedido:
+            flash('Pedido não encontrado!', 'error')
+            return redirect(url_for('index'))
+        
+        # Gerar código PIX simulado (em produção, usar uma API real)
+        codigo_pix = gerar_codigo_pix(pedido['total'], pedido_id)
+        
+        return render_template('pagamento_pix.html', 
+                             pedido=pedido, 
+                             codigo_pix=codigo_pix)
+    
+    except Exception as e:
+        print(f"Erro ao carregar pagamento PIX: {e}")
+        flash('Erro ao carregar página de pagamento!', 'error')
+        return redirect(url_for('index'))
+
+@app.route('/verificar-pagamento-pix', methods=['POST'])
+def verificar_pagamento_pix():
+    """Verificar status do pagamento PIX"""
+    try:
+        data = request.get_json()
+        pedido_id = data.get('pedido_id')
+        
+        # Simular verificação (em produção, consultar API do banco/gateway)
+        # Por enquanto, simular que 30% dos pagamentos são aprovados
+        import random
+        pago = random.random() < 0.3  # 30% de chance de estar pago
+        
+        if pago:
+            # Atualizar status do pedido
+            conn = get_db_connection()
+            conn.execute('UPDATE pedidos SET status = ? WHERE id = ?', 
+                        ('Pago', pedido_id))
+            conn.commit()
+            conn.close()
+        
+        return jsonify({
+            'pago': pago,
+            'message': 'Pagamento confirmado!' if pago else 'Pagamento pendente'
+        })
+    
+    except Exception as e:
+        print(f"Erro ao verificar pagamento: {e}")
+        return jsonify({'pago': False, 'message': 'Erro na verificação'})
+
+def gerar_codigo_pix(valor, pedido_id):
+    """Gerar código PIX usando configurações salvas"""
+    # Carregar configurações PIX
+    config = carregar_configuracoes()
+    
+    # Valores padrão caso não estejam configurados
+    chave_pix = config.get('chavePix', 'contato@uzzerstore.com')
+    nome_beneficiario = config.get('nomeBeneficiarioPix', 'UZZERSTORE LTDA')
+    cidade_beneficiario = config.get('cidadeBeneficiario', 'SAO PAULO')
+    
+    # Em produção, usar biblioteca real para PIX (como pypix ou similar)
+    # Este é apenas um código simulado para demonstração
+    
+    # Formato básico do código PIX
+    base_code = f"PIX{pedido_id:06d}{int(valor*100):08d}"
+    
+    # Montar código PIX simplificado (formato real é mais complexo)
+    codigo_completo = (
+        f"00020126"  # Payload Format Indicator
+        f"{len(chave_pix)+4:02d}0014{chave_pix}"  # Merchant Account Information
+        f"5303986"  # Transaction Currency (986 = BRL)
+        f"54{len(f'{valor:.2f}'):02d}{valor:.2f}"  # Transaction Amount
+        f"5802BR"  # Country Code
+        f"59{len(nome_beneficiario):02d}{nome_beneficiario}"  # Merchant Name
+        f"60{len(cidade_beneficiario):02d}{cidade_beneficiario}"  # Merchant City
+        f"62{len(str(pedido_id))+4:02d}05{len(str(pedido_id)):02d}{pedido_id}"  # Additional Data
+        f"6304"  # CRC16
+    )
+    
+    # Simular checksum (em produção, calcular CRC16 real)
+    checksum = str(abs(hash(codigo_completo)) % 10000).zfill(4)
+    
+    return codigo_completo + checksum
 
 # ROTA MOBILE
 @app.route('/mobile')
@@ -1070,6 +1303,83 @@ def admin_dashboard():
     except Exception as e:
         return f"Erro no admin: {e}"
 
+@app.route('/admin/configuracoes')
+def admin_configuracoes():
+    """Página de configurações do admin"""
+    if not is_admin():
+        flash('Acesso negado!', 'error')
+        return redirect(url_for('login'))
+    
+    try:
+        conn = get_db_connection()
+        
+        # Obter estatísticas para a página de backup
+        stats = {
+            'total_usuarios': conn.execute('SELECT COUNT(*) FROM usuarios').fetchone()[0],
+            'total_produtos': conn.execute('SELECT COUNT(*) FROM produtos').fetchone()[0],
+            'total_pedidos': conn.execute('SELECT COUNT(*) FROM pedidos').fetchone()[0] if conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='pedidos'").fetchone() else 0,
+        }
+        
+        conn.close()
+        
+        # Carregar configurações salvas
+        config = carregar_configuracoes()
+        
+        return render_template('admin_configuracoes.html', stats=stats, config=config)
+    except Exception as e:
+        print(f"Erro nas configurações: {e}")
+        return f"Erro: {e}"
+
+@app.route('/admin/configuracoes/salvar', methods=['POST'])
+def salvar_configuracoes():
+    """Salvar configurações do admin"""
+    if not is_admin():
+        return {'success': False, 'message': 'Acesso negado'}, 403
+    
+    try:
+        data = request.get_json()
+        
+        # Salvar configurações em arquivo JSON
+        config_file = os.path.join(BASE_DIR, 'data', 'config.json')
+        
+        # Criar diretório se não existir
+        os.makedirs(os.path.dirname(config_file), exist_ok=True)
+        
+        # Carregar configurações existentes ou criar novo
+        if os.path.exists(config_file):
+            with open(config_file, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+        else:
+            config = {}
+        
+        # Atualizar com novas configurações
+        config.update(data)
+        config['ultima_atualizacao'] = datetime.now().isoformat()
+        
+        # Salvar arquivo
+        with open(config_file, 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=2, ensure_ascii=False)
+        
+        print(f"Configurações salvas: {data}")
+        
+        return {'success': True, 'message': 'Configurações salvas com sucesso!'}
+        
+    except Exception as e:
+        print(f"Erro ao salvar configurações: {e}")
+        return {'success': False, 'message': f'Erro interno do servidor: {str(e)}'}, 500
+
+def carregar_configuracoes():
+    """Carregar configurações salvas"""
+    try:
+        config_file = os.path.join(BASE_DIR, 'data', 'config.json')
+        if os.path.exists(config_file):
+            with open(config_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        return {}
+    except Exception as e:
+        print(f"Erro ao carregar configurações: {e}")
+        return {}
+
 @app.route('/admin/produtos')
 def admin_produtos():
     if not is_admin():
@@ -1122,7 +1432,7 @@ def admin_novo_produto():
             conn.execute('''
                 INSERT INTO produtos (nome, preco, categoria, descricao, imagem, imagens_adicionais, tamanhos, estoque)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (nome, preco, categoria, descricao, imagem, imagens_adicionais_json, tamanhos_str, estoque))
+            ''', (nome, preco, categoria, descricao, imagem, imagens_adicionais_str, tamanhos_str, estoque))
             conn.commit()
             conn.close()
             
@@ -1212,6 +1522,84 @@ def admin_deletar_produto(produto_id):
     
     return redirect(url_for('admin_produtos'))
 
+@app.route('/admin/relatorios')
+def admin_relatorios():
+    if not is_admin():
+        flash('Acesso negado!', 'error')
+        return redirect(url_for('login'))
+    
+    try:
+        conn = get_db_connection()
+        
+        # Estatísticas básicas
+        stats = {}
+        
+        # Total de produtos
+        stats['total_produtos'] = conn.execute('SELECT COUNT(*) as count FROM produtos').fetchone()['count']
+        
+        # Total de usuários
+        stats['total_usuarios'] = conn.execute('SELECT COUNT(*) as count FROM usuarios').fetchone()['count']
+        
+        # Vendas totais (simular - você pode implementar uma tabela de vendas)
+        stats['vendas_total'] = '15.750,80'
+        
+        # Total de pedidos (simular)
+        stats['total_pedidos'] = 127
+        
+        conn.close()
+        return render_template('admin_relatorios.html', stats=stats)
+    
+    except Exception as e:
+        flash(f'Erro ao carregar relatórios: {e}', 'error')
+        return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/relatorios/dados', methods=['POST'])
+def admin_relatorios_dados():
+    if not is_admin():
+        return jsonify({'success': False, 'message': 'Acesso negado'})
+    
+    try:
+        filtros = request.get_json()
+        
+        # Aqui você implementaria a lógica real de filtragem
+        # Por enquanto, retornando dados simulados
+        dados = {
+            'vendas': {
+                'total': 15750.80,
+                'periodo': [
+                    {'data': '2025-10-01', 'valor': 1200.50},
+                    {'data': '2025-10-02', 'valor': 890.00},
+                    {'data': '2025-10-03', 'valor': 1450.30},
+                    {'data': '2025-10-04', 'valor': 1120.75},
+                    {'data': '2025-10-05', 'valor': 2100.20},
+                ]
+            },
+            'pedidos': {
+                'total': 127,
+                'concluidos': 95,
+                'pendentes': 22,
+                'cancelados': 10
+            },
+            'produtos': [
+                {'nome': 'Vestido Floral Primavera', 'vendas': 25, 'valor': 4747.50},
+                {'nome': 'Calça Jeans Skinny', 'vendas': 18, 'valor': 2338.20},
+                {'nome': 'Blusa Básica Algodão', 'vendas': 32, 'valor': 1596.80},
+                {'nome': 'Tênis Casual Branco', 'vendas': 15, 'valor': 1847.25},
+                {'nome': 'Saia Midi Estampada', 'vendas': 12, 'valor': 1176.00}
+            ],
+            'categorias': {
+                'Feminino': 45,
+                'Masculino': 30, 
+                'Infantil': 15,
+                'Acessórios': 10
+            }
+        }
+        
+        return jsonify({'success': True, 'dados': dados})
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
 @app.route('/debug/produtos')
 def debug_produtos():
     if not is_admin():
@@ -1257,7 +1645,7 @@ def db_info():
 @click.option('--senha', prompt=True, hide_input=True, confirmation_prompt=True)
 def create_admin(nome, email, senha):
     """Cria (ou promove) um usuário para administrador."""
-    conn = _conn_rw()
+    conn = get_db_connection()
     try:
         ensure_is_admin_column(conn)
         pass_col = ensure_password_column(conn)

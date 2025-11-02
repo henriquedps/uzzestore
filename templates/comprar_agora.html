@@ -1,0 +1,792 @@
+{% extends "base.html" %}
+
+{% block title %}Finalizar Compra - UzzerStore{% endblock %}
+
+{% block head %}
+<style>
+    .compra-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    .compra-header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding: 30px 0;
+        background: linear-gradient(135deg, #e91e63, #ad1457);
+        border-radius: 12px;
+        color: white;
+    }
+
+    .compra-titulo {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .compra-subtitulo {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    .compra-main {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 40px;
+        margin-bottom: 40px;
+    }
+
+    /* Formulário de Dados */
+    .dados-cliente {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .secao-titulo {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #e91e63;
+        padding-bottom: 10px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #e91e63;
+        box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .form-row-3 {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr;
+        gap: 15px;
+    }
+
+    /* Resumo do Pedido */
+    .resumo-pedido {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        height: fit-content;
+    }
+
+    .produto-resumo {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .produto-imagem {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .produto-info {
+        flex: 1;
+    }
+
+    .produto-nome {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .produto-detalhes {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 5px;
+    }
+
+    .produto-preco {
+        font-weight: 600;
+        color: #e91e63;
+        font-size: 1.1rem;
+    }
+
+    .resumo-valores {
+        margin-bottom: 25px;
+    }
+
+    .valor-linha {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding: 8px 0;
+    }
+
+    .valor-linha.total {
+        border-top: 2px solid #e91e63;
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: #e91e63;
+        margin-top: 15px;
+        padding-top: 15px;
+    }
+
+    /* Métodos de Pagamento */
+    .pagamento-opcoes {
+        margin-bottom: 25px;
+    }
+
+    .pagamento-opcao {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .pagamento-opcao:hover {
+        border-color: #e91e63;
+        background: #fce4ec;
+    }
+
+    .pagamento-opcao.selecionado {
+        border-color: #e91e63;
+        background: #fce4ec;
+    }
+
+    .pagamento-radio {
+        margin-right: 15px;
+    }
+
+    .pagamento-info {
+        flex: 1;
+    }
+
+    .pagamento-nome {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .pagamento-descricao {
+        font-size: 14px;
+        color: #666;
+    }
+
+    /* Botões */
+    .botoes-compra {
+        display: flex;
+        gap: 15px;
+    }
+
+    .btn-voltar {
+        flex: 1;
+        padding: 15px 30px;
+        background: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        text-align: center;
+    }
+
+    .btn-voltar:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+    }
+
+    .btn-finalizar {
+        flex: 2;
+        padding: 15px 30px;
+        background: linear-gradient(135deg, #e91e63, #ad1457);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .btn-finalizar:hover {
+        background: linear-gradient(135deg, #ad1457, #880e4f);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(233, 30, 99, 0.3);
+    }
+
+    .btn-finalizar:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .compra-main {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .compra-titulo {
+            font-size: 2rem;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .form-row-3 {
+            grid-template-columns: 1fr;
+        }
+
+        .botoes-compra {
+            flex-direction: column;
+        }
+
+        .produto-resumo {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .produto-imagem {
+            align-self: center;
+        }
+    }
+
+    /* Loading e Mensagens */
+    .loading {
+        display: none;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .loading.show {
+        display: block;
+    }
+
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #e91e63;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .success-message {
+        display: none;
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .success-message.show {
+        display: block;
+    }
+
+    .error-message {
+        display: none;
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .error-message.show {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="compra-container">
+    <div class="compra-header">
+        <h1 class="compra-titulo">Finalizar Compra</h1>
+        <p class="compra-subtitulo">Complete seus dados para finalizar o pedido</p>
+    </div>
+
+    <div id="successMessage" class="success-message">
+        <h3>🎉 Pedido realizado com sucesso!</h3>
+        <p>Você receberá um e-mail com os detalhes do seu pedido.</p>
+    </div>
+
+    <div id="errorMessage" class="error-message">
+        <h3>❌ Erro ao processar pedido</h3>
+        <p id="errorText">Verifique os dados e tente novamente.</p>
+    </div>
+
+    <div class="compra-main">
+        <!-- Formulário de Dados -->
+        <div class="dados-cliente">
+            <h2 class="secao-titulo">📝 Dados Pessoais</h2>
+            
+            <form id="formCompra">
+                <div class="form-group">
+                    <label class="form-label" for="nomeCompleto">Nome Completo *</label>
+                    <input type="text" id="nomeCompleto" name="nomeCompleto" class="form-input" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="email">E-mail *</label>
+                        <input type="email" id="email" name="email" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="telefone">Telefone *</label>
+                        <input type="tel" id="telefone" name="telefone" class="form-input" placeholder="(11) 99999-9999" required>
+                    </div>
+                </div>
+
+                <h3 class="secao-titulo">📍 Endereço de Entrega</h3>
+
+                <div class="form-group">
+                    <label class="form-label" for="cep">CEP *</label>
+                    <input type="text" id="cep" name="cep" class="form-input" placeholder="00000-000" maxlength="9" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="endereco">Endereço *</label>
+                    <input type="text" id="endereco" name="endereco" class="form-input" required>
+                </div>
+
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label class="form-label" for="numero">Número *</label>
+                        <input type="text" id="numero" name="numero" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="complemento">Complemento</label>
+                        <input type="text" id="complemento" name="complemento" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="bairro">Bairro *</label>
+                        <input type="text" id="bairro" name="bairro" class="form-input" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="cidade">Cidade *</label>
+                        <input type="text" id="cidade" name="cidade" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="estado">Estado *</label>
+                        <select id="estado" name="estado" class="form-input" required>
+                            <option value="">Selecione</option>
+                            <option value="AC">Acre</option>
+                            <option value="AL">Alagoas</option>
+                            <option value="AP">Amapá</option>
+                            <option value="AM">Amazonas</option>
+                            <option value="BA">Bahia</option>
+                            <option value="CE">Ceará</option>
+                            <option value="DF">Distrito Federal</option>
+                            <option value="ES">Espírito Santo</option>
+                            <option value="GO">Goiás</option>
+                            <option value="MA">Maranhão</option>
+                            <option value="MT">Mato Grosso</option>
+                            <option value="MS">Mato Grosso do Sul</option>
+                            <option value="MG">Minas Gerais</option>
+                            <option value="PA">Pará</option>
+                            <option value="PB">Paraíba</option>
+                            <option value="PR">Paraná</option>
+                            <option value="PE">Pernambuco</option>
+                            <option value="PI">Piauí</option>
+                            <option value="RJ">Rio de Janeiro</option>
+                            <option value="RN">Rio Grande do Norte</option>
+                            <option value="RS">Rio Grande do Sul</option>
+                            <option value="RO">Rondônia</option>
+                            <option value="RR">Roraima</option>
+                            <option value="SC">Santa Catarina</option>
+                            <option value="SP">São Paulo</option>
+                            <option value="SE">Sergipe</option>
+                            <option value="TO">Tocantins</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Resumo do Pedido -->
+        <div class="resumo-pedido">
+            <h2 class="secao-titulo">📋 Resumo do Pedido</h2>
+            
+            <div id="produtoResumo" class="produto-resumo">
+                <!-- Produto será inserido via JavaScript -->
+            </div>
+
+            <div class="resumo-valores">
+                <div class="valor-linha">
+                    <span>Subtotal:</span>
+                    <span id="subtotal">R$ 0,00</span>
+                </div>
+                <div class="valor-linha">
+                    <span>Frete:</span>
+                    <span id="frete">R$ 15,00</span>
+                </div>
+                <div class="valor-linha total">
+                    <span>Total:</span>
+                    <span id="total">R$ 0,00</span>
+                </div>
+            </div>
+
+            <h3 class="secao-titulo">💳 Método de Pagamento</h3>
+            
+            <div class="pagamento-opcoes">
+                <div class="pagamento-opcao selecionado" data-metodo="pix">
+                    <input type="radio" name="pagamento" value="pix" class="pagamento-radio" checked>
+                    <div class="pagamento-info">
+                        <div class="pagamento-nome">PIX</div>
+                        <div class="pagamento-descricao">Pagamento instantâneo</div>
+                    </div>
+                </div>
+
+                <div class="pagamento-opcao" data-metodo="cartao">
+                    <input type="radio" name="pagamento" value="cartao" class="pagamento-radio">
+                    <div class="pagamento-info">
+                        <div class="pagamento-nome">Cartão de Crédito</div>
+                        <div class="pagamento-descricao">Em até 12x sem juros</div>
+                    </div>
+                </div>
+
+                <div class="pagamento-opcao" data-metodo="boleto">
+                    <input type="radio" name="pagamento" value="boleto" class="pagamento-radio">
+                    <div class="pagamento-info">
+                        <div class="pagamento-nome">Boleto Bancário</div>
+                        <div class="pagamento-descricao">Vencimento em 3 dias úteis</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Processando seu pedido...</p>
+            </div>
+
+            <div class="botoes-compra">
+                <a href="javascript:history.back()" class="btn-voltar">Voltar</a>
+                <button type="button" id="btnFinalizar" class="btn-finalizar" onclick="finalizarCompra()">
+                    Finalizar Pedido
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Dados do produto selecionado
+let produtoCompra = null;
+
+// Inicializar página
+document.addEventListener('DOMContentLoaded', function() {
+    carregarProdutoCompra();
+    inicializarEventos();
+    preencherDadosUsuario();
+});
+
+function carregarProdutoCompra() {
+    // Recuperar produto do localStorage ou URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const produtoId = urlParams.get('produto');
+    const tamanho = urlParams.get('tamanho');
+    const quantidade = parseInt(urlParams.get('quantidade')) || 1;
+
+    if (produtoId) {
+        // Simular dados do produto (em produção, viria do servidor)
+        produtoCompra = {
+            id: produtoId,
+            nome: 'Produto Selecionado',
+            preco: 129.90,
+            imagem: '/static/imagens/placeholder.jpg',
+            tamanho: tamanho,
+            quantidade: quantidade
+        };
+    } else {
+        // Tentar recuperar do sessionStorage (do botão "Comprar Agora")
+        const produtoSessao = sessionStorage.getItem('produtoCompraAgora');
+        if (produtoSessao) {
+            produtoCompra = JSON.parse(produtoSessao);
+        }
+    }
+
+    if (produtoCompra) {
+        exibirResumo();
+    } else {
+        // Redirecionar para página de produtos se não houver produto
+        window.location.href = '/';
+    }
+}
+
+function exibirResumo() {
+    const container = document.getElementById('produtoResumo');
+    const subtotal = produtoCompra.preco * produtoCompra.quantidade;
+    const frete = 15.00;
+    const total = subtotal + frete;
+
+    container.innerHTML = `
+        <img src="${produtoCompra.imagem}" alt="${produtoCompra.nome}" class="produto-imagem">
+        <div class="produto-info">
+            <div class="produto-nome">${produtoCompra.nome}</div>
+            <div class="produto-detalhes">
+                ${produtoCompra.tamanho ? `Tamanho: ${produtoCompra.tamanho}` : ''}
+                ${produtoCompra.tamanho ? '<br>' : ''}
+                Quantidade: ${produtoCompra.quantidade}
+            </div>
+            <div class="produto-preco">R$ ${produtoCompra.preco.toFixed(2).replace('.', ',')}</div>
+        </div>
+    `;
+
+    document.getElementById('subtotal').textContent = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+    document.getElementById('total').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+}
+
+function inicializarEventos() {
+    // Máscara para telefone
+    document.getElementById('telefone').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length <= 11) {
+            value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+            if (value.length < 14) {
+                value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+            }
+        }
+        e.target.value = value;
+    });
+
+    // Máscara para CEP
+    document.getElementById('cep').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length <= 8) {
+            value = value.replace(/(\d{5})(\d{3})/, '$1-$2');
+        }
+        e.target.value = value;
+    });
+
+    // Buscar endereço por CEP
+    document.getElementById('cep').addEventListener('blur', buscarCEP);
+
+    // Seleção de método de pagamento
+    document.querySelectorAll('.pagamento-opcao').forEach(opcao => {
+        opcao.addEventListener('click', function() {
+            document.querySelectorAll('.pagamento-opcao').forEach(o => o.classList.remove('selecionado'));
+            this.classList.add('selecionado');
+            this.querySelector('input[type="radio"]').checked = true;
+        });
+    });
+}
+
+function buscarCEP() {
+    const cep = document.getElementById('cep').value.replace(/\D/g, '');
+    
+    if (cep.length === 8) {
+        fetch(`https://viacep.com.br/ws/${cep}/json/`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data.erro) {
+                    document.getElementById('endereco').value = data.logradouro;
+                    document.getElementById('bairro').value = data.bairro;
+                    document.getElementById('cidade').value = data.localidade;
+                    document.getElementById('estado').value = data.uf;
+                }
+            })
+            .catch(error => {
+                console.log('Erro ao buscar CEP:', error);
+            });
+    }
+}
+
+function preencherDadosUsuario() {
+    // Se usuário estiver logado, preencher dados salvos
+    const usuarioLogado = sessionStorage.getItem('usuarioLogado');
+    if (usuarioLogado) {
+        const dados = JSON.parse(usuarioLogado);
+        if (dados.nome) document.getElementById('nomeCompleto').value = dados.nome;
+        if (dados.email) document.getElementById('email').value = dados.email;
+    }
+}
+
+function validarFormulario() {
+    const form = document.getElementById('formCompra');
+    const campos = form.querySelectorAll('[required]');
+    
+    for (let campo of campos) {
+        if (!campo.value.trim()) {
+            campo.focus();
+            mostrarErro(`O campo "${campo.previousElementSibling.textContent}" é obrigatório.`);
+            return false;
+        }
+    }
+
+    // Validar e-mail
+    const email = document.getElementById('email').value;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        document.getElementById('email').focus();
+        mostrarErro('Por favor, insira um e-mail válido.');
+        return false;
+    }
+
+    // Validar CEP
+    const cep = document.getElementById('cep').value.replace(/\D/g, '');
+    if (cep.length !== 8) {
+        document.getElementById('cep').focus();
+        mostrarErro('Por favor, insira um CEP válido.');
+        return false;
+    }
+
+    return true;
+}
+
+function finalizarCompra() {
+    if (!validarFormulario()) return;
+
+    const btnFinalizar = document.getElementById('btnFinalizar');
+    const loading = document.getElementById('loading');
+
+    // Desabilitar botão e mostrar loading
+    btnFinalizar.disabled = true;
+    loading.classList.add('show');
+
+    // Coletar dados do formulário
+    const dadosCompra = {
+        produto: produtoCompra,
+        cliente: {
+            nome: document.getElementById('nomeCompleto').value,
+            email: document.getElementById('email').value,
+            telefone: document.getElementById('telefone').value
+        },
+        endereco: {
+            cep: document.getElementById('cep').value,
+            endereco: document.getElementById('endereco').value,
+            numero: document.getElementById('numero').value,
+            complemento: document.getElementById('complemento').value,
+            bairro: document.getElementById('bairro').value,
+            cidade: document.getElementById('cidade').value,
+            estado: document.getElementById('estado').value
+        },
+        pagamento: document.querySelector('input[name="pagamento"]:checked').value
+    };
+
+    // Simular envio para servidor
+    setTimeout(() => {
+        // Simular sucesso (em produção, fazer requisição real)
+        processarPedido(dadosCompra);
+    }, 2000);
+}
+
+function processarPedido(dados) {
+    // Enviar dados para o servidor
+    fetch('/processar-compra', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dados)
+    })
+    .then(response => response.json())
+    .then(data => {
+        const loading = document.getElementById('loading');
+        const btnFinalizar = document.getElementById('btnFinalizar');
+        
+        loading.classList.remove('show');
+        btnFinalizar.disabled = false;
+
+        if (data.success) {
+            const successMessage = document.getElementById('successMessage');
+            successMessage.classList.add('show');
+
+            // Limpar dados temporários
+            sessionStorage.removeItem('produtoCompraAgora');
+
+            // Se for pagamento PIX, redirecionar para página específica
+            if (data.redirect_pix) {
+                setTimeout(() => {
+                    window.location.href = `/pagamento-pix/${data.pedido_id}`;
+                }, 2000);
+            } else {
+                // Redirecionar para página de sucesso após 3 segundos
+                setTimeout(() => {
+                    window.location.href = `/pedido-sucesso?id=${data.pedido_id}`;
+                }, 3000);
+            }
+        } else {
+            mostrarErro(data.message || 'Erro ao processar pedido');
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        
+        const loading = document.getElementById('loading');
+        const btnFinalizar = document.getElementById('btnFinalizar');
+        
+        loading.classList.remove('show');
+        btnFinalizar.disabled = false;
+        
+        mostrarErro('Erro de conexão. Tente novamente.');
+    });
+}
+
+function mostrarErro(mensagem) {
+    const errorMessage = document.getElementById('errorMessage');
+    const errorText = document.getElementById('errorText');
+    
+    errorText.textContent = mensagem;
+    errorMessage.classList.add('show');
+
+    setTimeout(() => {
+        errorMessage.classList.remove('show');
+    }, 5000);
+}
+</script>
+{% endblock %}

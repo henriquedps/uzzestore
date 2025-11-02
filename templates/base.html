@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}UzzeStore{% endblock %}</title>
+    <title>{% block title %}UzzeStore - Moda Feminina e Masculina{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-1S8s..." crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -13,10 +13,16 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/sacola-lateral.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/banner-images.css') }}">
     <style>
+        /* 🎨 Variáveis CSS Dinâmicas - Configurações Personalizadas */
+        :root {
+            --cor-principal-config: {{ global_config.get('corPrincipal', '#1a1a1a') }};
+            --cor-secundaria-config: {{ global_config.get('corSecundaria', '#2c3e50') }};
+        }
+        
         :root {
             /* 🎨 Paleta de Cores Padronizada UzzeStore */
-            --primary-color: #1a1a1a;          /* Preto elegante - cor principal */
-            --secondary-color: #2c3e50;        /* Azul naval - elementos secundários */
+            --primary-color: var(--cor-principal-config);   /* Cor principal personalizada */
+            --secondary-color: var(--cor-secundaria-config); /* Cor secundária personalizada */
             --accent-color: #e67e22;           /* Laranja queimado - destaques */
             --gold-accent: #f39c12;            /* Dourado - elementos premium */
             --steel-accent: #34495e;           /* Cinza aço - elementos neutros */
@@ -192,6 +198,49 @@
         .nav-item.sale a {
             color: var(--error-color);
             font-weight: 600;
+        }
+
+        /* Estilo para o botão Admin */
+        .nav-item.admin a {
+            color: var(--warning-color);
+            font-weight: 600;
+            background: rgba(243, 156, 18, 0.1);
+            border: 1px solid rgba(243, 156, 18, 0.3);
+            border-radius: var(--border-radius);
+            padding: 8px 12px;
+            transition: var(--transition);
+        }
+
+        .nav-item.admin a:hover {
+            background: var(--warning-color);
+            color: var(--bg-dark);
+            border-color: var(--warning-color);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(243, 156, 18, 0.4);
+        }
+
+        .nav-item.admin a i {
+            margin-right: 6px;
+            font-size: 14px;
+        }
+
+        /* Badge para indicar que é admin */
+        .nav-item.admin a::after {
+            content: '🔧';
+            margin-left: 4px;
+            font-size: 12px;
+        }
+
+        /* Responsividade para o botão admin */
+        @media (max-width: 768px) {
+            .nav-item.admin a {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+            
+            .nav-item.admin a::after {
+                display: none;
+            }
         }
 
         .nav-actions {
@@ -813,7 +862,7 @@
             letter-spacing: -2px;
         }
 
-        /* Cores das letras individuais - estilo Texas Farm */
+        /* Cores das letras individuais - estilo Moda */
         .letter-d { color: #ff69b4; }  /* Rosa */
         .letter-a { color: #ffa500; }  /* Laranja */
         .letter-i { color: #40e0d0; }  /* Turquesa */
@@ -839,6 +888,8 @@
         .letter-m { color: #32cd32; }
         .letter-s { color: #ff1493; }
         .letter-t { color: #40e0d0; }
+        .letter-p { color: #ff4500; }
+        .letter-q { color: #ff69b4; }
 
         .banner-title-colorful span {
             display: inline-block;
@@ -907,34 +958,24 @@
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
         }
 
-        .collection-tag.txteen {
+        .collection-tag.feminino {
             border-color: #ff69b4;
             background: rgba(255, 105, 180, 0.2);
         }
 
-        .collection-tag.txmini {
-            border-color: #ffa500;
-            background: rgba(255, 165, 0, 0.2);
+        .collection-tag.masculino {
+            border-color: #4169e1;
+            background: rgba(65, 105, 225, 0.2);
         }
 
-        .collection-tag.western {
-            border-color: #40e0d0;
-            background: rgba(64, 224, 208, 0.2);
-        }
-
-        .collection-tag.country {
-            border-color: #32cd32;
-            background: rgba(50, 205, 50, 0.2);
+        .collection-tag.promocao {
+            border-color: #ff4500;
+            background: rgba(255, 69, 0, 0.2);
         }
 
         .collection-tag.premium {
             border-color: #ffd700;
             background: rgba(255, 215, 0, 0.2);
-        }
-
-        .collection-tag.family {
-            border-color: #9370db;
-            background: rgba(147, 112, 219, 0.2);
         }
 
         .banner-cta-modern {
@@ -1927,15 +1968,23 @@
             <a href="{{ url_for('index') }}" class="logo">UzzeStore</a>
             
             <nav class="nav-menu">
-                <li class="nav-item"><a href="{{ url_for('index', categoria='Camisas') }}">Camisas</a></li>
-                <li class="nav-item"><a href="{{ url_for('index', categoria='Calças') }}">Calças</a></li>
-                <li class="nav-item"><a href="{{ url_for('index', categoria='Bermuda') }}">Bermuda</a></li>
+                <li class="nav-item"><a href="{{ url_for('index', categoria='Feminino') }}">Feminino</a></li>
+                <li class="nav-item"><a href="{{ url_for('index', categoria='Masculino') }}">Masculino</a></li>
                 <li class="nav-item"><a href="{{ url_for('index', categoria='Camisetas') }}">Camisetas</a></li>
-                <li class="nav-item"><a href="{{ url_for('index', categoria='vestido') }}">vestido</a></li>
+                <li class="nav-item"><a href="{{ url_for('index', categoria='Calças') }}">Calças</a></li>
+                <li class="nav-item"><a href="{{ url_for('index', categoria='Vestidos') }}">Vestidos</a></li>
                 <li class="nav-item"><a href="{{ url_for('index', categoria='Calçados') }}">Calçados</a></li>
-                <li class="nav-item"><a href="{{ url_for('index', categoria='Conjuntos') }}">Conjuntos</a></li>
                 <li class="nav-item"><a href="{{ url_for('index', categoria='Acessórios') }}">Acessórios</a></li>
-                <li class="nav-item"><a href="{{ url_for('index') }}">Lançamentos</a></li>
+                <li class="nav-item sale"><a href="{{ url_for('index', categoria='Promoção') }}">Promoção</a></li>
+                
+                <!-- Botão Admin - só aparece para administradores logados -->
+                {% if session.user_id and is_admin() %}
+                <li class="nav-item admin">
+                    <a href="{{ url_for('admin_dashboard') }}" title="Painel Administrativo">
+                        <i class="fas fa-cog"></i> Admin
+                    </a>
+                </li>
+                {% endif %}
             </nav>
             
             <div class="nav-actions">
@@ -1976,13 +2025,26 @@
     {% if request.endpoint == 'index' and not request.args.get('categoria') %}
     <div class="banner-container">
         <div class="banner-slide active" id="slide-1">
-            <div class="banner-bg-image" style="background-image: url('{{ url_for('static', filename='imagens/cowboy.webp') }}');"></div>
+            <div class="banner-bg-image" style="background-image: url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');"></div>
             <div class="banner-overlay-gradient"></div>
             <div class="banner-content-fullwidth">
                 <div class="banner-text-overlay">
+                    <div class="banner-subtitle">Nova Coleção</div>
+                    <h1 class="banner-title-colorful">
+                        <span class="letter-m">M</span><span class="letter-o">o</span><span class="letter-d">d</span><span class="letter-a">a</span>
+                        <span class="letter-space"> </span>
+                        <span class="letter-f">F</span><span class="letter-e">e</span><span class="letter-m">m</span><span class="letter-i">i</span><span class="letter-n">n</span><span class="letter-a">i<samp class="letter-n">n</samp><samp class="letter-i">o</span>  
+                    </h1>
+                    <div class="banner-subtitle-bottom">Elegância que inspira</div>
+                    <div class="banner-collections">
+                        <span class="collection-tag feminino">Vestidos</span>
+                        <span class="collection-tag feminino">Blusas</span>
+                        <span class="collection-tag feminino">Calças</span>
+                        <span class="collection-tag feminino">Acessórios</span>
+                    </div>
                     <div class="texas-farm-buttons">
-                        <button class="btn-texas-farm btn-primary" onclick="window.location.href='{{ url_for('index', categoria='Texas Farm') }}'">
-                            COLEÇÃO TEXAS FARM
+                        <button class="btn-texas-farm btn-primary" onclick="window.location.href='{{ url_for('index', categoria='Feminino') }}'">
+                            VER COLEÇÃO FEMININA
                         </button>
                         <button class="btn-texas-farm btn-secondary" onclick="window.location.href='{{ url_for('index') }}'">
                             VER TUDO
@@ -1993,16 +2055,57 @@
         </div>
 
         <div class="banner-slide" id="slide-2">
-            <div class="banner-bg-image" style="background-image: url('{{ url_for('static', filename='imagens/cowgirl.webp') }}');"></div>
+            <div class="banner-bg-image" style="background-image: url('https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');"></div>
             <div class="banner-overlay-gradient"></div>
             <div class="banner-content-fullwidth">
                 <div class="banner-text-overlay">
+                    <div class="banner-subtitle">Estilo Masculino</div>
+                    <h1 class="banner-title-colorful">
+                        <span class="letter-m">M</span><span class="letter-o">o</span><span class="letter-d">d</span><span class="letter-a">a</span>
+                        <span class="letter-space"> </span>
+                        <span class="letter-m">M</span><span class="letter-a">a</span><span class="letter-s">s</span><span class="letter-c">c</span><span class="letter-u">u</span><span class="letter-l">l</span><span class="letter-i">i</span><span class="letter-n">n</span><span class="letter-a">a</span>
+                    </h1>
+                    <div class="banner-subtitle-bottom">Sofisticação e conforto</div>
+                    <div class="banner-collections">
+                        <span class="collection-tag masculino">Camisas</span>
+                        <span class="collection-tag masculino">Camisetas</span>
+                        <span class="collection-tag masculino">Calças</span>
+                        <span class="collection-tag masculino">Calçados</span>
+                    </div>
                     <div class="texas-farm-buttons">
-                        <button class="btn-texas-farm btn-primary" onclick="window.location.href='{{ url_for('index', categoria='Texas Farm') }}'">
-                            LINHA FEMININA
+                        <button class="btn-texas-farm btn-primary" onclick="window.location.href='{{ url_for('index', categoria='Masculino') }}'">
+                            VER COLEÇÃO MASCULINA
                         </button>
-                        <button class="btn-texas-farm btn-secondary" onclick="window.location.href='{{ url_for('index', categoria='Camisas') }}'">
-                            CAMISAS
+                        <button class="btn-texas-farm btn-secondary" onclick="window.location.href='{{ url_for('index', categoria='Calçados') }}'">
+                            VER CALÇADOS
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="banner-slide" id="slide-3">
+            <div class="banner-bg-image" style="background-image: url('https://images.unsplash.com/photo-1445205170230-053b83016050?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2071&q=80');"></div>
+            <div class="banner-overlay-gradient"></div>
+            <div class="banner-content-fullwidth">
+                <div class="banner-text-overlay">
+                    <div class="banner-subtitle">Oferta Especial</div>
+                    <h1 class="banner-title-colorful">
+                        <span class="letter-p">P</span><span class="letter-r">r</span><span class="letter-o">o</span><span class="letter-m">m</span><span class="letter-o">o</span><span class="letter-c">ç</span><span class="letter-a">ã</span><span class="letter-o">o</span>
+                    </h1>
+                    <div class="banner-subtitle-bottom">Até 50% de desconto</div>
+                    <div class="banner-collections">
+                        <span class="collection-tag promocao">Vestidos</span>
+                        <span class="collection-tag promocao">Camisetas</span>
+                        <span class="collection-tag promocao">Calças</span>
+                        <span class="collection-tag promocao">Acessórios</span>
+                    </div>
+                    <div class="texas-farm-buttons">
+                        <button class="btn-texas-farm btn-primary" onclick="window.location.href='{{ url_for('index', categoria='Promoção') }}'">
+                            VER PROMOÇÕES
+                        </button>
+                        <button class="btn-texas-farm btn-secondary" onclick="window.location.href='{{ url_for('index', categoria='Vestidos') }}'">
+                            VER VESTIDOS
                         </button>
                     </div>
                 </div>
@@ -2017,6 +2120,7 @@
             <div class="banner-dots">
                 <span class="dot active" onclick="currentSlide(1)"></span>
                 <span class="dot" onclick="currentSlide(2)"></span>
+                <span class="dot" onclick="currentSlide(3)"></span>
             </div>
             <button class="banner-next" onclick="nextSlide()">
                 <i class="fas fa-chevron-right"></i>
@@ -2245,7 +2349,7 @@
         // 🎠 Banner Rotativo JavaScript
         let currentSlideIndex = 1;
         let slideInterval;
-        const totalSlides = 2;
+        const totalSlides = 3;
 
         // Função para mostrar slide específico
         function showSlide(n) {

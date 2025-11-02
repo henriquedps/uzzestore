@@ -1,0 +1,23 @@
+{
+  "pixAtivo": true,
+  "tipoChavePix": "cpf",
+  "chavePix": "contato@uzzerstore.com",
+  "nomeBeneficiarioPix": "UZZERSTORE LTDA",
+  "cidadeBeneficiario": "SAO PAULO",
+  "tempoPagamentoPix": "30",
+  "verificacaoAutomatica": "30",
+  "cartaoAtivo": true,
+  "boletoAtivo": true,
+  "taxaEntrega": "00.0",
+  "ultima_atualizacao": "2025-10-27T20:54:59.648042",
+  "nomeLoja": "UzzerStore",
+  "emailLoja": "contato@uzzerstore.com",
+  "telefoneLoja": "66996979066",
+  "descricaoLoja": "A UzzerStore é especializada em moda moderna e tendências fashion.",
+  "cnpj": "",
+  "enderecoLoja": "Rua Papa João XXIII",
+  "prazoEntrega": "7",
+  "faixaCep": "",
+  "freteGratis": true,
+  "valorMinimoFrete": "100.00"
+}

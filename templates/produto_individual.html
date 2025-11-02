@@ -4,916 +4,452 @@
 
 {% block head %}
 <style>
-    /* Reset e Variáveis */
-    * {
-        box-sizing: border-box;
-    }
-
     .produto-container {
         max-width: 1400px;
         margin: 0 auto;
         padding: 20px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 60px;
-        align-items: start;
-        min-height: 80vh;
         background: #fff;
     }
 
-    /* Breadcrumb */
-    .breadcrumb {
-        grid-column: 1 / -1;
-        font-size: 14px;
-        color: #666;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .breadcrumb a {
-        color: #007bff;
-        text-decoration: none;
-        transition: color 0.3s ease;
-    }
-
-    .breadcrumb a:hover {
-        color: #0056b3;
-    }
-
-    .breadcrumb > span {
-        color: #999;
-    }
-
-    /* Seção de imagens */
-    .produto-imagens {
+    .produto-main {
         display: grid;
-        grid-template-columns: 120px 1fr;
-        gap: 20px;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        margin-bottom: 40px;
     }
 
-    /* Miniaturas à esquerda */
-    .miniaturas {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
+    .produto-galeria {
+        position: relative;
     }
 
-    .miniatura {
-        width: 100px;
-        height: 100px;
-        border-radius: 8px;
-        overflow: hidden;
-        cursor: pointer;
-        border: 2px solid transparent;
-        transition: all 0.3s ease;
-        background: #f5f5f5;
-    }
-
-    .miniatura:hover,
-    .miniatura.ativa {
-        border-color: #000;
-        transform: scale(1.05);
-    }
-
-    .miniatura img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    /* Imagem principal */
     .imagem-principal {
         width: 100%;
         height: 600px;
-        border-radius: 12px;
-        overflow: hidden;
-        background: #f8f9fa;
-        position: relative;
-    }
-
-    .imagem-principal img {
-        width: 100%;
-        height: 100%;
         object-fit: cover;
-        transition: transform 0.5s ease;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
     }
 
-    .imagem-principal:hover img {
+    .imagem-principal:hover {
         transform: scale(1.02);
     }
 
-    /* Seção de informações */
     .produto-info {
-        padding: 20px 0;
-    }
-
-    .cashback-badge {
-        background: #e8f5e8;
-        color: #28a745;
-        padding: 6px 12px;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: 600;
-        display: inline-block;
-        margin-bottom: 15px;
-    }
-
-    .produto-titulo {
-        font-size: 1.8rem;
-        font-weight: 400;
-        color: #333;
-        margin-bottom: 8px;
-        line-height: 1.3;
+        padding: 20px;
     }
 
     .produto-categoria {
-        font-size: 14px;
         color: #666;
-        margin-bottom: 20px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    /* Preços */
-    .preco-container {
-        margin: 25px 0;
-    }
-
-    .preco-original {
         font-size: 14px;
-        color: #999;
-        text-decoration: line-through;
-        margin-bottom: 2px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 10px;
     }
 
-    .preco-atual {
-        font-size: 1.8rem;
+    .produto-nome {
+        font-size: 2.5rem;
         font-weight: 700;
-        color: #000;
-        margin-bottom: 5px;
-    }
-
-    .economia {
-        font-size: 12px;
-        color: #28a745;
-        font-weight: 600;
-    }
-
-    /* Seletores */
-    .selecoes {
-        margin: 30px 0;
-    }
-
-    .selecao-grupo {
-        margin-bottom: 25px;
-    }
-
-    .selecao-titulo {
-        font-size: 14px;
-        font-weight: 600;
         color: #333;
-        margin-bottom: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        margin-bottom: 15px;
+        line-height: 1.2;
     }
 
-    .cor-selected {
-        font-weight: 400;
+    .produto-preco {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #e91e63;
+        margin-bottom: 20px;
+    }
+
+    .produto-descricao {
+        font-size: 16px;
+        line-height: 1.6;
         color: #666;
+        margin-bottom: 30px;
     }
 
-    /* Cores */
-    .cores-container {
+    .tamanhos-section {
+        margin-bottom: 30px;
+    }
+
+    .tamanhos-label {
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: block;
+        color: #333;
+    }
+
+    .tamanhos-opcoes {
         display: flex;
-        gap: 8px;
+        gap: 10px;
         flex-wrap: wrap;
-        align-items: center;
-    }
-
-    .cor-opcao {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        border: 2px solid #ddd;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-    }
-
-    .cor-opcao:hover,
-    .cor-opcao.selecionada {
-        border-color: #000;
-        transform: scale(1.1);
-    }
-
-    .cor-opcao.preto { background: #1a1a1a; }
-    .cor-opcao.branco { background: #f5f5f5; border-color: #ccc; }
-    .cor-opcao.azul { background: #4a90e2; }
-    .cor-opcao.verde { background: #7ed321; }
-    .cor-opcao.vermelho { background: #d0021b; }
-    .cor-opcao.cinza { background: #9b9b9b; }
-    .cor-opcao.marrom { background: #8b4513; }
-
-    /* Tamanhos */
-    .tamanhos-container {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
+        
     }
 
     .tamanho-opcao {
-        min-width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        background: #fff;
-        color: #333;
-        font-weight: 500;
+        padding: 12px 20px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
         cursor: pointer;
         transition: all 0.3s ease;
-        padding: 0 12px;
-        font-size: 14px;
+        font-weight: 500;
+        background: #fff;
     }
 
-    .tamanho-opcao:hover,
+    .tamanho-opcao:hover {
+        border-color: #e91e63;
+        background: #fce4ec;
+    }
+
     .tamanho-opcao.selecionado {
-        border-color: #000;
-        background: #000;
-        color: #fff;
+        border-color: #e91e63;
+        background: #e91e63;
+        color: white;
     }
 
-    /* Quantidade e ações */
-    .acoes-container {
+    .compra-controles {
         display: flex;
         gap: 15px;
-        margin: 30px 0;
         align-items: center;
-    }
-
-    .quantidade-container {
-        display: flex;
-        align-items: center;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        overflow: hidden;
-        background: #fff;
-    }
-
-    .quantidade-btn {
-        width: 40px;
-        height: 48px;
-        background: none;
-        border: none;
-        color: #333;
-        font-size: 18px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .quantidade-btn:hover {
-        background: #f5f5f5;
+        margin-bottom: 30px;
     }
 
     .quantidade-input {
-        width: 60px;
-        height: 48px;
-        background: none;
-        border: none;
-        color: #333;
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        width: 80px;
         text-align: center;
-        font-size: 16px;
-        font-weight: 600;
-        border-left: 1px solid #ddd;
-        border-right: 1px solid #ddd;
+        font-weight: 500;
     }
 
-    .btn-adicionar {
+    .btn-adicionar-carrinho {
         flex: 1;
-        padding: 14px 32px;
-        background: #28a745;
-        color: #fff;
+        padding: 15px 30px;
+        background: linear-gradient(135deg, #e91e63, #ad1457);
+        color: white;
         border: none;
-        border-radius: 4px;
+        border-radius: 8px;
         font-size: 16px;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
+        letter-spacing: 1px;
     }
 
-    .btn-adicionar:hover {
-        background: #218838;
-        transform: translateY(-1px);
+    .btn-adicionar-carrinho:hover {
+        background: linear-gradient(135deg, #ad1457, #880e4f);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(233, 30, 99, 0.3);
     }
 
-    .btn-favorito {
-        width: 48px;
-        height: 48px;
-        background: #fff;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        color: #666;
-        font-size: 20px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .btn-favorito:hover {
-        background: #f5f5f5;
-        border-color: #000;
-        color: #000;
-    }
-
-    .btn-favorito.ativo {
-        background: #dc3545;
-        border-color: #dc3545;
-        color: #fff;
-    }
-
-    /* Botão Personalizar */
-    .btn-personalizar {
-        width: 100%;
-        padding: 12px 20px;
-        background: #fff;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        color: #333;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin: 15px 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-    }
-
-    .btn-personalizar:hover {
-        background: #f5f5f5;
-        border-color: #000;
-    }
-
-    /* Informações adicionais */
-    .info-adicional {
-        margin-top: 40px;
-        border-top: 1px solid #eee;
-        padding-top: 30px;
-    }
-
-    .info-tabs {
-        display: flex;
-        gap: 2px;
-        margin-bottom: 25px;
-        border-bottom: 1px solid #eee;
-    }
-
-    .tab-btn {
-        padding: 12px 20px;
-        background: none;
+    .btn-comprar-agora {
+        padding: 15px 30px;
+        background: #333;
+        color: white;
         border: none;
-        color: #666;
-        cursor: pointer;
-        border-bottom: 2px solid transparent;
-        transition: all 0.3s ease;
-        font-weight: 500;
-        font-size: 14px;
-    }
-
-    .tab-btn.ativo {
-        color: #000;
-        border-bottom-color: #000;
-    }
-
-    .tab-content {
-        padding: 20px 0;
-        color: #666;
-        line-height: 1.6;
-        font-size: 14px;
-    }
-
-    .tab-content h3 {
-        color: #333;
-        margin-bottom: 10px;
+        border-radius: 8px;
         font-size: 16px;
-    }
-
-    .tab-content table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 15px;
-    }
-
-    .tab-content th,
-    .tab-content td {
-        padding: 8px 12px;
-        text-align: left;
-        border-bottom: 1px solid #eee;
-    }
-
-    .tab-content th {
-        background: #f8f9fa;
         font-weight: 600;
-        color: #333;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
 
-    /* Produtos relacionados */
+    .btn-comprar-agora:hover {
+        background: #000;
+        transform: translateY(-2px);
+    }
+
     .produtos-relacionados {
-        grid-column: 1 / -1;
         margin-top: 60px;
-        padding-top: 40px;
-        border-top: 1px solid #eee;
     }
 
     .relacionados-titulo {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 30px;
+        font-size: 2rem;
+        font-weight: 700;
         text-align: center;
+        margin-bottom: 40px;
+        color: #333;
     }
 
     .relacionados-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 30px;
     }
 
-    /* Responsividade */
-    @media (max-width: 1024px) {
-        .produto-container {
-            grid-template-columns: 1fr;
-            gap: 40px;
-        }
-        
-        .produto-imagens {
-            grid-template-columns: 1fr;
-            grid-template-rows: auto 1fr;
-        }
-        
-        .miniaturas {
-            flex-direction: row;
-            order: 2;
-            justify-content: center;
-        }
-        
-        .imagem-principal {
-            order: 1;
-            height: 500px;
-        }
+    .produto-relacionado {
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .produto-relacionado:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+
+    .produto-relacionado img {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+    }
+
+    .produto-relacionado-info {
+        padding: 20px;
+    }
+
+    .produto-relacionado-nome {
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .produto-relacionado-preco {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #e91e63;
     }
 
     @media (max-width: 768px) {
-        .produto-container {
-            padding: 15px;
+        .produto-main {
+            grid-template-columns: 1fr;
+            gap: 20px;
         }
-        
-        .produto-titulo {
+
+        .produto-nome {
+            font-size: 2rem;
+        }
+
+        .produto-preco {
             font-size: 1.5rem;
         }
-        
-        .preco-atual {
-            font-size: 1.5rem;
-        }
-        
-        .acoes-container {
+
+        .compra-controles {
             flex-direction: column;
-            align-items: stretch;
         }
-        
-        .quantidade-container {
-            align-self: center;
+
+        .btn-adicionar-carrinho,
+        .btn-comprar-agora {
+            width: 100%;
         }
+
+        .relacionados-grid {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+    }
+
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 25px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 1000;
+        transform: translateX(400px);
+        transition: transform 0.3s ease;
+    }
+
+    .notification.success {
+        background: #4caf50;
+    }
+
+    .notification.show {
+        transform: translateX(0);
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Breadcrumb -->
 <div class="produto-container">
-    <div class="breadcrumb">
-        <a href="{{ url_for('index') }}">Home</a>
-        <span>></span>
-        <a href="{{ url_for('index') }}">Reserva</a>
-        <span>></span>
-        <a href="{{ url_for('index') }}">Bazar</a>
-        <span>></span>
-        <a href="{{ url_for('index', categoria=produto.categoria) }}">{{ produto.categoria }}</a>
-        <span>></span>
-        <span>{{ produto.nome }}</span>
-    </div>
+    <div class="produto-main">
+        <div class="produto-galeria">
+            <img src="{{ produto.imagem }}" alt="{{ produto.nome }}" class="imagem-principal" id="imagemPrincipal">
+        </div>
 
-    <!-- Seção de Imagens -->
-    <div class="produto-imagens">
-        <!-- Miniaturas -->
-        <div class="miniaturas">
-            <div class="miniatura ativa" onclick="trocarImagem('{{ produto.imagem }}', this)">
-                <img src="{{ produto.imagem }}" alt="Principal"
-                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjZjVmNWY1Ii8+CjxwYXRoIGQ9Ik00MCA0MEg2MFY2MEg0MFY0MFoiIGZpbGw9IiNjY2MiLz4KPC9zdmc+';">
+        <div class="produto-info">
+            <div class="produto-categoria">{{ produto.categoria }}</div>
+            <h1 class="produto-nome">{{ produto.nome }}</h1>
+            <div class="produto-preco">R$ {{ "%.2f"|format(produto.preco) }}</div>
+            <p class="produto-descricao">{{ produto.descricao }}</p>
+
+            {% if produto.tamanhos %}
+            <div class="tamanhos-section">
+                <label class="tamanhos-label">Tamanho:</label>
+                <div class="tamanhos-opcoes">
+                    {% for tamanho in produto.tamanhos.split(',') %}
+                    <div class="tamanho-opcao{% if loop.first %} selecionado{% endif %}" 
+                         data-tamanho="{{ tamanho.strip() }}" 
+                         onclick="selecionarTamanho(this)">
+                        {{ tamanho.strip() }}
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
-            
-            {% if imagens_adicionais %}
-                {% for imagem in imagens_adicionais %}
-                    {% if imagem %}
-                        <div class="miniatura" onclick="trocarImagem('{{ imagem }}', this)">
-                            <img src="{{ imagem }}" alt="Adicional"
-                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjZjVmNWY1Ii8+CjxwYXRoIGQ9Ik00MCA0MEg2MFY2MEg0MFY0MFoiIGZpbGw9IiNjY2MiLz4KPC9zdmc+';">
-                        </div>
-                    {% endif %}
-                {% endfor %}
             {% endif %}
-        </div>
-        
-        <!-- Imagem principal -->
-        <div class="imagem-principal">
-            <img id="imagemPrincipal" src="{{ produto.imagem }}" alt="{{ produto.nome }}" 
-                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDYwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI2MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjZjVmNWY1Ii8+CjxwYXRoIGQ9Ik0yNTAgMjUwSDM1MFYzNTBIMjUwVjI1MFoiIGZpbGw9IiNjY2MiLz4KPC9zdmc+';">
-        </div>
-    </div>
-    
-    <!-- Seção de Informações -->
-    <div class="produto-info">
-        <div class="cashback-badge">
-            Ganhe 10% de cashback
-        </div>
-        
-        <h1 class="produto-titulo">{{ produto.nome }}</h1>
-        
-        <div class="preco-container">
-            <div class="preco-original">R$ {{ "%.2f"|format(produto.preco * 1.54) }}</div>
-            <div class="preco-atual">R$ {{ "%.2f"|format(produto.preco) }}</div>
-            <div class="economia">Economize R$ {{ "%.2f"|format(produto.preco * 0.54) }}</div>
-        </div>
-        
-        <div class="selecoes">
-            <!-- Seletor de Cores -->
-            <div class="selecao-grupo">
-                <div class="selecao-titulo">Cor: <span class="cor-selected" id="corSelecionada">PRETO</span></div>
-                <div class="cores-container">
-                    <div class="cor-opcao preto selecionada" data-cor="PRETO" onclick="selecionarCor(this, 'PRETO')"></div>
-                    <div class="cor-opcao branco" data-cor="BRANCO" onclick="selecionarCor(this, 'BRANCO')"></div>
-                    <div class="cor-opcao azul" data-cor="AZUL" onclick="selecionarCor(this, 'AZUL')"></div>
-                    <div class="cor-opcao verde" data-cor="VERDE" onclick="selecionarCor(this, 'VERDE')"></div>
-                    <div class="cor-opcao vermelho" data-cor="VERMELHO" onclick="selecionarCor(this, 'VERMELHO')"></div>
-                    <div class="cor-opcao cinza" data-cor="CINZA" onclick="selecionarCor(this, 'CINZA')"></div>
-                </div>
-            </div>
-            
-            <!-- Seletor de Tamanhos -->
-            <div class="selecao-grupo">
-                <div class="selecao-titulo">Escolha o tamanho: <span class="cor-selected" id="tamanhoSelecionado">P</span></div>
-                <div class="tamanhos-container">
-                    <div class="tamanho-opcao selecionado" data-tamanho="P" onclick="selecionarTamanho(this, 'P')">P</div>
-                    <div class="tamanho-opcao" data-tamanho="M" onclick="selecionarTamanho(this, 'M')">M</div>
-                    <div class="tamanho-opcao" data-tamanho="G" onclick="selecionarTamanho(this, 'G')">G</div>
-                    <div class="tamanho-opcao" data-tamanho="GG" onclick="selecionarTamanho(this, 'GG')">GG</div>
-                    <div class="tamanho-opcao" data-tamanho="GGG" onclick="selecionarTamanho(this, 'GGG')">GGG</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Quantidade e Botões -->
-        <div class="acoes-container">
-            <div class="quantidade-container">
-                <button class="quantidade-btn" onclick="alterarQuantidade(-1)">-</button>
-                <input type="number" class="quantidade-input" id="quantidade" value="1" min="1" max="99">
-                <button class="quantidade-btn" onclick="alterarQuantidade(1)">+</button>
-            </div>
-            
-            <button class="btn-adicionar" onclick="adicionarAoCarrinho()">
-                <i class="fas fa-shopping-bag"></i>
-                Adicionar à sacola
-            </button>
-            
-            <button class="btn-favorito" onclick="toggleFavorito()">
-                <i class="far fa-heart"></i>
-            </button>
-        </div>
-        
-        <!-- Botão Personalizar -->
-        <button class="btn-personalizar">
-            <i class="fas fa-palette"></i>
-            Personalize
-        </button>
-        
-        <!-- Informações de Medidas e Tamanho -->
-        <div style="display: flex; gap: 20px; margin: 20px 0; font-size: 14px;">
-            <button onclick="mostrarTab('medidas')" style="background: none; border: none; color: #007bff; cursor: pointer; text-decoration: underline;">
-                <i class="fas fa-ruler"></i> Tabela de Medidas
-            </button>
-            <button onclick="mostrarTab('tamanho')" style="background: none; border: none; color: #007bff; cursor: pointer; text-decoration: underline;">
-                <i class="fas fa-question-circle"></i> Descubra seu tamanho
-            </button>
-        </div>
-        
-        <!-- Informações Adicionais -->
-        <div class="info-adicional">
-            <div class="info-tabs">
-                <button class="tab-btn ativo" onclick="mostrarTab('descricao')">Descrição</button>
-                <button class="tab-btn" onclick="mostrarTab('entrega')">Prazo e entrega</button>
-                <button class="tab-btn" onclick="mostrarTab('composicao')">Composição</button>
-            </div>
-            
-            <div id="descricao" class="tab-content">
-                <h3>{{ produto.nome.upper() }}</h3>
-                <p>{{ produto.descricao or 'Camiseta básica brasa com pica-pau bordado. Confeccionada em algodão de alta qualidade, oferece conforto e estilo para o dia a dia. O bordado exclusivo adiciona um toque divertido e único à peça.' }}</p>
-                <br>
-                <p><strong>Código do Produto:</strong> REF: {{ '%08d'|format(produto.id) }}</p>
-            </div>
-            
-            <div id="entrega" class="tab-content" style="display: none;">
-                <h3>Prazo de Entrega</h3>
-                <p><strong>Frete Grátis</strong> para compras acima de R$ 199,00</p>
-                <p><strong>Entrega Normal:</strong> 5 a 10 dias úteis</p>
-                <p><strong>Entrega Expressa:</strong> 2 a 4 dias úteis</p>
-                <br>
-                <p>O prazo de entrega é contado a partir da confirmação do pagamento e pode variar conforme a região de destino.</p>
-            </div>
-            
-            <div id="composicao" class="tab-content" style="display: none;">
-                <h3>Composição e Cuidados</h3>
-                <p><strong>Material:</strong> 100% Algodão</p>
-                <p><strong>Gramatura:</strong> 180g/m²</p>
-                <br>
-                <h4>Cuidados com a peça:</h4>
-                <ul style="line-height: 2; margin-left: 20px;">
-                    <li>Lavar à máquina em água fria (30°C)</li>
-                    <li>Usar sabão neutro</li>
-                    <li>Não usar alvejante</li>
-                    <li>Secar à sombra</li>
-                    <li>Passar ferro em temperatura média</li>
-                    <li>Não lavar a seco</li>
-                </ul>
-            </div>
-            
-            <div id="medidas" class="tab-content" style="display: none;">
-                <h3>Tabela de Medidas (cm)</h3>
-                <table>
-                    <tr>
-                        <th>Tamanho</th>
-                        <th>Peito</th>
-                        <th>Comprimento</th>
-                        <th>Manga</th>
-                    </tr>
-                    <tr><td>P</td><td>92-96</td><td>68</td><td>20</td></tr>
-                    <tr><td>M</td><td>96-100</td><td>70</td><td>21</td></tr>
-                    <tr><td>G</td><td>100-104</td><td>72</td><td>22</td></tr>
-                    <tr><td>GG</td><td>104-108</td><td>74</td><td>23</td></tr>
-                    <tr><td>GGG</td><td>108-112</td><td>76</td><td>24</td></tr>
-                </table>
-            </div>
-            
-            <div id="tamanho" class="tab-content" style="display: none;">
-                <h3>Guia de Tamanhos</h3>
-                <p>Para escolher o tamanho ideal, meça o contorno do peito na altura das axilas, mantendo a fita métrica paralela ao chão.</p>
-                <br>
-                <p><strong>Dica:</strong> Se você está entre dois tamanhos, recomendamos escolher o maior para maior conforto.</p>
-                <br>
-                <p><strong>Modelo da foto:</strong> Altura 1,85m, veste tamanho M</p>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Produtos Relacionados -->
-{% if produtos_relacionados %}
-<div class="produtos-relacionados">
-    <h2 class="relacionados-titulo">Você também pode gostar</h2>
-    <div class="relacionados-grid">
-        {% for produto_rel in produtos_relacionados %}
-        <div class="product-card">
-            <div class="product-image">
-                <a href="{{ url_for('produto_individual', produto_id=produto_rel.id) }}">
-                    <img src="{{ produto_rel.imagem }}" alt="{{ produto_rel.nome }}"
-                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUwIiBoZWlnaHQ9IjI1MCIgdmlld0JveD0iMCAwIDI1MCAyNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyNTAiIGhlaWdodD0iMjUwIiBmaWxsPSIjZjVmNWY1Ii8+CjxwYXRoIGQ9Ik0xMDAgMTAwSDE1MFYxNTBIMTAwVjEwMFoiIGZpbGw9IiNjY2MiLz4KPC9zdmc+';">
-                </a>
-            </div>
-            <div class="product-info">
-                <h3 class="product-title">
-                    <a href="{{ url_for('produto_individual', produto_id=produto_rel.id) }}">
-                        {{ produto_rel.nome }}
-                    </a>
-                </h3>
-                <p class="product-price">R$ {{ "%.2f"|format(produto_rel.preco) }}</p>
-                <button class="btn-add-cart" onclick="adicionarAoCarrinhoRapido({{ produto_rel.id }})">
-                    <i class="fas fa-shopping-bag"></i>
-                    Adicionar
+            <div class="compra-controles">
+                <input type="number" value="1" min="1" max="99" class="quantidade-input" id="quantidade">
+                <button class="btn-adicionar-carrinho" onclick="adicionarAoCarrinho()">
+                    Adicionar ao Carrinho
+                </button>
+                <button class="btn-comprar-agora" onclick="comprarAgora()">
+                    Comprar Agora
                 </button>
             </div>
         </div>
-        {% endfor %}
     </div>
+
+    {% if produtos_relacionados %}
+    <div class="produtos-relacionados">
+        <h2 class="relacionados-titulo">Produtos Relacionados</h2>
+        <div class="relacionados-grid">
+            {% for produto_rel in produtos_relacionados %}
+            <div class="produto-relacionado" onclick="irParaProduto({{ produto_rel.id }})">
+                <img src="{{ produto_rel.imagem }}" alt="{{ produto_rel.nome }}">
+                <div class="produto-relacionado-info">
+                    <div class="produto-relacionado-nome">{{ produto_rel.nome }}</div>
+                    <div class="produto-relacionado-preco">R$ {{ "%.2f"|format(produto_rel.preco) }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 </div>
-{% endif %}
-{% endblock %}
 
-{% block scripts %}
 <script>
-// Variáveis globais
-let corSelecionada = 'PRETO';
-let tamanhoSelecionado = 'P';
+let tamanhoSelecionado = '';
+let corAtual = 'Padrão';
 
-// Função para trocar imagem principal
-function trocarImagem(novaImagem, elemento) {
-    document.getElementById('imagemPrincipal').src = novaImagem;
-    
-    // Remove classe ativa de todas as miniaturas
-    document.querySelectorAll('.miniatura').forEach(mini => {
-        mini.classList.remove('ativa');
+function selecionarTamanho(elemento) {
+    document.querySelectorAll('.tamanho-opcao').forEach(el => {
+        el.classList.remove('selecionado');
     });
     
-    // Adiciona classe ativa na miniatura clicada
-    elemento.classList.add('ativa');
-}
-
-// Função para selecionar cor
-function selecionarCor(elemento, cor) {
-    // Remove seleção anterior
-    document.querySelectorAll('.cor-opcao').forEach(opcao => {
-        opcao.classList.remove('selecionada');
-    });
-    
-    // Adiciona nova seleção
-    elemento.classList.add('selecionada');
-    corSelecionada = cor;
-    document.getElementById('corSelecionada').textContent = cor;
-}
-
-// Função para selecionar tamanho
-function selecionarTamanho(elemento, tamanho) {
-    // Remove seleção anterior
-    document.querySelectorAll('.tamanho-opcao').forEach(opcao => {
-        opcao.classList.remove('selecionado');
-    });
-    
-    // Adiciona nova seleção
     elemento.classList.add('selecionado');
-    tamanhoSelecionado = tamanho;
-    document.getElementById('tamanhoSelecionado').textContent = tamanho;
+    tamanhoSelecionado = elemento.dataset.tamanho;
 }
 
-// Função para alterar quantidade
-function alterarQuantidade(delta) {
-    const input = document.getElementById('quantidade');
-    let novaQuantidade = parseInt(input.value) + delta;
+async function adicionarAoCarrinho() {
+    const quantidade = document.getElementById('quantidade').value;
     
-    if (novaQuantidade < 1) novaQuantidade = 1;
-    if (novaQuantidade > 99) novaQuantidade = 99;
-    
-    input.value = novaQuantidade;
-}
-
-// Função para mostrar tabs
-function mostrarTab(tabName) {
-    // Esconder todas as tabs
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.style.display = 'none';
-    });
-    
-    // Remover classe ativo de todos os botões
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('ativo');
-    });
-    
-    // Mostrar tab selecionada
-    const tabContent = document.getElementById(tabName);
-    if (tabContent) {
-        tabContent.style.display = 'block';
+    const temTamanhos = document.querySelectorAll('.tamanho-opcao').length > 0;
+    if (temTamanhos && !tamanhoSelecionado) {
+        showNotification('Por favor, selecione um tamanho', 'error');
+        return;
     }
-    
-    // Adicionar classe ativo no botão correto
-    const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => {
-        return btn.textContent.toLowerCase().includes(tabName.toLowerCase()) ||
-               (tabName === 'descricao' && btn.textContent.includes('Descrição')) ||
-               (tabName === 'entrega' && btn.textContent.includes('entrega')) ||
-               (tabName === 'composicao' && btn.textContent.includes('Composição'));
-    });
-    
-    if (activeBtn) {
-        activeBtn.classList.add('ativo');
-    }
-}
 
-// Função para adicionar ao carrinho
-function adicionarAoCarrinho() {
+    const corSelecionada = corAtual || 'Padrão';
     const produtoId = {{ produto.id }};
-    const quantidade = parseInt(document.getElementById('quantidade').value);
-    
-    const dados = {
-        produto_id: produtoId,
-        quantidade: quantidade,
-        tamanho: tamanhoSelecionado,
-        cor: corSelecionada
-    };
-    
-    fetch('/carrinho/adicionar', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(dados)
-    })
-    .then(response => response.json())
-    .then(data => {
+
+    try {
+        // Fazer requisição para adicionar ao carrinho no servidor
+        const url = `/carrinho/adicionar/${produtoId}?ajax=true&q=${quantidade}&tamanho=${encodeURIComponent(tamanhoSelecionado || 'M')}&cor=${encodeURIComponent(corSelecionada)}`;
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
         if (data.success) {
-            // Animação de sucesso
-            const btn = document.querySelector('.btn-adicionar');
-            const textoOriginal = btn.innerHTML;
+            showNotification(data.message || 'Produto adicionado ao carrinho!', 'success');
             
-            btn.innerHTML = '<i class="fas fa-check"></i> Adicionado!';
-            btn.style.background = '#28a745';
+            // Atualizar contador do carrinho
+            updateCartCount();
             
-            setTimeout(() => {
-                btn.innerHTML = textoOriginal;
-                btn.style.background = '#28a745';
-            }, 2000);
-            
-            // Atualizar contador do carrinho se existir
-            const contador = document.querySelector('.cart-count');
-            if (contador) {
-                contador.textContent = data.carrinho_count || '';
-                contador.style.display = data.carrinho_count > 0 ? 'block' : 'none';
+            // Abrir sacola lateral se existir
+            if (typeof toggleSacola === 'function') {
+                setTimeout(() => toggleSacola(), 500);
             }
         } else {
-            alert('Erro ao adicionar produto: ' + data.message);
+            showNotification(data.message || 'Erro ao adicionar produto', 'error');
         }
-    })
-    .catch(error => {
-        console.error('Erro:', error);
-        alert('Erro ao adicionar produto ao carrinho');
-    });
-}
-
-// Função para adicionar produto relacionado ao carrinho
-function adicionarAoCarrinhoRapido(produtoId) {
-    const dados = {
-        produto_id: produtoId,
-        quantidade: 1,
-        tamanho: 'M',
-        cor: 'Padrão'
-    };
-    
-    fetch('/carrinho/adicionar', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(dados)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Produto adicionado ao carrinho!');
-            
-            // Atualizar contador do carrinho se existir
-            const contador = document.querySelector('.cart-count');
-            if (contador) {
-                contador.textContent = data.carrinho_count || '';
-                contador.style.display = data.carrinho_count > 0 ? 'block' : 'none';
-            }
-        } else {
-            alert('Erro ao adicionar produto: ' + data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Erro:', error);
-        alert('Erro ao adicionar produto ao carrinho');
-    });
-}
-
-// Função para toggle favorito
-function toggleFavorito() {
-    const btn = document.querySelector('.btn-favorito');
-    const icon = btn.querySelector('i');
-    
-    if (icon.classList.contains('fas')) {
-        icon.classList.remove('fas');
-        icon.classList.add('far');
-        btn.classList.remove('ativo');
-    } else {
-        icon.classList.remove('far');
-        icon.classList.add('fas');
-        btn.classList.add('ativo');
+    } catch (error) {
+        console.error('Erro ao adicionar ao carrinho:', error);
+        showNotification('Erro ao adicionar produto ao carrinho', 'error');
     }
 }
 
-// Permitir apenas números no input de quantidade
+function comprarAgora() {
+    const quantidade = document.getElementById('quantidade').value;
+    
+    // Verificar se um tamanho foi selecionado (se houver tamanhos)
+    const temTamanhos = document.querySelectorAll('.tamanho-opcao').length > 0;
+    if (temTamanhos && !tamanhoSelecionado) {
+        showNotification('Por favor, selecione um tamanho', 'error');
+        return;
+    }
+
+    // Preparar dados do produto para compra
+    const produtoCompra = {
+        id: {{ produto.id }},
+        nome: '{{ produto.nome }}',
+        preco: {{ produto.preco }},
+        imagem: '{{ produto.imagem }}',
+        tamanho: tamanhoSelecionado,
+        quantidade: parseInt(quantidade)
+    };
+
+    // Salvar no sessionStorage e redirecionar para página de compra
+    sessionStorage.setItem('produtoCompraAgora', JSON.stringify(produtoCompra));
+    window.location.href = '/comprar-agora';
+}
+
+function irParaProduto(produtoId) {
+    window.location.href = `/produto/${produtoId}`;
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+async function updateCartCount() {
+    try {
+        const response = await fetch('/api/carrinho');
+        const data = await response.json();
+        
+        const totalItens = data.items ? data.items.reduce((total, item) => total + item.quantidade, 0) : 0;
+        
+        const cartCount = document.querySelector('.cart-count');
+        if (cartCount) {
+            cartCount.textContent = totalItens;
+            cartCount.style.display = totalItens > 0 ? 'block' : 'none';
+        }
+    } catch (error) {
+        console.error('Erro ao atualizar contador do carrinho:', error);
+    }
+}
+
 document.getElementById('quantidade').addEventListener('input', function(e) {
     let value = parseInt(e.target.value);
     if (isNaN(value) || value < 1) {
@@ -921,6 +457,15 @@ document.getElementById('quantidade').addEventListener('input', function(e) {
     } else if (value > 99) {
         e.target.value = 99;
     }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const primeiroTamanho = document.querySelector('.tamanho-opcao.selecionado');
+    if (primeiroTamanho) {
+        tamanhoSelecionado = primeiroTamanho.dataset.tamanho;
+    }
+    
+    updateCartCount();
 });
 </script>
 {% endblock %}
