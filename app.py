@@ -25,7 +25,7 @@ if db_dir:
     os.makedirs(db_dir, exist_ok=True)
 
 # Configurações do WhatsApp da loja
-WHATSAPP_LOJA = "5566996979066"  # Número padrão - altere aqui ou use variável de ambiente
+WHATSAPP_LOJA = "551166997164602"  # Número padrão - altere aqui ou use variável de ambiente
 WHATSAPP_NUMERO = os.getenv('WHATSAPP_NUMERO', WHATSAPP_LOJA)
 
 def get_db_connection():
@@ -111,6 +111,10 @@ if os.environ.get('VERCEL'):
     app.config['DATABASE_PATH'] = '/tmp/loja.db'
 else:
     app.config['DATABASE_PATH'] = 'loja.db'
+
+# Configuração do WhatsApp
+app.config['WHATSAPP_NUMBER'] = os.environ.get('WHATSAPP_NUMBER', '551166997164602')
+app.config['WHATSAPP_STORE_NAME'] = os.environ.get('WHATSAPP_STORE_NAME', 'CAMILA DE PAULA.')
 
 # Filtros de template
 @app.template_filter('currency')
@@ -442,6 +446,16 @@ def limpar_cache():
             'Pragma': 'no-cache',
             'Expires': '0'
         }
+    })
+
+# 📱 API para configurações do WhatsApp
+@app.route('/api/whatsapp-config')
+def whatsapp_config():
+    """Retorna configurações do WhatsApp da loja"""
+    from flask import jsonify
+    return jsonify({
+        'numero': app.config.get('WHATSAPP_NUMBER', '551166997164602'),
+        'loja_nome': app.config.get('WHATSAPP_STORE_NAME', 'CAMILA DE PAULA.')
     })
 
 # API para sacola lateral
@@ -1522,6 +1536,35 @@ def admin_deletar_produto(produto_id):
     
     return redirect(url_for('admin_produtos'))
 
+@app.route('/admin/produtos/remover-todos', methods=['POST'])
+def admin_remover_todos_produtos():
+    if not is_admin():
+        return jsonify({'success': False, 'message': 'Acesso negado!'}), 403
+    
+    try:
+        conn = get_db_connection()
+        
+        # Contar quantos produtos serão removidos
+        count = conn.execute('SELECT COUNT(*) as total FROM produtos').fetchone()
+        total_produtos = count['total'] if count else 0
+        
+        if total_produtos == 0:
+            conn.close()
+            return jsonify({'success': False, 'message': 'Não há produtos para remover!'}), 400
+        
+        # Remover todos os produtos
+        conn.execute('DELETE FROM produtos')
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True, 
+            'message': 'Todos os produtos foram removidos com sucesso!',
+            'removidos': total_produtos
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Erro ao remover produtos: {str(e)}'}), 500
+
 @app.route('/admin/relatorios')
 def admin_relatorios():
     if not is_admin():
@@ -1716,5 +1759,4 @@ if not os.environ.get('WERKZEUG_RUN_MAIN'):
     init_db()
 
 if __name__ == "__main__":
-    app.run(debug=True)
-
+    app.run(debug=True, host='0.0.0.0', port=5000)  

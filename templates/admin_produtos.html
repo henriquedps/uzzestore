@@ -71,6 +71,16 @@
     border-color: #d4af37;
 }
 
+.admin-nav-btn.danger {
+    background: #dc3545;
+    border-color: #dc3545;
+}
+
+.admin-nav-btn.danger:hover {
+    background: #c82333;
+    border-color: #bd2130;
+}
+
 .products-table-container {
     background: white;
     border-radius: 20px;
@@ -288,6 +298,10 @@
             <button id="toggleEstoque" class="admin-nav-btn" onclick="toggleProdutosSemEstoque()">
                 <i class="fas fa-eye-slash"></i>
                 <span id="toggleText">Ocultar Sem Estoque</span>
+            </button>
+            <button id="btnRemoverTodos" class="admin-nav-btn danger" onclick="confirmarRemoverTodos()">
+                <i class="fas fa-trash-alt"></i>
+                Remover Todos
             </button>
             <a href="{{ url_for('logout') }}" class="admin-nav-btn">
                 <i class="fas fa-sign-out-alt"></i>
@@ -544,5 +558,69 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Função para confirmar e remover todos os produtos
+function confirmarRemoverTodos() {
+    const totalProdutos = document.querySelectorAll('tbody tr').length;
+    
+    if (totalProdutos === 0) {
+        alert('Não há produtos para remover!');
+        return;
+    }
+    
+    const confirmacao = confirm(
+        `⚠️ ATENÇÃO!\n\n` +
+        `Você está prestes a REMOVER TODOS OS ${totalProdutos} PRODUTOS do sistema.\n\n` +
+        `Esta ação é IRREVERSÍVEL e todos os dados dos produtos serão perdidos permanentemente.\n\n` +
+        `Tem certeza absoluta que deseja continuar?`
+    );
+    
+    if (!confirmacao) {
+        return;
+    }
+    
+    // Segunda confirmação para segurança extra
+    const confirmacaoFinal = confirm(
+        `🚨 ÚLTIMA CONFIRMAÇÃO!\n\n` +
+        `Esta é sua última chance de cancelar.\n\n` +
+        `Clique em OK para DELETAR PERMANENTEMENTE todos os produtos.\n` +
+        `Clique em Cancelar para manter os produtos.`
+    );
+    
+    if (!confirmacaoFinal) {
+        return;
+    }
+    
+    // Mostrar loading
+    const btnRemover = document.getElementById('btnRemoverTodos');
+    const textoOriginal = btnRemover.innerHTML;
+    btnRemover.disabled = true;
+    btnRemover.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removendo...';
+    
+    // Fazer requisição para remover todos
+    fetch('/admin/produtos/remover-todos', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`✅ ${data.message}\n\n${data.removidos} produtos foram removidos com sucesso!`);
+            window.location.reload();
+        } else {
+            alert(`❌ Erro: ${data.message}`);
+            btnRemover.disabled = false;
+            btnRemover.innerHTML = textoOriginal;
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('❌ Erro ao remover produtos. Tente novamente.');
+        btnRemover.disabled = false;
+        btnRemover.innerHTML = textoOriginal;
+    });
+}
 </script>
 {% endblock %}

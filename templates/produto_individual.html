@@ -145,25 +145,6 @@
         box-shadow: 0 8px 25px rgba(233, 30, 99, 0.3);
     }
 
-    .btn-comprar-agora {
-        padding: 15px 30px;
-        background: #333;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    .btn-comprar-agora:hover {
-        background: #000;
-        transform: translateY(-2px);
-    }
-
     .produtos-relacionados {
         margin-top: 60px;
     }
@@ -236,8 +217,7 @@
             flex-direction: column;
         }
 
-        .btn-adicionar-carrinho,
-        .btn-comprar-agora {
+        .btn-adicionar-carrinho {
             width: 100%;
         }
 
@@ -302,9 +282,6 @@
                 <input type="number" value="1" min="1" max="99" class="quantidade-input" id="quantidade">
                 <button class="btn-adicionar-carrinho" onclick="adicionarAoCarrinho()">
                     Adicionar ao Carrinho
-                </button>
-                <button class="btn-comprar-agora" onclick="comprarAgora()">
-                    Comprar Agora
                 </button>
             </div>
         </div>
@@ -383,31 +360,6 @@ async function adicionarAoCarrinho() {
         console.error('Erro ao adicionar ao carrinho:', error);
         showNotification('Erro ao adicionar produto ao carrinho', 'error');
     }
-}
-
-function comprarAgora() {
-    const quantidade = document.getElementById('quantidade').value;
-    
-    // Verificar se um tamanho foi selecionado (se houver tamanhos)
-    const temTamanhos = document.querySelectorAll('.tamanho-opcao').length > 0;
-    if (temTamanhos && !tamanhoSelecionado) {
-        showNotification('Por favor, selecione um tamanho', 'error');
-        return;
-    }
-
-    // Preparar dados do produto para compra
-    const produtoCompra = {
-        id: {{ produto.id }},
-        nome: '{{ produto.nome }}',
-        preco: {{ produto.preco }},
-        imagem: '{{ produto.imagem }}',
-        tamanho: tamanhoSelecionado,
-        quantidade: parseInt(quantidade)
-    };
-
-    // Salvar no sessionStorage e redirecionar para página de compra
-    sessionStorage.setItem('produtoCompraAgora', JSON.stringify(produtoCompra));
-    window.location.href = '/comprar-agora';
 }
 
 function irParaProduto(produtoId) {

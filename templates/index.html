@@ -3,6 +3,9 @@
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-products.css') }}">
+<!-- Preload banner images -->
+<link rel="preload" as="image" href="{{ url_for('static', filename='banner/photo-1441986300917-64674bd600d8.jpg') }}">
+<link rel="preload" as="image" href="{{ url_for('static', filename='banner/photo-1490481651871-ab68de25d43d.jpg') }}">
 {% endblock %}
 
 {% block content %}
@@ -10,6 +13,11 @@
 <section class="hero-section">
     <h1 class="hero-title">Vista-se com estilo e personalidade</h1>
     <p class="hero-subtitle">Descubra as últimas tendências em moda feminina e masculina</p>
+    <div class="hero-image">
+        <a href="{{ url_for('index', categoria='ACESSÓRIOS') }}" class="hero-accessories-link">
+            <img src="{{ url_for('static', filename='banner/acessorios.png') }}" alt="Acessórios" class="hero-accessories-img">
+        </a>
+    </div>
 </section>
 
 <script>
@@ -315,6 +323,61 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 <style>
+/* Hero Section Styles */
+.hero-image {
+    margin-top: 30px;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 20px;
+}
+
+.hero-accessories-link {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.hero-accessories-link::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0);
+    transition: background 0.3s ease;
+    pointer-events: none;
+}
+
+.hero-accessories-link:hover::after {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.hero-accessories-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.hero-accessories-link:hover .hero-accessories-img {
+    transform: scale(1.02);
+}
+
+@media (max-width: 768px) {
+    .hero-accessories-link {
+        border-radius: 8px;
+    }
+    
+    .hero-accessories-img {
+        border-radius: 8px;
+    }
+}
+
 /* Estilos para o sistema de filtros */
 .filters-panel {
     position: fixed;
@@ -1224,6 +1287,414 @@ document.addEventListener('DOMContentLoaded', function() {
   .qv-main{ order: 1; min-height: 320px; }
   .qv-side{ order: 3; }
 }
+
+/* Estilos do Banner Rotativo */
+.banner-rotativo-section-wrapper {
+    max-width: 1400px;
+    margin: 60px auto 40px;
+    padding: 0 20px;
+}
+
+.banner-rotativo-inline {
+    width: 100%;
+    min-height: 500px;
+    margin: 0;
+}
+
+.banner-rotativo-inline .banner-rotativo-container {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    min-height: 500px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    background: transparent;
+}
+
+.banner-rotativo-section {
+    margin: 60px auto;
+    max-width: 1400px;
+    padding: 0 20px;
+}
+
+.banner-rotativo-container {
+    position: relative;
+    width: 100%;
+    height: 450px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.banner-slide {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+    pointer-events: none;
+    z-index: 1;
+    visibility: hidden;
+}
+
+.banner-slide.active {
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 2;
+    visibility: visible;
+}
+
+.banner-content-full {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
+    width: 100%;
+    padding: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+}
+
+.banner-content-full::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="0.5" fill="%23fff" opacity="0.03"/><circle cx="75" cy="75" r="0.5" fill="%23fff" opacity="0.03"/><circle cx="50" cy="10" r="0.3" fill="%23fff" opacity="0.03"/><circle cx="20" cy="80" r="0.4" fill="%23fff" opacity="0.03"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    pointer-events: none;
+}
+
+.banner-content-2 {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.banner-content-3 {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+/* Banner com imagem */
+.banner-content-image {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.banner-image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 1;
+}
+
+.banner-text-over-image {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.banner-interno-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.banner-interno-slide {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    visibility: hidden;
+    z-index: 0;
+}
+
+.banner-interno-slide.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 2;
+}
+
+.banner-content-with-image {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+}
+
+.banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1;
+}
+
+.banner-text-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 40px;
+}
+
+.banner-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.banner-slide:nth-child(2) .banner-content {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.banner-slide:nth-child(3) .banner-content {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.banner-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px;
+    color: white;
+    z-index: 2;
+}
+
+.banner-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    line-height: 1.2;
+    color: white;
+    position: relative;
+    z-index: 1;
+    letter-spacing: -0.01em;
+}
+
+.banner-subtitle {
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+    opacity: 0.95;
+    font-weight: 400;
+    color: white;
+    position: relative;
+    z-index: 1;
+}
+
+.banner-btn {
+    background: white;
+    color: #333;
+    border: none;
+    padding: 14px 35px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 1;
+}
+
+.banner-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+/* Botões de navegação */
+.banner-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #333;
+    transition: all 0.3s ease;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+}
+
+.banner-nav:hover {
+    background: white;
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.banner-prev {
+    left: 20px;
+}
+
+.banner-next {
+    right: 20px;
+}
+
+/* Indicadores */
+.banner-indicators {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    z-index: 100;
+}
+
+.indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.indicator.active {
+    background: white;
+    width: 40px;
+    border-radius: 6px;
+}
+
+.indicator:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+/* Responsivo */
+@media (max-width: 1024px) {
+    .banner-rotativo-container {
+        height: 400px;
+    }
+
+    .banner-title {
+        font-size: 2.5rem;
+    }
+
+    .banner-subtitle {
+        font-size: 1.1rem;
+    }
+
+    .banner-text {
+        padding: 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .banner-rotativo-container {
+        height: 500px;
+    }
+
+    .banner-content {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
+    }
+
+    .banner-text {
+        padding: 30px;
+        order: 2;
+    }
+
+    .banner-image {
+        order: 1;
+    }
+
+    .banner-title {
+        font-size: 2rem;
+    }
+
+    .banner-subtitle {
+        font-size: 1rem;
+        margin-bottom: 20px;
+    }
+
+    .banner-btn {
+        padding: 14px 32px;
+        font-size: 1rem;
+    }
+
+    .banner-nav {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .banner-prev {
+        left: 10px;
+    }
+
+    .banner-next {
+        right: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .banner-rotativo-section {
+        margin: 30px auto;
+    }
+
+    .banner-rotativo-container {
+        height: 450px;
+        border-radius: 15px;
+    }
+
+    .banner-text {
+        padding: 20px;
+    }
+
+    .banner-title {
+        font-size: 1.5rem;
+    }
+
+    .banner-subtitle {
+        font-size: 0.9rem;
+    }
+}
+
 </style>
 
 
@@ -1798,6 +2269,150 @@ document.addEventListener('click', function(event) {
             toggleFilters();
         }
     }
+});
+
+// =============== BANNER ROTATIVO ===============
+let bannerAtual = 0;
+let bannerInterval;
+
+// Função para mudar banner
+function mudarBanner(direcao) {
+    const slides = document.querySelectorAll('.banner-slide');
+    const indicators = document.querySelectorAll('.indicator');
+    
+    if (slides.length === 0) return;
+    
+    // Verifica se o slide atual existe antes de remover a classe
+    if (slides[bannerAtual]) {
+        slides[bannerAtual].classList.remove('active');
+    }
+    if (indicators[bannerAtual]) {
+        indicators[bannerAtual].classList.remove('active');
+    }
+    
+    // Calcula novo índice
+    bannerAtual = (bannerAtual + direcao + slides.length) % slides.length;
+    
+    // Adiciona classe active ao novo slide
+    if (slides[bannerAtual]) {
+        slides[bannerAtual].classList.add('active');
+    }
+    if (indicators[bannerAtual]) {
+        indicators[bannerAtual].classList.add('active');
+    }
+    
+    // Reinicia o intervalo automático
+    clearInterval(bannerInterval);
+    iniciarBannerAutomatico();
+}
+
+// Função para ir para um banner específico
+function irParaBanner(index) {
+    const slides = document.querySelectorAll('.banner-slide');
+    const indicators = document.querySelectorAll('.indicator');
+    
+    if (slides.length === 0 || index < 0 || index >= slides.length) return;
+    
+    // Remove classe active do slide atual
+    if (slides[bannerAtual]) {
+        slides[bannerAtual].classList.remove('active');
+    }
+    if (indicators[bannerAtual]) {
+        indicators[bannerAtual].classList.remove('active');
+    }
+    
+    // Define novo índice
+    bannerAtual = index;
+    
+    // Adiciona classe active ao novo slide
+    if (slides[bannerAtual]) {
+        slides[bannerAtual].classList.add('active');
+    }
+    if (indicators[bannerAtual]) {
+        indicators[bannerAtual].classList.add('active');
+    }
+    
+    // Reinicia o intervalo automático
+    clearInterval(bannerInterval);
+    iniciarBannerAutomatico();
+}
+
+// Função para iniciar rotação automática
+function iniciarBannerAutomatico() {
+    const slides = document.querySelectorAll('.banner-slide');
+    if (slides.length === 0) return;
+    
+    clearInterval(bannerInterval);
+    bannerInterval = setInterval(() => {
+        mudarBanner(1);
+    }, 5000); // Muda a cada 5 segundos
+}
+
+// Inicializar banner quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', function() {
+    const slides = document.querySelectorAll('.banner-slide');
+    if (slides.length > 0) {
+        // Garantir que o primeiro slide está ativo
+        slides[0].classList.add('active');
+        const indicators = document.querySelectorAll('.indicator');
+        if (indicators.length > 0) {
+            indicators[0].classList.add('active');
+        }
+        
+        iniciarBannerAutomatico();
+        
+        // Pausar rotação quando o mouse estiver sobre o banner
+        const bannerContainer = document.querySelector('.banner-rotativo-container');
+        if (bannerContainer) {
+            bannerContainer.addEventListener('mouseenter', () => {
+                clearInterval(bannerInterval);
+            });
+            
+            bannerContainer.addEventListener('mouseleave', () => {
+                iniciarBannerAutomatico();
+            });
+        }
+    }
+    
+    // Banner interno rotativo (dentro do segundo slide)
+    let bannerInternoAtual = 0;
+    let bannerInternoInterval;
+    
+    function mudarBannerInterno() {
+        const slidesInternos = document.querySelectorAll('.banner-interno-slide');
+        if (slidesInternos.length === 0) return;
+        
+        // Remove active do slide atual
+        if (slidesInternos[bannerInternoAtual]) {
+            slidesInternos[bannerInternoAtual].classList.remove('active');
+        }
+        
+        // Calcula próximo índice
+        bannerInternoAtual = (bannerInternoAtual + 1) % slidesInternos.length;
+        
+        // Adiciona active ao novo slide
+        if (slidesInternos[bannerInternoAtual]) {
+            slidesInternos[bannerInternoAtual].classList.add('active');
+        }
+    }
+    
+    function iniciarBannerInterno() {
+        const slidesInternos = document.querySelectorAll('.banner-interno-slide');
+        if (slidesInternos.length === 0) return;
+        
+        // Garantir que o primeiro slide interno está ativo
+        if (slidesInternos[0]) {
+            slidesInternos[0].classList.add('active');
+        }
+        
+        clearInterval(bannerInternoInterval);
+        bannerInternoInterval = setInterval(() => {
+            mudarBannerInterno();
+        }, 3000); // Muda a cada 3 segundos
+    }
+    
+    // Iniciar banner interno
+    iniciarBannerInterno();
 });
 
 // Fechar filtros com tecla Escape

@@ -353,6 +353,34 @@
             box-shadow: var(--shadow-heavy);
         }
 
+        .user-icon-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--bg-secondary);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .user-icon-link i {
+            font-size: 24px;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .user-icon-link:hover {
+            background: var(--primary-color);
+            transform: scale(1.1);
+        }
+
+        .user-icon-link:hover i {
+            color: var(--text-light);
+        }
+
         .user-greeting {
             font-size: 12px;
             color: var(--text-light);
@@ -1957,6 +1985,131 @@
                 justify-content: center;
             }
         }
+
+        /* Modal WhatsApp Form */
+        .modal-whatsapp-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-whatsapp-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 100%;
+            padding: 30px;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-whatsapp-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #666;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+        }
+
+        .modal-whatsapp-close:hover {
+            color: #000;
+        }
+
+        .modal-whatsapp-content h3 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .modal-required {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .form-group-whatsapp {
+            margin-bottom: 20px;
+        }
+
+        .form-group-whatsapp label {
+            display: block;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .form-group-whatsapp input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group-whatsapp input:focus {
+            outline: none;
+            border-color: #25d366;
+        }
+
+        .btn-enviar-whatsapp {
+            width: 100%;
+            background: #00875f;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .btn-enviar-whatsapp:hover {
+            background: #00704a;
+        }
+
+        .modal-footer-text {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .modal-footer-text a {
+            color: #00875f;
+            text-decoration: none;
+        }
+
+        .link-enviar-sem-dados {
+            display: block;
+            text-align: center;
+            color: #00875f;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .link-enviar-sem-dados:hover {
+            text-decoration: underline;
+        }
     </style>
     {% block head %}{% endblock %}
     <script src="{{ url_for('static', filename='js/img-fallback.js') }}?v=1"></script>
@@ -2013,8 +2166,9 @@
                     </div>
                 {% else %}
                     <div class="auth-buttons">
-                        <a href="{{ url_for('login') }}" class="btn-auth">Entrar</a>
-                        <a href="{{ url_for('cadastro') }}" class="btn-auth primary">Cadastrar</a>
+                        <a href="{{ url_for('login') }}" class="user-icon-link" title="Entrar">
+                            <i class="fas fa-user-circle"></i>
+                        </a>
                     </div>
                 {% endif %}
             </div>
@@ -2490,10 +2644,49 @@
                     <span>Subtotal</span>
                     <span id="sacola-total">R$ 0,00</span>
                 </div>
-                <button class="sacola-finalizar" onclick="window.location.href='{{ url_for('carrinho') }}'">
-                    FINALIZAR COMPRA
+                <button class="sacola-whatsapp" onclick="abrirFormularioWhatsApp()">
+                    <i class="fab fa-whatsapp"></i> Enviar para Loja - CAMILA DE P.
+                </button>
+                <button class="sacola-escolher-mais" onclick="toggleSacola()">
+                    Escolher mais
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal Formulário WhatsApp -->
+    <div id="modal-whatsapp-form" class="modal-whatsapp-overlay" style="display: none;">
+        <div class="modal-whatsapp-content">
+            <button class="modal-whatsapp-close" onclick="fecharFormularioWhatsApp()">&times;</button>
+            <h3>Olá! Informe seu nome e celular para que a loja de Loja - CAMILA DE PAULA identifique a sua compra</h3>
+            <p class="modal-required">* Campos obrigatórios</p>
+            
+            <form id="form-whatsapp-dados" onsubmit="enviarParaWhatsAppComDados(event)">
+                <div class="form-group-whatsapp">
+                    <label for="whatsapp-nome">Nome Completo*</label>
+                    <input type="text" id="whatsapp-nome" placeholder="Nome Completo*" required>
+                </div>
+                
+                <div class="form-group-whatsapp">
+                    <label for="whatsapp-celular">Celular* (__) _____-____</label>
+                    <input type="tel" id="whatsapp-celular" placeholder="Celular* (__) _____-____" 
+                           pattern="\(\d{2}\) \d{5}-\d{4}" required>
+                </div>
+                
+                <button type="submit" class="btn-enviar-whatsapp">
+                    Enviar compra por WhatsApp
+                </button>
+                
+                <p class="modal-footer-text">
+                    Ao continuar, seus dados serão tratados de acordo com a 
+                    <a href="#" target="_blank">Política de Privacidade</a> do Grupo Boticário e os 
+                    <a href="#" target="_blank">Termos e Condições</a> da loja digital do Revendedor.
+                </p>
+                
+                <a href="#" class="link-enviar-sem-dados" onclick="enviarSemInformarDados(event)">
+                    Enviar compra sem informar dados
+                </a>
+            </form>
         </div>
     </div>
 
@@ -2569,6 +2762,121 @@
                 console.error('Erro ao carregar sacola:', error);
             } finally {
                 carregandoSacola = false;
+            }
+        }
+
+        // Função para abrir formulário WhatsApp
+        function abrirFormularioWhatsApp() {
+            const response = fetch('/api/carrinho').then(r => r.json());
+            response.then(data => {
+                if (!data.items || data.items.length === 0) {
+                    alert('Seu carrinho está vazio!');
+                    return;
+                }
+                document.getElementById('modal-whatsapp-form').style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            });
+        }
+
+        // Função para fechar formulário
+        function fecharFormularioWhatsApp() {
+            document.getElementById('modal-whatsapp-form').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        // Máscara para celular
+        document.addEventListener('DOMContentLoaded', function() {
+            const celularInput = document.getElementById('whatsapp-celular');
+            if (celularInput) {
+                celularInput.addEventListener('input', function(e) {
+                    let valor = e.target.value.replace(/\D/g, '');
+                    if (valor.length <= 11) {
+                        valor = valor.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
+                    }
+                    e.target.value = valor;
+                });
+            }
+        });
+
+        // Função para enviar com dados do formulário
+        async function enviarParaWhatsAppComDados(event) {
+            event.preventDefault();
+            
+            const nome = document.getElementById('whatsapp-nome').value;
+            const celular = document.getElementById('whatsapp-celular').value;
+            
+            await enviarParaWhatsApp(nome, celular);
+            fecharFormularioWhatsApp();
+        }
+
+        // Função para enviar sem informar dados
+        async function enviarSemInformarDados(event) {
+            event.preventDefault();
+            await enviarParaWhatsApp();
+            fecharFormularioWhatsApp();
+        }
+
+        // 📱 Função para enviar produtos para WhatsApp
+        async function enviarParaWhatsApp(nomeCliente = null, celularCliente = null) {
+            try {
+                // Buscar configurações do WhatsApp
+                const configResponse = await fetch('/api/whatsapp-config');
+                const config = await configResponse.json();
+                
+                // Buscar itens do carrinho
+                const response = await fetch('/api/carrinho');
+                const data = await response.json();
+                
+                if (!data.items || data.items.length === 0) {
+                    alert('Seu carrinho está vazio!');
+                    return;
+                }
+                
+                // Número da loja
+                const numeroLoja = config.numero;
+                const lojaNome = config.loja_nome;
+                
+                // Montar mensagem
+                let mensagem = `🛍️ *Olá ${lojaNome}! Gostaria de fazer um pedido:*\n\n`;
+                
+                // Adicionar dados do cliente se fornecidos
+                if (nomeCliente && celularCliente) {
+                    mensagem += `👤 *Dados do Cliente:*\n`;
+                    mensagem += `Nome: ${nomeCliente}\n`;
+                    mensagem += `Celular: ${celularCliente}\n\n`;
+                    mensagem += `━━━━━━━━━━━━━━━━\n\n`;
+                }
+                
+                mensagem += `📦 *Produtos:*\n\n`;
+                
+                data.items.forEach((item, index) => {
+                    mensagem += `${index + 1}. *${item.nome}*\n`;
+                    mensagem += `   💰 R$ ${item.preco.toFixed(2).replace('.', ',')}\n`;
+                    mensagem += `   📏 Tamanho: ${item.tamanho || 'Padrão'}\n`;
+                    mensagem += `   🎨 Cor: ${item.cor || 'Padrão'}\n`;
+                    mensagem += `   📦 Quantidade: ${item.quantidade}\n`;
+                    mensagem += `   💵 Subtotal: R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}\n\n`;
+                });
+                
+                mensagem += `━━━━━━━━━━━━━━━━\n`;
+                mensagem += `💰 *Total: R$ ${data.total.toFixed(2).replace('.', ',')}*\n\n`;
+                mensagem += `✨ _Enviado da UzzeStore_`;
+                
+                // Codificar mensagem para URL
+                const mensagemCodificada = encodeURIComponent(mensagem);
+                
+                // Abrir WhatsApp
+                const urlWhatsApp = `https://wa.me/${numeroLoja}?text=${mensagemCodificada}`;
+                window.open(urlWhatsApp, '_blank');
+                
+                // Opcional: Fechar a sacola após enviar
+                setTimeout(() => {
+                    toggleSacola();
+                }, 500);
+                
+            } catch (error) {
+                console.error('Erro ao enviar para WhatsApp:', error);
+                alert('Erro ao preparar mensagem do WhatsApp');
             }
         }
 

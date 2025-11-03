@@ -9,7 +9,7 @@
   "cartaoAtivo": true,
   "boletoAtivo": true,
   "taxaEntrega": "00.0",
-  "ultima_atualizacao": "2025-10-27T20:54:59.648042",
+  "ultima_atualizacao": "2025-11-02T17:41:23.966408",
   "nomeLoja": "UzzerStore",
   "emailLoja": "contato@uzzerstore.com",
   "telefoneLoja": "66996979066",
@@ -19,5 +19,8 @@
   "prazoEntrega": "7",
   "faixaCep": "",
   "freteGratis": true,
-  "valorMinimoFrete": "100.00"
+  "valorMinimoFrete": "100.00",
+  "emailPedidos": true,
+  "whatsappAtivo": true,
+  "whatsappNumero": ""
 }
