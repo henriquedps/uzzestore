@@ -3,6 +3,7 @@ import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from decimal import Decimal
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 import json
 from datetime import datetime
 import uuid
@@ -1420,16 +1421,44 @@ def admin_novo_produto():
         preco = float(request.form['preco'])
         categoria = request.form['categoria']
         descricao = request.form['descricao']
-        imagem = request.form['imagem']  # Imagem principal
+        # Imagem principal: pode ser upload via form file 'imagem_file' ou URL no campo 'imagem'
+        imagem = None
+        imagem_file = request.files.get('imagem_file')
+        if imagem_file and imagem_file.filename:
+            filename = secure_filename(imagem_file.filename)
+            base, ext = os.path.splitext(filename)
+            timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
+            filename = f"{base}-{timestamp}{ext}"
+            upload_dir = os.path.join(BASE_DIR, 'static', 'produtos')
+            os.makedirs(upload_dir, exist_ok=True)
+            upload_path = os.path.join(upload_dir, filename)
+            imagem_file.save(upload_path)
+            imagem = f'produtos/{filename}'
+        else:
+            imagem = request.form.get('imagem', '').strip()  # fallback para URL
         estoque = int(request.form.get('estoque', 0))
         
         # Processar tamanhos selecionados
         tamanhos_selecionados = request.form.getlist('tamanhos[]')
         tamanhos_str = ','.join(tamanhos_selecionados) if tamanhos_selecionados else ''
         
-        # Processar imagens adicionais
+        # Processar imagens adicionais (aceita upload file ou URL)
         imagens_adicionais = []
         for i in range(1, 10):  # Imagens adicionais de 1 a 9 (total 10 com a principal)
+            # Checar upload primeiro
+            file_field = request.files.get(f'imagem_adicional_file_{i}')
+            if file_field and file_field.filename:
+                filename = secure_filename(file_field.filename)
+                base, ext = os.path.splitext(filename)
+                timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
+                filename = f"{base}-{timestamp}{ext}"
+                upload_dir = os.path.join(BASE_DIR, 'static', 'produtos')
+                os.makedirs(upload_dir, exist_ok=True)
+                upload_path = os.path.join(upload_dir, filename)
+                file_field.save(upload_path)
+                imagens_adicionais.append(f'produtos/{filename}')
+                continue
+            # fallback para campo URL
             imagem_adicional = request.form.get(f'imagem_adicional_{i}')
             if imagem_adicional and imagem_adicional.strip():
                 imagens_adicionais.append(imagem_adicional.strip())

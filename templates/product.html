@@ -12,7 +12,11 @@
     <div class="produto-container">
         <div class="produto-imagem-container">
             {% if produto.imagem %}
-                <img src="{{ produto.imagem }}" alt="{{ produto.nome }}" class="produto-imagem-grande">
+                {% if produto.imagem.startswith('http') or produto.imagem.startswith('/') %}
+                    <img src="{{ produto.imagem }}" alt="{{ produto.nome }}" class="produto-imagem-grande">
+                {% else %}
+                    <img src="{{ url_for('static', filename=produto.imagem) }}" alt="{{ produto.nome }}" class="produto-imagem-grande">
+                {% endif %}
             {% else %}
                 <div class="sem-imagem-grande">📷 Sem imagem disponível</div>
             {% endif %}

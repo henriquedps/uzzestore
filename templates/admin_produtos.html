@@ -346,9 +346,11 @@
                     <tr>
                         <td>
                             {% if produto.imagem %}
-                                <img src="{{ produto.imagem }}" alt="{{ produto.nome }}" 
-                                     class="product-img"
-                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                {% if produto.imagem.startswith('http') or produto.imagem.startswith('/') %}
+                                    <img src="{{ produto.imagem }}" alt="{{ produto.nome }}" class="product-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename=produto.imagem) }}" alt="{{ produto.nome }}" class="product-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                {% endif %}
                                 <div class="product-img-placeholder" style="display: none;">
                                     <i class="fas fa-image"></i>
                                 </div>

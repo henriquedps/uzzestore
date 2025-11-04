@@ -32,7 +32,11 @@
                     <div class="item-carrinho">
                         <div class="item-imagem-container">
                             {% if item.produto.imagem %}
-                                <img src="{{ item.produto.imagem }}" alt="{{ item.produto.nome }}" class="item-imagem">
+                                {% if item.produto.imagem.startswith('http') or item.produto.imagem.startswith('/') %}
+                                    <img src="{{ item.produto.imagem }}" alt="{{ item.produto.nome }}" class="item-imagem">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename=item.produto.imagem) }}" alt="{{ item.produto.nome }}" class="item-imagem">
+                                {% endif %}
                             {% else %}
                                 <div class="item-sem-imagem">👕</div>
                             {% endif %}

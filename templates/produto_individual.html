@@ -254,7 +254,15 @@
 <div class="produto-container">
     <div class="produto-main">
         <div class="produto-galeria">
-            <img src="{{ produto.imagem }}" alt="{{ produto.nome }}" class="imagem-principal" id="imagemPrincipal">
+            {% if produto.imagem %}
+                {% if produto.imagem.startswith('http') or produto.imagem.startswith('/') %}
+                    <img src="{{ produto.imagem }}" alt="{{ produto.nome }}" class="imagem-principal" id="imagemPrincipal">
+                {% else %}
+                    <img src="{{ url_for('static', filename=produto.imagem) }}" alt="{{ produto.nome }}" class="imagem-principal" id="imagemPrincipal">
+                {% endif %}
+            {% else %}
+                <img src="" alt="{{ produto.nome }}" class="imagem-principal" id="imagemPrincipal" onerror="this.src='';">
+            {% endif %}
         </div>
 
         <div class="produto-info">
@@ -292,8 +300,16 @@
         <h2 class="relacionados-titulo">Produtos Relacionados</h2>
         <div class="relacionados-grid">
             {% for produto_rel in produtos_relacionados %}
-            <div class="produto-relacionado" onclick="irParaProduto({{ produto_rel.id }})">
-                <img src="{{ produto_rel.imagem }}" alt="{{ produto_rel.nome }}">
+                <div class="produto-relacionado" onclick="irParaProduto({{ produto_rel.id }})">
+                {% if produto_rel.imagem %}
+                    {% if produto_rel.imagem.startswith('http') or produto_rel.imagem.startswith('/') %}
+                        <img src="{{ produto_rel.imagem }}" alt="{{ produto_rel.nome }}">
+                    {% else %}
+                        <img src="{{ url_for('static', filename=produto_rel.imagem) }}" alt="{{ produto_rel.nome }}">
+                    {% endif %}
+                {% else %}
+                    <img src="" alt="{{ produto_rel.nome }}">
+                {% endif %}
                 <div class="produto-relacionado-info">
                     <div class="produto-relacionado-nome">{{ produto_rel.nome }}</div>
                     <div class="produto-relacionado-preco">R$ {{ "%.2f"|format(produto_rel.preco) }}</div>

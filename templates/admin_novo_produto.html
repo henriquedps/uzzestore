@@ -298,7 +298,7 @@ small {
 
     <!-- Formulário -->
     <div style="max-width: 800px; margin: 0 auto;">
-        <form method="POST" style="background: white; padding: 40px; border-radius: 16px; box-shadow: var(--shadow-light); border: 1px solid var(--border-light);">
+    <form method="POST" enctype="multipart/form-data" style="background: white; padding: 40px; border-radius: 16px; box-shadow: var(--shadow-light); border: 1px solid var(--border-light);">
             
             <!-- Nome do Produto -->
             <div style="margin-bottom: 30px;">
@@ -442,13 +442,18 @@ small {
                                 🌟 Imagem Principal *
                             </label>
                         </div>
-                        <input type="url" name="imagem" class="imagem-url-input" data-index="0"
-                               placeholder="https://exemplo.com/imagem1.jpg"
-                               style="width: 100%; padding: 12px 15px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 14px; margin-bottom: 10px; background: white;"
-                               onchange="previewImagem(this, 0)" required>
-                        <div class="preview-container" style="display: none;">
-                            <img class="preview-imagem" src="" alt="Preview" 
-                                 style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 2px solid var(--accent-color);">
+                        <div style="display:flex; gap:12px; align-items:center;">
+                            <div id="picker-0" class="file-picker" onclick="document.getElementById('imagem_file').click()" style="cursor:pointer; width:120px; height:120px; display:flex; align-items:center; justify-content:center; border-radius:8px; background:#fff; border:2px dashed var(--border-light);">
+                                <!-- ícone pequeno que abre explorador -->
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 15V7a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2v10" stroke="#6b7280" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="12" width="18" height="8" rx="2" stroke="#6b7280" stroke-width="1.2"/></svg>
+                            </div>
+                            <div>
+                                <input type="file" id="imagem_file" name="imagem_file" accept="image/*" style="display:none;" onchange="previewFile(this, 0)" required>
+                                <div class="preview-container" id="preview-0" style="display: none;">
+                                    <img class="preview-imagem" src="" alt="Preview" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 2px solid var(--accent-color);">
+                                </div>
+                                <div id="imagem-filename-0" style="margin-top:8px; color:var(--text-secondary); font-size:13px;"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -506,71 +511,71 @@ small {
 </div>
 
 <script>
-let contadorImagens = 1;
-const maxImagens = 10;
+    let contadorImagens = 1;
+    const maxImagens = 10;
 
-function previewImagem(input, index) {
-    const url = input.value;
-    const imagemItem = input.closest('.imagem-item');
-    const preview = imagemItem.querySelector('.preview-imagem');
-    const container = imagemItem.querySelector('.preview-container');
-    
-    if (url) {
-        preview.src = url;
-        preview.onload = function() {
-            container.style.display = 'block';
-        };
-        preview.onerror = function() {
-            container.style.display = 'none';
-            alert('Não foi possível carregar a imagem. Verifique se a URL está correta.');
-        };
-    } else {
-        container.style.display = 'none';
-    }
-}
+    function previewFile(input, index) {
+        const file = input.files && input.files[0];
+        const imagemItem = input.closest('.imagem-item');
+        const preview = imagemItem ? imagemItem.querySelector('.preview-imagem') : document.querySelector(`#preview-${index} .preview-imagem`);
+        const container = imagemItem ? imagemItem.querySelector('.preview-container') : document.getElementById(`preview-${index}`);
+        const filenameEl = document.getElementById(`imagem-filename-${index}`);
 
-function adicionarImagem() {
-    if (contadorImagens >= maxImagens) {
-        alert(`Você pode adicionar no máximo ${maxImagens} imagens por produto.`);
-        return;
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (preview) preview.src = e.target.result;
+                if (container) container.style.display = 'block';
+                if (filenameEl) filenameEl.textContent = file.name;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            if (container) container.style.display = 'none';
+            if (filenameEl) filenameEl.textContent = '';
+        }
     }
-    
-    const container = document.getElementById('imagens-container');
-    const novaImagem = document.createElement('div');
-    novaImagem.className = 'imagem-item';
-    novaImagem.style.cssText = 'margin-bottom: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px; border: 2px dashed var(--border-light);';
-    
-    novaImagem.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-            <label style="font-weight: 600; color: var(--text-primary); font-size: 13px;">
-                📸 Imagem ${contadorImagens + 1}
-            </label>
-            <button type="button" onclick="removerImagem(this)" 
-                    style="background: var(--danger-color); color: white; border: none; border-radius: 5px; padding: 5px 10px; font-size: 12px; cursor: pointer;">
-                🗑️ Remover
-            </button>
+
+    function adicionarImagem() {
+        if (contadorImagens >= maxImagens) {
+            alert(`Você pode adicionar no máximo ${maxImagens} imagens por produto.`);
+            return;
+        }
+
+        const container = document.getElementById('imagens-container');
+        const novaImagem = document.createElement('div');
+        novaImagem.className = 'imagem-item';
+        novaImagem.style.cssText = 'margin-bottom: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px; border: 2px dashed var(--border-light); display:flex; gap:12px; align-items:flex-start;';
+
+        novaImagem.innerHTML = `
+        <div style="flex:0 0 120px;">
+            <div id="picker-${contadorImagens}" class="file-picker" onclick="document.getElementById('imagem_file_${contadorImagens}').click()" style="cursor:pointer; width:120px; height:120px; display:flex; align-items:center; justify-content:center; border-radius:8px; background:#fff; border:2px dashed var(--border-light);">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 15V7a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2v10" stroke="#6b7280" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="12" width="18" height="8" rx="2" stroke="#6b7280" stroke-width="1.2"/></svg>
+            </div>
         </div>
-        <input type="url" name="imagem_adicional_${contadorImagens}" class="imagem-url-input" data-index="${contadorImagens}"
-               placeholder="https://exemplo.com/imagem${contadorImagens + 1}.jpg"
-               style="width: 100%; padding: 12px 15px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 14px; margin-bottom: 10px; background: white;"
-               onchange="previewImagem(this, ${contadorImagens})">
-        <div class="preview-container" style="display: none;">
-            <img class="preview-imagem" src="" alt="Preview" 
-                 style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 2px solid var(--info-color);">
+        <div style="flex:1;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <label style="font-weight: 600; color: var(--text-primary); font-size: 13px;">📸 Imagem ${contadorImagens + 1}</label>
+                <button type="button" onclick="removerImagem(this)" style="background: var(--danger-color); color: white; border: none; border-radius: 5px; padding: 5px 10px; font-size: 12px; cursor: pointer;">🗑️ Remover</button>
+            </div>
+            <input type="file" id="imagem_file_${contadorImagens}" name="imagem_adicional_file_${contadorImagens}" accept="image/*" style="display:none;" onchange="previewFile(this, ${contadorImagens})">
+            <div class="preview-container" id="preview-${contadorImagens}" style="display: none;">
+                <img class="preview-imagem" src="" alt="Preview" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 2px solid var(--info-color);">
+            </div>
+            <div id="imagem-filename-${contadorImagens}" style="margin-top:8px; color:var(--text-secondary); font-size:13px;"></div>
         </div>
     `;
-    
-    container.appendChild(novaImagem);
-    contadorImagens++;
-    
-    // Atualizar o botão se chegou no limite
-    if (contadorImagens >= maxImagens) {
-        const botaoAdicionar = document.querySelector('button[onclick="adicionarImagem()"]');
-        botaoAdicionar.disabled = true;
-        botaoAdicionar.style.opacity = '0.5';
-        botaoAdicionar.innerHTML = '✅ Limite Máximo Atingido';
+
+        container.appendChild(novaImagem);
+        contadorImagens++;
+
+        // Atualizar o botão se chegou no limite
+        if (contadorImagens >= maxImagens) {
+            const botaoAdicionar = document.querySelector('button[onclick="adicionarImagem()"]');
+            botaoAdicionar.disabled = true;
+            botaoAdicionar.style.opacity = '0.5';
+            botaoAdicionar.innerHTML = '✅ Limite Máximo AtingIDO';
+        }
     }
-}
 
 function removerImagem(botao) {
     const imagemItem = botao.closest('.imagem-item');
