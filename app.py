@@ -352,8 +352,103 @@ def init_db():
         conn.commit()
         conn.close()
         print("✅ Banco de dados inicializado com sucesso!")
+        # Se o banco estiver vazio de produtos, tentar popular com imagens em static/produtos
+        try:
+            # Abrir conexão separada para seed (evita lock com a anterior)
+            conn2 = get_db_connection()
+            cur = conn2.execute("SELECT COUNT(*) as c FROM produtos")
+            total = cur.fetchone()['c']
+            if total == 0:
+                try:
+                    seed_count = seed_products_from_static(conn2)
+                    if seed_count:
+                        print(f"✅ Seed automático: inseridos {seed_count} produtos a partir de static/produtos")
+                except Exception as se:
+                    print(f"Aviso: falha ao popular produtos automaticamente: {se}")
+            conn2.close()
+        except Exception:
+            pass
     except Exception as e:
         print(f"❌ Erro ao inicializar banco: {e}")
+
+
+def seed_products_from_static(conn=None):
+    """Popula a tabela produtos a partir dos arquivos em static/produtos se não houver entradas.
+    Retorna o número de produtos inseridos.
+    Se uma conexão for passada, usa-a; caso contrário abre uma conexão temporária.
+    """
+    import os
+    from datetime import datetime
+
+    close_conn = False
+    if conn is None:
+        conn = get_db_connection()
+        close_conn = True
+
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    produtos_dir = os.path.join(BASE_DIR, 'static', 'produtos')
+    if not os.path.isdir(produtos_dir):
+        if close_conn:
+            conn.close()
+        return 0
+
+    files = [f for f in os.listdir(produtos_dir) if os.path.isfile(os.path.join(produtos_dir, f))]
+    if not files:
+        if close_conn:
+            conn.close()
+        return 0
+
+    # Ler imagens já referenciadas
+    cur = conn.execute("SELECT imagem FROM produtos WHERE imagem IS NOT NULL")
+    existing = set([r['imagem'] for r in cur.fetchall() if r['imagem']])
+
+    def infer_category(filename):
+        s = filename.lower()
+        if 'bermuda' in s:
+            return 'Bermudas'
+        if 'calça' in s or 'calca' in s:
+            return 'Calças'
+        if 'camisa' in s or 'polo' in s:
+            return 'Camisetas'
+        if 'camiseta' in s:
+            return 'Camisetas'
+        if 'bolsa' in s:
+            return 'Acessórios'
+        if 'boné' in s or 'bone' in s:
+            return 'Acessórios'
+        if 'cueca' in s:
+            return 'Moda Intima'
+        return 'Sem categoria'
+
+    inserted = 0
+    for fn in files:
+        imagem_field = f'produtos/{fn}'
+        if imagem_field in existing:
+            continue
+        nome = os.path.splitext(fn)[0].replace('_', ' ').replace('-', ' ').title()
+        preco = 49.90
+        categoria = infer_category(fn)
+        descricao = ''
+        tamanhos = 'P,M,G'
+        estoque = 10
+
+        try:
+            conn.execute('''
+                INSERT INTO produtos (nome, preco, imagem, categoria, descricao, tamanhos, estoque, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (nome, preco, imagem_field, categoria, descricao, tamanhos, estoque, datetime.utcnow().isoformat()))
+            inserted += 1
+        except Exception:
+            # ignora erros de inserção individuais
+            continue
+
+    if inserted > 0:
+        conn.commit()
+
+    if close_conn:
+        conn.close()
+
+    return inserted
 
 def is_admin():
     """Verifica se usuário atual é administrador (otimizado)"""
