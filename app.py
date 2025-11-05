@@ -1794,6 +1794,23 @@ def debug_produtos():
     except Exception as e:
         return f"Erro: {e}"
 
+
+@app.route('/debug/static-produtos')
+def debug_static_produtos():
+    """Retorna JSON com a lista de arquivos presentes em static/produtos no servidor.
+    Útil para verificar se os assets foram incluídos no deploy (por exemplo Render).
+    """
+    try:
+        import os, json
+        base = os.path.dirname(os.path.abspath(__file__))
+        p = os.path.join(base, 'static', 'produtos')
+        if not os.path.isdir(p):
+            return json.dumps({'exists': False, 'path': p, 'files': []}), 200, {'Content-Type': 'application/json'}
+        files = sorted([f for f in os.listdir(p) if os.path.isfile(os.path.join(p, f))])
+        return json.dumps({'exists': True, 'path': p, 'count': len(files), 'files': files}, ensure_ascii=False), 200, {'Content-Type': 'application/json'}
+    except Exception as e:
+        return {'error': str(e)}
+
 @app.cli.command("db-info")
 def db_info():
     """Mostra o arquivo de banco em uso e as colunas de usuarios."""
