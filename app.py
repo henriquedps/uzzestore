@@ -1,6 +1,13 @@
 import os
 import sqlite3
+try:
+    import pymysql
+    pymysql.install_as_MySQLdb()
+except Exception:
+    # Se PyMySQL não estiver instalado, SQLAlchemy tentará usar MySQLdb (mysqlclient)
+    pass
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask_sqlalchemy import SQLAlchemy
 from decimal import Decimal
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -28,6 +35,29 @@ if db_dir:
 # Configurações do WhatsApp da loja
 WHATSAPP_LOJA = "551166997164602"  # Número padrão - altere aqui ou use variável de ambiente
 WHATSAPP_NUMERO = os.getenv('WHATSAPP_NUMERO', WHATSAPP_LOJA)
+
+app = Flask(__name__)
+app.secret_key = os.environ.get('SECRET_KEY', 'uzzer-store-secret-key-2024')
+
+# Configuração para MySQL
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('MYSQL_URL', 'mysql://usuario:senha@localhost/nome_do_banco')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
+# Modelo Produto
+class Produto(db.Model):
+    __tablename__ = 'produtos'
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(255), nullable=False)
+    preco = db.Column(db.Numeric(10,2), nullable=False)
+    categoria = db.Column(db.String(100))
+    descricao = db.Column(db.Text)
+    imagem = db.Column(db.String(255))
+    estoque = db.Column(db.Integer, default=0)
+    tamanhos = db.Column(db.String(100))
+    visivel = db.Column(db.Boolean, default=True)
+    # Adicione outros campos conforme necessário
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
@@ -75,8 +105,13 @@ def ensure_imagens_adicionais_column(conn):
         conn.commit()
         print("✅ Coluna 'imagens_adicionais' adicionada à tabela produtos")
 
-app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'uzzer-store-secret-key-2024')
+def ensure_visivel_column(conn):
+    """Garante que a coluna visivel existe na tabela produtos"""
+    cols = [r['name'] for r in conn.execute("PRAGMA table_info(produtos)").fetchall()]
+    if 'visivel' not in cols:
+        conn.execute("ALTER TABLE produtos ADD COLUMN visivel INTEGER NOT NULL DEFAULT 1")
+        conn.commit()
+        print("✅ Coluna 'visivel' adicionada à tabela produtos")
 
 # Filtro personalizado para converter JSON no template
 @app.template_filter('fromjson')
@@ -1495,13 +1530,35 @@ def admin_produtos():
     if not is_admin():
         flash('Acesso negado!', 'error')
         return redirect(url_for('login'))
-    
+    conn = get_db_connection()
+    ensure_visivel_column(conn)
+    produtos = conn.execute('SELECT * FROM produtos ORDER BY id DESC').fetchall()
+    conn.close()
+    return render_template('admin_produtos.html', produtos=produtos)
+
+
+@app.route('/admin/produtos/ocultar/<int:produto_id>', methods=['POST'])
+def admin_ocultar_produto(produto_id):
+    if not is_admin():
+        flash('Acesso negado!', 'error')
+        return redirect(url_for('login'))
     try:
         conn = get_db_connection()
-        produtos = conn.execute('SELECT * FROM produtos ORDER BY id DESC').fetchall()
+        produto = conn.execute('SELECT visivel, nome FROM produtos WHERE id = ?', (produto_id,)).fetchone()
+        if not produto:
+            flash('Produto não encontrado!', 'error')
+            conn.close()
+            return redirect(url_for('admin_produtos'))
+        novo_visivel = 0 if produto['visivel'] else 1
+        conn.execute('UPDATE produtos SET visivel = ? WHERE id = ?', (novo_visivel, produto_id))
+        conn.commit()
         conn.close()
-        
-        return render_template('admin_produtos.html', produtos=produtos)
+        status = 'ocultado' if novo_visivel == 0 else 'exibido'
+        flash(f'Produto "{produto["nome"]}" {status} com sucesso!', 'success')
+        return redirect(url_for('admin_produtos'))
+    except Exception as e:
+        flash(f'Erro ao alterar visibilidade: {e}', 'error')
+        return redirect(url_for('admin_produtos'))
     except Exception as e:
         return f"Erro: {e}"
 
@@ -1890,6 +1947,13 @@ def upgrade_db():
     finally:
         conn.close()
 
+# Comando para criar as tabelas no MySQL
+@app.cli.command('create-db')
+def create_db():
+    """Cria todas as tabelas no banco MySQL configurado"""
+    db.create_all()
+    print('✅ Tabelas criadas com sucesso no MySQL!')
+
 # Para o Vercel, não usar if __name__ == '__main__'
 # O app será executado automaticamente
 print("🚀 UzzerStore inicializado para produção!")
@@ -1900,4 +1964,4 @@ if not os.environ.get('WERKZEUG_RUN_MAIN'):
     init_db()
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=5000)  
+    app.run(debug=True, host='0.0.0.0', port=5000)

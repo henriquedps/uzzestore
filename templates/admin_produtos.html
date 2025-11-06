@@ -393,6 +393,15 @@
                                     <i class="fas fa-trash"></i>
                                     Deletar
                                 </a>
+                                    <form method="POST" action="{{ url_for('admin_ocultar_produto', produto_id=produto.id) }}" style="display:inline;">
+                                        <button type="submit" class="btn-action" style="background: {{ 'gray' if not produto.visivel else '#27ae60' }}; color: white;">
+                                            {% if produto.visivel %}
+                                                <i class="fas fa-eye-slash"></i> Ocultar
+                                            {% else %}
+                                                <i class="fas fa-eye"></i> Exibir
+                                            {% endif %}
+                                        </button>
+                                    </form>
                             </div>
                         </td>
                     </tr>
