@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}UzzeStore - Moda Feminina e Masculina{% endblock %}</title>
+    <title>{% block title %}UzzeStore - Moda Masculina{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-1S8s..." crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -25,11 +25,11 @@
             --secondary-color: var(--cor-secundaria-config); /* Cor secundária personalizada */
             --accent-color: #e67e22;           /* Laranja queimado - destaques */
             --gold-accent: #f39c12;            /* Dourado - elementos premium */
-            --steel-accent: #34495e;           /* Cinza aço - elementos neutros */
+            --steel-accent: #ffffff;           /* Cinza aço - elementos neutros */
             
             /* 📝 Cores de Texto Padronizadas */
-            --text-primary: #1a1a1a;           /* Preto para texto principal */
-            --text-secondary: #34495e;         /* Cinza escuro para texto secundário */
+            --text-primary: #000000;           /* Preto para texto principal */
+            --text-secondary: #070505;         /* Cinza escuro para texto secundário */
             --text-light: #ffffff;             /* Branco para texto em fundos escuros */
             --text-muted: #7f8c8d;             /* Cinza para texto sutil */
             
@@ -98,52 +98,83 @@
             background: var(--bg-gradient);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-bottom: 3px solid var(--accent-color);
+            border-bottom: 3px solid rgba(0,0,0,0.06);
             position: sticky;
             top: 0;
-            z-index: 1000;
-            transition: var(--transition);
-            box-shadow: var(--shadow-heavy);
+            z-index: 9999;
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
         }
 
-        .nav-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 40px;
+        /* Layout específico para header: logo central e ações à direita */
+        .nav-header-flex {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            height: 80px;
+            justify-content: center;
+            position: relative;
+            padding: 12px 20px;
+            gap: 12px;
         }
-
-        .logo {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: var(--text-light);
-            text-decoration: none;
-            letter-spacing: -0.02em;
+        
+        .nav-actions-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
             position: absolute;
-            left: 40px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-            transition: var(--transition-bounce);
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
         }
 
-        .logo:hover {
-            transform: scale(1.05);
-            color: var(--gold-accent);
-            text-shadow: 0 0 20px rgba(243, 156, 18, 0.8);
+        @media (max-width: 768px) {
+            .nav-header-flex {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 10px;
+            }
+            .nav-actions-right { position: static; transform: none; justify-content: flex-end; }
         }
+                /* Layout específico para header: logo central*/
+       .nav-bar {
+  background: linear-gradient(135deg, #1a1a1a, #2e2e2e);
+  border-bottom: 3px solid #ff9f1c;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+  padding: 15px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
 
-        .logo::after {
+.nav-logo-center .logo {
+  font-family: 'Poppins', sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: #ffffff; /* Branco puro */
+  text-decoration: none; /* Remove sublinhado */
+  letter-spacing: 2px;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.3); /* brilho branco sutil */
+  transition: all 0.3s ease-in-out;
+}
+
+.nav-logo-center .logo:hover {
+  color: #ff9f1c; /* muda para laranja ao passar o mouse */
+  text-shadow: 0 0 15px rgba(255, 159, 28, 0.7);
+  transform: scale(1.05);
+}
+
+
+
+        /* Barra de destaque do header (gradiente fino) */
+        .header::after {
             content: '';
             position: absolute;
-            bottom: -2px;
             left: 0;
-            width: 0;
+            bottom: 0;
+            width: 100%;
             height: 3px;
             background: linear-gradient(90deg, var(--gold-accent), var(--accent-color));
-            transition: width 0.3s ease;
+            pointer-events: none;
         }
 
         .logo:hover::after {
@@ -247,6 +278,101 @@
             display: flex;
             align-items: center;
             gap: 25px;
+        }
+
+        /* Nav centralizada estilo foto */
+
+        .nav-center {
+            display: flex;
+            justify-content: center;
+            gap: 34px;
+            list-style: none;
+            align-items: center;
+            grid-column: 1 / -1; /* center across full width under the logo */
+            justify-self: center;
+            margin-top: 4px;
+        }
+
+        .nav-center .nav-item a {
+            text-decoration: none;
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            transition: var(--transition);
+            background: transparent;
+            backdrop-filter: blur(6px);
+            border: 1px solid transparent;
+        }
+
+        .nav-center .nav-item a:hover {
+            color: var(--accent-color);
+            background: rgba(255,255,255,0.05);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            border-color: rgba(255,255,255,0.06);
+        }
+
+        .nav-center .nav-item.sale a {
+            color: var(--error-color);
+            font-weight: 700;
+        }
+
+        .nav-admin {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-self: end;
+        }
+
+        .nav-admin a { color: var(--text-light); font-size: 16px; }
+
+        /* Header categories (ícones circulares) */
+    .header-categories { background: transparent; grid-column: 1 / -1; }
+
+        .categories-list {
+            display: flex;
+            gap: 42px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .category-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .category-thumb {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            border: 5px solid rgba(3, 34, 119, 0.9); /* anel branco para destacar sobre header escuro */
+            box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+            transition: transform 0.35s var(--transition-fast), box-shadow 0.35s var(--transition-fast);
+        }
+
+        .category-item:hover .category-thumb {
+            transform: translateY(-6px) scale(1.03);
+            box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+        }
+
+        .category-label { font-weight: 700; color:var(--text-primary) (--text-light); font-size: 12px; }
+
+        @media (max-width: 768px) {
+            .nav-center { position: static; transform: none; margin: 0 auto; }
+            .nav-container { justify-content: space-between; }
+            .categories-list { gap: 20px; }
+            .category-thumb { width: 72px; height: 72px; }
         }
 
         .icon-btn {
@@ -873,7 +999,7 @@
         .banner-subtitle {
             font-size: 16px;
             font-weight: 400;
-            color: white;
+            color: rgb(124, 62, 62);
             text-transform: lowercase;
             letter-spacing: 2px;
             margin-bottom: 15px;
@@ -2117,36 +2243,19 @@
 <body>
     <!-- Header Elegante -->
     <header class="header">
-        <div class="nav-container">
-            <a href="{{ url_for('index') }}" class="logo">UzzeStore</a>
-            
-            <nav class="nav-menu">
-                <li class="nav-item"><a href="{{ url_for('index', categoria='Feminino') }}">Feminino</a></li>
-                <li class="nav-item"><a href="{{ url_for('index', categoria='Masculino') }}">Masculino</a></li>
-                <li class="nav-item"><a href="{{ url_for('index', categoria='Camisetas') }}">Camisetas</a></li>
-                <li class="nav-item"><a href="{{ url_for('index', categoria='Calças') }}">Calças</a></li>
-                <li class="nav-item"><a href="{{ url_for('index', categoria='Calçados') }}">Calçados</a></li>
-                <li class="nav-item"><a href="{{ url_for('index', categoria='Acessórios') }}">Acessórios</a></li>
-                <li class="nav-item sale"><a href="{{ url_for('index', categoria='Promoção') }}">Promoção</a></li>
-                
-                <!-- Botão Admin - só aparece para administradores logados -->
-                {% if session.user_id and is_admin() %}
-                <li class="nav-item admin">
-                    <a href="{{ url_for('admin_dashboard') }}" title="Painel Administrativo">
-                        <i class="fas fa-cog"></i> Admin
-                    </a>
-                </li>
-                {% endif %}
-            </nav>
-            
-            <div class="nav-actions">
-                <button class="icon-btn search-icon">
+        <div class="nav-container nav-header-flex">
+            <div class="nav-logo-center">
+                <a href="{{ url_for('index') }}" class="logo">UzzeStore</a>
+            </div>
+
+            <div class="nav-actions nav-actions-right">
+                <button class="icon-btn search-icon" aria-label="Pesquisar">
                     <i class="fas fa-search"></i>
                 </button>
-                
+
                 <!-- Carrinho sempre visível -->
                 <div class="cart-container">
-                    <button class="icon-btn cart-toggle" onclick="toggleSacola()">
+                    <button class="icon-btn cart-toggle" onclick="toggleSacola()" aria-label="Abrir sacola">
                         <i class="fas fa-shopping-bag"></i>
                         {% set cart_items = session.get('carrinho', []) %}
                         {% if cart_items|length > 0 %}
@@ -2154,7 +2263,7 @@
                         {% endif %}
                     </button>
                 </div>
-                
+
                 {% if session.user_id %}
                     <div class="auth-buttons">
                         <span class="user-greeting">Olá, {{ session.user_nome }}</span>
@@ -2176,45 +2285,24 @@
 
     <!-- Banner Rotativo (apenas na página principal) -->
     {% if request.endpoint == 'index' and not request.args.get('categoria') %}
-    <div class="banner-container">
-        <div class="banner-slide active" id="slide-1">
-            <div class="banner-bg-image" style="background-image: url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');"></div>
-            <div class="banner-overlay-gradient"></div>
-            <div class="banner-content-fullwidth">
-            </div>
-        </div>
+    <div class="banner-container" style="margin-top: 0 !important; padding-top: 0 !important;">
+  <div class="banner-slide active" id="slide-1">
+    <div class="banner-bg-image" style="background-image: url('{{ url_for('static', filename='banner/banner.webp') }}');"></div>
+    <div class="banner-overlay-gradient"></div>
+  </div>
 
-        <div class="banner-slide" id="slide-2">
-            <div class="banner-bg-image" style="background-image: url('https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');"></div>
-            <div class="banner-overlay-gradient"></div>
-            <div class="banner-content-fullwidth">
-                <div class="banner-text-overlay">
-                </div>
-            </div>
-        </div>
+  <div class="banner-slide" id="slide-2">
+    <div class="banner-bg-image" style="background-image: url('{{ url_for('static', filename='banner/banner2.webp') }}');"></div>
+    <div class="banner-overlay-gradient"></div>
+  </div>
 
-        <div class="banner-slide" id="slide-3">
-            <div class="banner-bg-image" style="background-image: url('https://images.unsplash.com/photo-1445205170230-053b83016050?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2071&q=80');"></div>
-            <div class="banner-overlay-gradient"></div>
-            <div class="banner-content-fullwidth">
+  <div class="banner-slide" id="slide-3">
+    <div class="banner-bg-image" style="background-image: url('{{ url_for('static', filename='banner/banner3.webp') }}');"></div>
+    <div class="banner-overlay-gradient"></div>
+  </div>
+</div>
 
-            </div>
-        </div>
-
-        <!-- Navegação do Banner 
-            <button class="banner-prev" onclick="previousSlide()">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <div class="banner-dots">
-                <span class="dot active" onclick="currentSlide(1)"></span>
-                <span class="dot" onclick="currentSlide(2)"></span>
-                <span class="dot" onclick="currentSlide(3)"></span>
-            </div>
-            <button class="banner-next" onclick="nextSlide()">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
-              -->
+    <!-- slides adicionais desativados (removidos temporariamente) -->
     </div>
     {% endif %}
 
@@ -2315,41 +2403,6 @@
                         </div>
                     </form>
                     <div class="newsletter-benefits">
-                        <div class="benefit">
-                            <i class="fas fa-gift"></i>
-                            <span>10% OFF na primeira compra</span>
-                        </div>
-                        <div class="benefit">
-                            <i class="fas fa-shipping-fast"></i>
-                            <span>Frete grátis para Rondonópolis e regiões</span>
-                        </div>
-                        <div class="benefit">
-                            <i class="fas fa-undo"></i>
-                            <span>Primeira troca gratuita</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Seção de Pagamentos e Segurança -->
-            <div class="footer-payment">
-                <div class="payment-section">
-                    <h5>Formas de Pagamento</h5>
-                    <div class="payment-methods">
-                        <div class="payment-card visa">VISA</div>
-                        <div class="payment-card mastercard">Master</div>
-                        <div class="payment-card elo">ELO</div>
-                        <div class="payment-card amex">AMEX</div>
-                        <div class="payment-card pix">PIX</div>
-                    </div>
-                </div>
-                <div class="security-section">
-                    <h5>Segurança</h5>
-                    <div class="security-badges">
-                        <div class="security-badge">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>SSL 256 bits</span>
-                        </div>
                         <div class="security-badge">
                             <i class="fas fa-lock"></i>
                             <span>Site Seguro</span>
@@ -2494,7 +2547,7 @@
         function autoSlide() {
             slideInterval = setInterval(() => {
                 nextSlide();
-            }, 4000); // Muda a cada 4 segundos
+            }, 2000); // Muda a cada 2 segundos
         }
 
         // Função para resetar auto rotação
@@ -2817,20 +2870,17 @@
         // Função para alterar quantidade
         async function alterarQuantidade(produtoId, delta, tamanho, cor) {
             try {
-                const response = await fetch(`/carrinho/alterar-quantidade/${produtoId}?ajax=true&delta=${delta}&tamanho=${encodeURIComponent(tamanho)}&cor=${encodeURIComponent(cor)}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
+                const response = await fetch(
+                    `/carrinho/alterar-quantidade/${produtoId}?ajax=true&delta=${delta}&tamanho=${encodeURIComponent(tamanho)}&cor=${encodeURIComponent(cor)}`,
+                    { method: 'GET', headers: { 'Content-Type': 'application/json' } }
+                );
+
                 const data = await response.json();
-                
+
                 if (data.success) {
-                    // Recarregar os itens da sacola
+                    // Atualiza itens da sacola e contador no header
                     carregarItensSacola();
-                    
-                    // Atualizar contador na sacola do header
+
                     const cartCount = document.querySelector('.cart-count');
                     if (cartCount) {
                         if (data.carrinho_count > 0) {

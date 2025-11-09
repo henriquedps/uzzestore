@@ -4,22 +4,58 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-products.css') }}">
 <!-- Preload banner images -->
-<link rel="preload" as="image" href="{{ url_for('static', filename='banner/photo-1441986300917-64674bd600d8.jpg') }}">
-<link rel="preload" as="image" href="{{ url_for('static', filename='banner/photo-1490481651871-ab68de25d43d.jpg') }}">
+<link rel="preload" as="image" href="{{ url_for('static', filename='banner/banner.webp') }}">
 {% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
-<section class="hero-section">
-    <h1 class="hero-title">Vista-se com estilo e personalidade</h1>
-    <p class="hero-subtitle">Descubra as últimas tendências em moda masculina</p>
-    <div class="hero-image">
+  <!-- Categorias em círculo (linha central abaixo da logo) -->
+            <div class="header-categories" aria-hidden="false">
+                <div class="categories-inner" style="max-width:1400px; margin:18px auto 0; padding:12px 20px 24px;">
+                    <nav class="categories-list" aria-label="Categorias">
+                        <a href="{{ url_for('index', categoria='CAMISAS') }}" class="category-item" aria-label="Camisas">
+                            <div class="category-thumb" style="background-image: url('{{ url_for('static', filename='header-categories/camisa.webp') }}')"></div>
+                            <span class="category-label">CAMISAS</span>
+                        </a>
+                        <a href="{{ url_for('index', categoria='POLOS') }}" class="category-item" aria-label="Polos">
+                            <div class="category-thumb" style="background-image: url('{{ url_for('static', filename='header-categories/polo.webp') }}')"></div>
+                            <span class="category-label">POLOS</span>
+                        </a>
+                        <a href="{{ url_for('index', categoria='CALÇAS') }}" class="category-item" aria-label="Calças">
+                            <div class="category-thumb" style="background-image: url('{{ url_for('static', filename='header-categories/calca.webp') }}')"></div>
+                            <span class="category-label">CALÇAS</span>
+                        </a>
+                        <a href="{{ url_for('index', categoria='BERMUDAS') }}" class="category-item" aria-label="Bermudas">
+                            <div class="category-thumb" style="background-image: url('{{ url_for('static', filename='header-categories/bermuda.webp') }}')"></div>
+                            <span class="category-label">BERMUDAS</span>
+                        </a>
+                        <a href="{{ url_for('index', categoria='CASACOS') }}" class="category-item" aria-label="Casacos">
+                            <div class="category-thumb" style="background-image: url('{{ url_for('static', filename='header-categories/cuecas.webp') }}')"></div>
+                            <span class="category-label">CUECAS</span>
+                        </a>
+                        <a href="{{ url_for('index', categoria='ACESSÓRIOS') }}" class="category-item" aria-label="Acessórios">
+                            <div class="category-thumb" style="background-image: url('{{ url_for('static', filename='header-categories/acessorio.webp') }}')"></div>
+                            <span class="category-label">ACESSÓRIOS</span>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            
+ <div class="hero-image">
         <a href="{{ url_for('index', categoria='ACESSÓRIOS') }}" class="hero-accessories-link">
-            <img src="{{ url_for('static', filename='banner/acessorios.png') }}" alt="Acessórios" class="hero-accessories-img">
+            <img src="{{ url_for('static', filename='banner/acessorios.webp') }}" alt="Acessórios" class="hero-accessories-img">
         </a>
     </div>
-</section>
+    <!-- Categoria MODE TEXAS (dois cards estilizados: Cowgirl e Cowboy) -->
+    <div class="hero-texas-container" style="max-width:1400px; margin:18px auto 40px; padding:0 20px;">
+        <div class="hero-texas-grid">
+            <a href="{{ url_for('index', categoria='COWGIRL') }}" class="hero-card" style="background-image: url('{{ url_for('static', filename='img categoria/cowgirl.webp') }}')">
+            </a>
 
+            <a href="{{ url_for('index', categoria='COWBOY') }}" class="hero-card" style="background-image: url('{{ url_for('static', filename='img categoria/cowboy.webp') }}')">
+            </a>
+        </div>
+    </div>
 <script>
 // Modern Image Fallback System
 if (!window.imgFallback) {
@@ -241,6 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
                   <div class="product-image">
                         {% if produto.imagem and produto.imagem.strip() %}
                             {% if produto.imagem.startswith('http') or produto.imagem.startswith('/') %}
+                                <!-- Imagem externa: mantém comportamento padrão -->
                                 <img src="{{ produto.imagem }}"
                                      alt="{{ produto.nome }}"
                                      loading="lazy"
@@ -248,12 +285,20 @@ document.addEventListener('DOMContentLoaded', function() {
                                      onerror="imgFallback(this, 400, 400, 'Produto')"
                                      style="opacity: 0; transition: opacity 0.3s ease;">
                             {% else %}
-                                <img src="{{ url_for('static', filename=produto.imagem) }}"
-                                     alt="{{ produto.nome }}"
-                                     loading="lazy"
-                                     onload="this.style.opacity='1'"
-                                     onerror="imgFallback(this, 400, 400, 'Produto')"
-                                     style="opacity: 0; transition: opacity 0.3s ease;">
+                                {# Gerar nomes para versões otimizadas: base-400.webp e base-400.jpg/png #}
+                                {% set parts = produto.imagem.rsplit('.', 1) %}
+                                {% set base = parts[0] %}
+                                {% set ext = parts[1] %}
+                                <picture>
+                                    <source type="image/webp" data-srcset="{{ url_for('static', filename=base ~ '-400.webp') }}">
+                                    <source data-srcset="{{ url_for('static', filename=base ~ '-400.' ~ ext) }}">
+                                    <img data-src="{{ url_for('static', filename=base ~ '-400.' ~ ext) }}"
+                                         alt="{{ produto.nome }}"
+                                         loading="lazy"
+                                         onload="this.style.opacity='1'"
+                                         onerror="imgFallback(this, 400, 400, 'Produto')"
+                                         style="opacity: 0; transition: opacity 0.3s ease;">
+                                </picture>
                             {% endif %}
                         {% else %}
                             <img src="" alt="{{ produto.nome }}" loading="lazy" style="opacity: 0; transition: opacity 0.3s ease;" onerror="imgFallback(this,400,400,'Produto')">
@@ -389,6 +434,78 @@ document.addEventListener('DOMContentLoaded', function() {
     .hero-accessories-img {
         border-radius: 8px;
     }
+}
+
+/* Estilos para os cards MODE TEXAS (Cowgirl / Cowboy) */
+.hero-texas-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    align-items: stretch;
+}
+
+.hero-card {
+    display: block;
+    position: relative;
+    height: 380px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.hero-card:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px;
+    background: linear-gradient(90deg, rgba(0,0,0,0.45) 20%, rgba(0,0,0,0.12) 60%);
+    color: white;
+    gap: 12px;
+}
+
+.hero-card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 64px;
+    letter-spacing: -2px;
+    margin: 0;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 6px 20px rgba(0,0,0,0.5);
+}
+
+.hero-card-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.9);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 24px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 6px;
+    backdrop-filter: blur(6px);
+}
+
+.hero-card-btn:hover {
+    background: rgba(255,255,255,0.12);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .hero-texas-grid { grid-template-columns: 1fr; }
+    .hero-card { height: 320px; border-radius: 12px; }
+    .hero-card-title { font-size: 40px; }
 }
 
 /* Estilos para o sistema de filtros */
