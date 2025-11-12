@@ -1656,16 +1656,42 @@ def admin_editar_produto(produto_id):
         preco = float(request.form['preco'])
         categoria = request.form['categoria']
         descricao = request.form['descricao']
-        imagem = request.form['imagem']  # Imagem principal
+        # Imagem principal: aceitar upload via 'imagem_file' ou fallback para campo URL 'imagem'
+        imagem = None
+        imagem_file = request.files.get('imagem_file')
+        if imagem_file and imagem_file.filename:
+            filename = secure_filename(imagem_file.filename)
+            base, ext = os.path.splitext(filename)
+            timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
+            filename = f"{base}-{timestamp}{ext}"
+            upload_dir = os.path.join(BASE_DIR, 'static', 'produtos')
+            os.makedirs(upload_dir, exist_ok=True)
+            upload_path = os.path.join(upload_dir, filename)
+            imagem_file.save(upload_path)
+            imagem = f'produtos/{filename}'
+        else:
+            imagem = request.form.get('imagem', '').strip()
         estoque = int(request.form.get('estoque', 0))
         
         # Processar tamanhos selecionados
         tamanhos_selecionados = request.form.getlist('tamanhos[]')
         tamanhos_str = ','.join(tamanhos_selecionados) if tamanhos_selecionados else ''
         
-        # Processar imagens adicionais
+        # Processar imagens adicionais: aceitar upload ou URL
         imagens_adicionais = []
         for i in range(1, 10):  # Imagens adicionais de 1 a 9 (total 10 com a principal)
+            file_field = request.files.get(f'imagem_adicional_file_{i}')
+            if file_field and file_field.filename:
+                filename = secure_filename(file_field.filename)
+                base, ext = os.path.splitext(filename)
+                timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
+                filename = f"{base}-{timestamp}{ext}"
+                upload_dir = os.path.join(BASE_DIR, 'static', 'produtos')
+                os.makedirs(upload_dir, exist_ok=True)
+                upload_path = os.path.join(upload_dir, filename)
+                file_field.save(upload_path)
+                imagens_adicionais.append(f'produtos/{filename}')
+                continue
             imagem_adicional = request.form.get(f'imagem_adicional_{i}')
             if imagem_adicional and imagem_adicional.strip():
                 imagens_adicionais.append(imagem_adicional.strip())
@@ -1851,22 +1877,10 @@ def debug_produtos():
     except Exception as e:
         return f"Erro: {e}"
 
-
-@app.route('/debug/static-produtos')
-def debug_static_produtos():
-    """Retorna JSON com a lista de arquivos presentes em static/produtos no servidor.
-    Útil para verificar se os assets foram incluídos no deploy (por exemplo Render).
-    """
-    try:
-        import os, json
-        base = os.path.dirname(os.path.abspath(__file__))
-        p = os.path.join(base, 'static', 'produtos')
-        if not os.path.isdir(p):
-            return json.dumps({'exists': False, 'path': p, 'files': []}), 200, {'Content-Type': 'application/json'}
-        files = sorted([f for f in os.listdir(p) if os.path.isfile(os.path.join(p, f))])
-        return json.dumps({'exists': True, 'path': p, 'count': len(files), 'files': files}, ensure_ascii=False), 200, {'Content-Type': 'application/json'}
-    except Exception as e:
-        return {'error': str(e)}
+# Rotas de debug removidas para produção
+# /debug/produtos e /debug/static-produtos foram removidas do código principal.
+# Se precisar reativá-las para diagnóstico local, reimplemente temporariamente ou
+# use scripts separados que consultem o banco de dados/arquivos com permissões.
 
 @app.cli.command("db-info")
 def db_info():

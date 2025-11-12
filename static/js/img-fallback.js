@@ -14,13 +14,13 @@
   w.imgFallback = function (el, wpx, hpx, text) {
     try {
       if (!el) return;
-      console.log('ImgFallback ativado para:', el.src); // Debug
+       console.log('ImgFallback ativado para:', el.src); // Debug
       el.onerror = null;                 // evita loop
       el.src = svgData(wpx||400, hpx||400, text||'Sem Imagem');
       el.alt = el.alt || (text||'Sem Imagem');
       el.style.backgroundColor = '#f0f0f0';
     } catch (e) { 
-      console.error('Erro no imgFallback:', e);
+     //  console.error('Erro no imgFallback:', e);
     }
   };
   
@@ -29,7 +29,7 @@
     const images = document.querySelectorAll('img');
     images.forEach(img => {
       if (!img.complete || img.naturalHeight === 0) {
-        console.log('Imagem não carregou, aplicando fallback:', img.src);
+        // console.log('Imagem não carregou, aplicando fallback:', img.src);
         w.imgFallback(img, 400, 400, 'Produto');
       }
     });

@@ -20,6 +20,13 @@
 
     .produto-galeria {
         position: relative;
+        min-height: 360px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fafafa;
+        border-radius: 12px;
+        overflow: hidden;
     }
 
     .imagem-principal {
@@ -254,14 +261,15 @@
 <div class="produto-container">
     <div class="produto-main">
         <div class="produto-galeria">
+            {% set placeholder = "data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"800\" height=\"600\"><rect width=\"100%\" height=\"100%\" fill=\"%23f3f4f6\"/><text x=\"50%\" y=\"50%\" dominant-baseline=\"middle\" text-anchor=\"middle\" fill=\"%23999\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"28\">Sem imagem</text></svg>" %}
             {% if produto.imagem %}
                 {% if produto.imagem.startswith('http') or produto.imagem.startswith('/') %}
-                    <img src="{{ produto.imagem }}" alt="{{ produto.nome }}" class="imagem-principal" id="imagemPrincipal">
+                    <img src="{{ produto.imagem }}" alt="{{ produto.nome }}" class="imagem-principal" id="imagemPrincipal" onerror="this.onerror=null; this.src='{{ placeholder }}';">
                 {% else %}
-                    <img src="{{ url_for('static', filename=produto.imagem) }}" alt="{{ produto.nome }}" class="imagem-principal" id="imagemPrincipal">
+                    <img src="{{ url_for('static', filename=produto.imagem) }}" alt="{{ produto.nome }}" class="imagem-principal" id="imagemPrincipal" onerror="this.onerror=null; this.src='{{ placeholder }}';">
                 {% endif %}
             {% else %}
-                <img src="" alt="{{ produto.nome }}" class="imagem-principal" id="imagemPrincipal" onerror="this.src='';">
+                <img src="{{ placeholder }}" alt="{{ produto.nome }}" class="imagem-principal" id="imagemPrincipal">
             {% endif %}
         </div>
 
@@ -303,12 +311,12 @@
                 <div class="produto-relacionado" onclick="irParaProduto({{ produto_rel.id }})">
                 {% if produto_rel.imagem %}
                     {% if produto_rel.imagem.startswith('http') or produto_rel.imagem.startswith('/') %}
-                        <img src="{{ produto_rel.imagem }}" alt="{{ produto_rel.nome }}">
+                        <img src="{{ produto_rel.imagem }}" alt="{{ produto_rel.nome }}" onerror="this.onerror=null; this.src='{{ placeholder }}';">
                     {% else %}
-                        <img src="{{ url_for('static', filename=produto_rel.imagem) }}" alt="{{ produto_rel.nome }}">
+                        <img src="{{ url_for('static', filename=produto_rel.imagem) }}" alt="{{ produto_rel.nome }}" onerror="this.onerror=null; this.src='{{ placeholder }}';">
                     {% endif %}
                 {% else %}
-                    <img src="" alt="{{ produto_rel.nome }}">
+                    <img src="{{ placeholder }}" alt="{{ produto_rel.nome }}">
                 {% endif %}
                 <div class="produto-relacionado-info">
                     <div class="produto-relacionado-nome">{{ produto_rel.nome }}</div>

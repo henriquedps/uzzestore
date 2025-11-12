@@ -12,8 +12,9 @@
 
 .produtos-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 24px;
+    /* Aumentei o min-width dos cards para expositores maiores */
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 28px;
     margin-top: 20px;
     transition: opacity 0.3s ease;
 }
@@ -37,7 +38,8 @@
 .produto-card .product-image {
     position: relative;
     width: 100%;
-    height: 240px;
+    /* Imagens maiores para destaque do produto */
+    height: 320px;
     overflow: hidden;
 }
 
@@ -64,13 +66,14 @@
 }
 
 .produto-nome {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 600;
     color: var(--filter-text, #334155);
     margin-bottom: 8px;
     line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -86,7 +89,7 @@
 }
 
 .produto-preco {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 700;
     color: var(--filter-accent, #3b82f6);
     margin-bottom: 16px;
@@ -217,18 +220,18 @@
 }
 
 /* ============= RESPONSIVIDADE ============= */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .products-container {
         padding: 16px;
     }
-    
     .produtos-grid {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 16px;
+        /* em telas médias, reduz um pouco o min-width para caber melhor */
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
     }
-    
+
     .produto-card .product-image {
-        height: 200px;
+        height: 280px;
     }
     
     .produto-card .product-info {
@@ -236,17 +239,18 @@
     }
     
     .produto-nome {
-        font-size: 15px;
+        font-size: 16px;
     }
-    
+
     .produto-preco {
-        font-size: 18px;
+        font-size: 19px;
     }
 }
 
 @media (max-width: 480px) {
     .produtos-grid {
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        /* em telas pequenas mantemos um único card por linha confortável */
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
         gap: 12px;
     }
     

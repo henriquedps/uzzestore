@@ -330,49 +330,111 @@
 
         .nav-admin a { color: var(--text-light); font-size: 16px; }
 
-        /* Header categories (ícones circulares) */
-    .header-categories { background: transparent; grid-column: 1 / -1; }
+        /* Header categories (ícones circulares) - estilo renovado */
+        .header-categories { background: transparent; grid-column: 1 / -1; }
+
+        .categories-inner { display:block; }
 
         .categories-list {
             display: flex;
-            gap: 42px;
+            gap: 36px;
             justify-content: center;
             align-items: center;
+            padding: 6px 8px;
+            /* Permite rolar horizontalmente em telas pequenas */
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scroll-snap-type: x proximity;
         }
 
         .category-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             text-decoration: none;
             color: var(--text-secondary);
             font-size: 13px;
+            scroll-snap-align: center;
+            transition: transform 0.36s var(--transition), opacity 0.36s var(--transition);
+            will-change: transform, opacity;
         }
 
+        /* Thumbnail circular com brilho degradê e leve contorno */
         .category-thumb {
-            width: 88px;
-            height: 88px;
+            width: 110px;
+            height: 110px;
             border-radius: 50%;
             background-size: cover;
             background-position: center;
-            border: 5px solid rgba(3, 34, 119, 0.9); /* anel branco para destacar sobre header escuro */
-            box-shadow: 0 8px 20px rgba(0,0,0,0.35);
-            transition: transform 0.35s var(--transition-fast), box-shadow 0.35s var(--transition-fast);
+            position: relative;
+            box-shadow:
+                0 10px 30px rgba(0,0,0,0.45),
+                0 0 20px rgba(58,134,255,0.08);
+            transition: transform 0.32s var(--transition-bounce), box-shadow 0.32s var(--transition);
+            border: 6px solid rgba(255,255,255,0.06);
+            overflow: visible;
         }
 
+        /* anel colorido sutil por trás (efeito degradê) */
+        .category-thumb::before {
+            content: '';
+            position: absolute;
+            inset: -6px;
+            border-radius: 50%;
+            background: conic-gradient(from 120deg, #3a86ff, #8338ec, #ff006e, #ffd166, #06ffa5);
+            filter: blur(8px);
+            opacity: 0.12;
+            z-index: -1;
+            transition: opacity 0.32s ease;
+        }
+
+        /* halo ao passar o mouse */
         .category-item:hover .category-thumb {
-            transform: translateY(-6px) scale(1.03);
-            box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+            transform: translateY(-8px) scale(1.06) rotate(-1deg);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 40px rgba(58,134,255,0.14);
         }
 
-        .category-label { font-weight: 700; color:var(--text-primary) (--text-light); font-size: 12px; }
+        .category-item:hover .category-thumb::before { opacity: 0.28; filter: blur(6px); }
+
+        /* Label com texto em gradiente e pequeno sublinhado animado */
+        .category-label {
+            font-weight: 800;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #3a86ff, #ff006e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            display: inline-block;
+        }
+
+        .category-label::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: -6px;
+            transform: translateX(-50%);
+            height: 3px;
+            width: 0;
+            border-radius: 2px;
+            background: linear-gradient(90deg, #3a86ff, #ff006e);
+            transition: width 0.36s cubic-bezier(0.2,0.8,0.2,1);
+        }
+
+        .category-item:hover .category-label::after { width: 60%; }
+
+        /* Staggered pop-in animation para chamar atenção */
+        .category-item { opacity: 0; transform: translateY(8px) scale(0.98); }
+        .category-item.show { opacity: 1; transform: translateY(0) scale(1); }
 
         @media (max-width: 768px) {
             .nav-center { position: static; transform: none; margin: 0 auto; }
             .nav-container { justify-content: space-between; }
-            .categories-list { gap: 20px; }
-            .category-thumb { width: 72px; height: 72px; }
+            .categories-list { gap: 18px; padding: 8px 12px; }
+            .category-thumb { width: 84px; height: 84px; border: 5px solid rgba(255,255,255,0.06); }
+            .category-label { font-size: 11px; }
         }
 
         .icon-btn {
@@ -698,7 +760,7 @@
             position: relative;
             border-radius: 20px 20px 0 0;
         }
-
+        
         .product-image::before {
             content: '';
             position: absolute;
@@ -716,7 +778,7 @@
             opacity: 0;
             transition: opacity 0.6s ease;
         }
-
+         
         .product-card:hover .product-image::before {
             opacity: 1;
         }
@@ -1363,140 +1425,14 @@
         }
 
         /* Animações */
-        @keyframes slideInLeft {
-            0% {
-                opacity: 0;
-                transform: translateX(-80px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateX(0);
-            }
+        @keyframes slideInRight {
+            from { transform: translateX(18px) scale(0.98); opacity: 0; }
+            to   { transform: translateX(0) scale(1); opacity: 1; }
         }
 
-        /* Responsivo do Banner */
-        @media (max-width: 1024px) {
-            .banner-container {
-                height: 70vh;
-                min-height: 600px;
-            }
-
-            .banner-text-overlay {
-                padding: 0 40px;
-            }
-
-            .banner-title-colorful {
-                font-size: 90px;
-            }
-
-            .banner-subtitle {
-                font-size: 14px;
-            }
-
-            .banner-subtitle-bottom {
-                font-size: 16px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .banner-container {
-                height: 60vh;
-                min-height: 500px;
-            }
-
-            .banner-text-overlay {
-                padding: 0 30px;
-                text-align: center;
-            }
-
-            .banner-title-colorful {
-                font-size: 60px;
-            }
-
-            .banner-subtitle {
-                font-size: 12px;
-            }
-
-            .banner-subtitle-bottom {
-                font-size: 14px;
-            }
-
-            .banner-collections {
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: 15px;
-            }
-
-            .collection-tag {
-                font-size: 12px;
-                padding: 6px 15px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .banner-container {
-                height: 50vh;
-                min-height: 400px;
-            }
-
-            .banner-text-overlay {
-                padding: 0 20px;
-            }
-
-            .banner-title-colorful {
-                font-size: 45px;
-            }
-
-            .banner-nav {
-                bottom: 20px;
-                gap: 15px;
-            }
-
-            .banner-prev, .banner-next {
-                width: 45px;
-                height: 45px;
-                font-size: 16px;
-            }
-        }
-
-        /* Flash Messages Elegantes */
-        .flash-messages {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px 40px;
-        }
-
-        .flash-message {
-            padding: 15px 20px;
-            margin-bottom: 10px;
-            border-radius: var(--border-radius);
-            font-weight: 500;
-            border-left: 4px solid;
-            backdrop-filter: blur(10px);
-        }
-
-        .flash-success {
-            background: rgba(212, 237, 218, 0.9);
-            color: var(--success-color);
-            border-left-color: var(--success-color);
-        }
-
-        .flash-error {
-            background: rgba(248, 215, 218, 0.9);
-            color: var(--error-color);
-            border-left-color: var(--error-color);
-        }
-
-        .flash-info {
-            background: rgba(209, 236, 241, 0.9);
-            color: var(--info-color);
-            border-left-color: var(--info-color);
-        }
-
-        .flash-warning {
-            background: rgba(255, 243, 205, 0.9);
-            color: var(--warning-color);
-            border-left-color: var(--warning-color);
+        @keyframes slideOutRight {
+            from { transform: translateX(0) scale(1); opacity: 1; }
+            to   { transform: translateX(18px) scale(0.98); opacity: 0; }
         }
 
         /* Mobile Responsivo Elegante */
@@ -1539,7 +1475,7 @@
             }
 
             .flash-messages {
-                padding: 20px;
+                padding: 50px;
             }
         }
 
@@ -2236,6 +2172,14 @@
         .link-enviar-sem-dados:hover {
             text-decoration: underline;
         }
+
+        /* coloque temporariamente no <style> do base.html para testar */
+.hero-card, .product-thumb {
+  min-height: 220px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
     </style>
     {% block head %}{% endblock %}
     <script src="{{ url_for('static', filename='js/img-fallback.js') }}?v=1"></script>
@@ -2287,7 +2231,7 @@
     {% if request.endpoint == 'index' and not request.args.get('categoria') %}
     <div class="banner-container" style="margin-top: 0 !important; padding-top: 0 !important;">
   <div class="banner-slide active" id="slide-1">
-    <div class="banner-bg-image" style="background-image: url('{{ url_for('static', filename='banner/banner.webp') }}');"></div>
+    <div class="banner-bg-image" style="background-image: url('{{ url_for('static', filename='banner/banner3.webp') }}');"></div>
     <div class="banner-overlay-gradient"></div>
   </div>
 
@@ -2297,21 +2241,77 @@
   </div>
 
   <div class="banner-slide" id="slide-3">
-    <div class="banner-bg-image" style="background-image: url('{{ url_for('static', filename='banner/banner3.webp') }}');"></div>
+    <div class="banner-bg-image" style="background-image: url('{{ url_for('static', filename='banner/banner.webp') }}');"></div>
     <div class="banner-overlay-gradient"></div>
   </div>
 </div>
 
-    <!-- slides adicionais desativados (removidos temporariamente) -->
+<!-- Categorias em círculo (linha central abaixo da logo) -->
+            <div class="header-categories" aria-hidden="false">
+                <div class="categories-inner" style="max-width:1400px; margin:18px auto 0; padding:12px 20px 24px;">
+                    <nav class="categories-list" aria-label="Categorias">
+                        <a href="{{ url_for('index', categoria='CAMISAS') }}" class="category-item" aria-label="Camisas">
+                            <div class="category-thumb" style="background-image: url('{{ url_for('static', filename='header-categories/camisa.webp') }}')"></div>
+                            <span class="category-label">CAMISAS</span>
+                        </a>
+                        <a href="{{ url_for('index', categoria='POLOS') }}" class="category-item" aria-label="Polos">
+                            <div class="category-thumb" style="background-image: url('{{ url_for('static', filename='header-categories/polo.webp') }}')"></div>
+                            <span class="category-label">POLOS</span>
+                        </a>
+                        <a href="{{ url_for('index', categoria='TEXAS FARM') }}" class="category-item" aria-label="Texas Farm">
+                            <div class="category-thumb" style="background-image: url('{{ url_for('static', filename='header-categories/11.webp') }}')"></div>
+                            <span class="category-label">TEXAS FARM</span>
+                        </a>
+                        <a href="{{ url_for('index', categoria='CALÇAS') }}" class="category-item" aria-label="Calças">
+                            <div class="category-thumb" style="background-image: url('{{ url_for('static', filename='header-categories/calca.webp') }}')"></div>
+                            <span class="category-label">CALÇAS</span>
+                        </a>
+                        <a href="{{ url_for('index', categoria='BERMUDAS') }}" class="category-item" aria-label="Bermudas">
+                            <div class="category-thumb" style="background-image: url('{{ url_for('static', filename='header-categories/bermuda.webp') }}')"></div>
+                            <span class="category-label">BERMUDAS</span>
+                        </a>
+                        <a href="{{ url_for('index', categoria='CASACOS') }}" class="category-item" aria-label="Casacos">
+                            <div class="category-thumb" style="background-image: url('{{ url_for('static', filename='header-categories/cuecas.webp') }}')"></div>
+                            <span class="category-label">CUECAS</span>
+                        </a>
+                        <a href="{{ url_for('index', categoria='ACESSÓRIOS') }}" class="category-item" aria-label="Acessórios">
+                            <div class="category-thumb" style="background-image: url('{{ url_for('static', filename='header-categories/acessorio.webp') }}')"></div>
+                            <span class="category-label">ACESSÓRIOS</span>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+ <div class="hero-texas-container" style="max-width:1400px; margin:18px auto 40px; padding:0 20px;">
+        <div class="hero-texas-grid">
+            <a href="{{ url_for('index', categoria='COWGIRL') }}" class="hero-card" style="background-image: url('{{ url_for('static', filename='img categoria/cowgirl.webp') }}')" onclick="showCategory('COWGIRL'); return false;"></a>
+            <a href="{{ url_for('index', categoria='COWBOY') }}" class="hero-card" style="background-image: url('{{ url_for('static', filename='img categoria/cowboy.webp') }}')" onclick="showCategory('COWBOY'); return false;">
+            </a>
+        </div>
     </div>
+    
+  </div>
+    <!-- slides adicionais desativados (removidos temporariamente) -->
+  
     {% endif %}
 
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div class="flash-messages">
+            <div class="flash-messages" role="status" aria-live="polite">
                 {% for category, message in messages %}
-                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    <div class="flash-message flash-{{ category }}" role="alert">
+                        {% if category == 'success' %}
+                            <div class="icon"><i class="fas fa-check"></i></div>
+                        {% elif category == 'error' %}
+                            <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        {% elif category == 'warning' %}
+                            <div class="icon"><i class="fas fa-exclamation-circle"></i></div>
+                        {% else %}
+                            <div class="icon"><i class="fas fa-info-circle"></i></div>
+                        {% endif %}
+                        <div class="text">{{ message }}</div>
+                        <button class="flash-close" aria-label="Fechar mensagem" onclick="this.parentElement.style.animation='slideOutRight 260ms forwards'; setTimeout(()=>this.parentElement.remove(),260)">&times;</button>
+                    </div>
                 {% endfor %}
             </div>
         {% endif %}
@@ -2321,7 +2321,13 @@
     <main>
         {% block content %}{% endblock %}
     </main>
-
+{% if request.endpoint == 'index' and not request.args.get('categoria') %}
+<div class="hero-texas-container" style="max-width:1400px; margin:18px auto 40px; padding:0 20px;">
+        <a href="{{ url_for('index', categoria='ACESSÓRIOS') }}" class="hero-accessories-link">
+            <img src="{{ url_for('static', filename='banner/acessorios.webp') }}" alt="Acessórios" class="hero-accessories-img">
+        </a>
+    </div>
+{% endif %}
     <!-- Rodapé Elegante -->
     <footer class="footer">
         <div class="footer-container">
@@ -2356,11 +2362,8 @@
                     <ul class="footer-links">
                         <li><a href="{{ url_for('index', categoria='Camisas') }}">Camisas Sociais</a></li>
                         <li><a href="{{ url_for('index', categoria='Camisetas') }}">Camisetas</a></li>
-                        <li><a href="{{ url_for('index', categoria='Calças') }}">Calças & Jeans</a></li>
+                        <li><a href="{{ url_for('index', categoria='Calças') }}">Calças</a></li>
                         <li><a href="{{ url_for('index', categoria='Bermuda') }}">Bermudas</a></li>
-                        <li><a href="{{ url_for('index', categoria='Vestidos') }}">Blazers</a></li>
-                        <li><a href="{{ url_for('index', categoria='Calçados') }}">Calçados</a></li>
-                        <li><a href="{{ url_for('index', categoria='Acessórios') }}">Acessórios</a></li>
                         <li><a href="{{ url_for('index') }}">Lançamentos</a></li>
                         <li><a href="{{ url_for('index') }}">Promoções</a></li>
                     </ul>
@@ -2369,7 +2372,6 @@
                 <div class="footer-section">
                     <h4>Atendimento</h4>
                     <ul class="footer-links">
-                        <li><a href="#" onclick="openModal('contato')">Entre em Contato</a></li>
                         <li><a href="#" onclick="openModal('trocas')">Trocas e Devoluções</a></li>
                         <li><a href="#" onclick="openModal('entrega')">Política de Entrega</a></li>
                         <li><a href="#" onclick="openModal('guia')">Guia de Tamanhos</a></li>
@@ -2547,7 +2549,7 @@
         function autoSlide() {
             slideInterval = setInterval(() => {
                 nextSlide();
-            }, 2000); // Muda a cada 2 segundos
+            }, 4000); // Muda a cada 4 segundos
         }
 
         // Função para resetar auto rotação
@@ -2847,7 +2849,7 @@
                 
                 mensagem += `━━━━━━━━━━━━━━━━\n`;
                 mensagem += `💰 *Total: R$ ${data.total.toFixed(2).replace('.', ',')}*\n\n`;
-                mensagem += `✨ _Enviado da UzzeStore_`;
+                mensagem += `✨ _Cliente da UzzeStore_`;
                 
                 // Codificar mensagem para URL
                 const mensagemCodificada = encodeURIComponent(mensagem);
@@ -2990,7 +2992,7 @@
 
         // Carregar itens da sacola APENAS quando clicar (removido auto-carregamento)
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('[DEBUG] DOM carregado - SEM auto-carregamento da sacola');
+          //  console.log('[DEBUG] DOM carregado - SEM auto-carregamento da sacola');
             // carregarItensSacola(); // DESABILITADO para evitar loop
         });
 
@@ -3030,7 +3032,7 @@
                 button.innerHTML = '<i class="fas fa-check"></i>';
                 
                 // Mostrar notificação de sucesso
-                showNotification('🎉 Newsletter cadastrada com sucesso! Você receberá 10% OFF na primeira compra.', 'success');
+                showNotification('🎉 Newsletter cadastrada com sucesso! Você receberá 2% OFF na primeira compra.', 'success');
                 
                 // Reset form
                 event.target.querySelector('input[type="email"]').value = '';
@@ -3049,33 +3051,6 @@
             const body = document.getElementById('modal-body');
             
             const modalContent = {
-                contato: {
-                    title: 'Entre em Contato',
-                    content: `
-                        <div style="display: grid; gap: 25px;">
-                            <div>
-                                <h4 style="color: var(--accent-color); margin-bottom: 15px;">📞 Atendimento ao Cliente</h4>
-                                <p><strong>Telefone:</strong> (11) 9 9999-9999</p>
-                                <p><strong>WhatsApp:</strong> (11) 9 9999-9999</p>
-                                <p><strong>E-mail:</strong> contato@uzzestore.com.br</p>
-                                <p><strong>Horário:</strong> Segunda a Sexta, das 9h às 18h</p>
-                            </div>
-                            <div>
-                                <h4 style="color: var(--accent-color); margin-bottom: 15px;">🏢 Endereço</h4>
-                                <p>Rua da Moda Masculina, 123<br>
-                                Vila Elegante - São Paulo/SP<br>
-                                CEP: 01234-567</p>
-                            </div>
-                            <div>
-                                <h4 style="color: var(--accent-color); margin-bottom: 15px;">🕒 Horário de Funcionamento</h4>
-                                <p><strong>Loja Física:</strong><br>
-                                Segunda a Sexta: 10h às 20h<br>
-                                Sábado: 10h às 18h<br>
-                                Domingo: 12h às 17h</p>
-                            </div>
-                        </div>
-                    `
-                },
                 trocas: {
                     title: 'Trocas e Devoluções',
                     content: `
@@ -3124,29 +3099,6 @@
                                     <li><strong>SEDEX:</strong> A partir de R$ 25,90</li>
                                     <li><strong>Entrega expressa:</strong> A partir de R$ 35,90</li>
                                 </ul>
-                            </div>
-                        </div>
-                    `
-                },
-                faq: {
-                    title: 'Perguntas Frequentes',
-                    content: `
-                        <div style="display: grid; gap: 20px;">
-                            <div>
-                                <h4 style="color: var(--accent-color);">❓ Como escolher o tamanho ideal?</h4>
-                                <p>Consulte nosso guia de tamanhos disponível em cada produto. Medimos todas as peças para garantir o caimento perfeito.</p>
-                            </div>
-                            <div>
-                                <h4 style="color: var(--accent-color);">💳 Quais formas de pagamento aceitas?</h4>
-                                <p>Aceitamos cartões de crédito, débito, PIX e boleto bancário. Parcelamento em até 12x sem juros no cartão.</p>
-                            </div>
-                            <div>
-                                <h4 style="color: var(--accent-color);">📱 Como acompanhar meu pedido?</h4>
-                                <p>Enviaremos o código de rastreamento por e-mail assim que o produto for despachado.</p>
-                            </div>
-                            <div>
-                                <h4 style="color: var(--accent-color);">🎁 Vocês fazem embrulho para presente?</h4>
-                                <p>Sim! Oferecemos embalagem especial para presentes sem custo adicional. Selecione a opção no checkout.</p>
                             </div>
                         </div>
                     `
@@ -3358,6 +3310,17 @@
                 console.log('[CACHE] Limpeza manual ativada');
                 limparTodosOsCaches();
             }
+        });
+    </script>
+    <script>
+        // animação de entrada das categorias (stagger)
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const items = document.querySelectorAll('.categories-list .category-item');
+                items.forEach((el, i) => {
+                    setTimeout(() => el.classList.add('show'), i * 80);
+                });
+            } catch (e) { /* silencioso */ }
         });
     </script>
 </body>

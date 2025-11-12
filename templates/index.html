@@ -4,58 +4,16 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-products.css') }}">
 <!-- Preload banner images -->
-<link rel="preload" as="image" href="{{ url_for('static', filename='banner/banner.webp') }}">
+<link rel="preload" as="image" href="{{ url_for('static', filename='banner/banner3.webp') }}">
 {% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
-  <!-- Categorias em círculo (linha central abaixo da logo) -->
-            <div class="header-categories" aria-hidden="false">
-                <div class="categories-inner" style="max-width:1400px; margin:18px auto 0; padding:12px 20px 24px;">
-                    <nav class="categories-list" aria-label="Categorias">
-                        <a href="{{ url_for('index', categoria='CAMISAS') }}" class="category-item" aria-label="Camisas">
-                            <div class="category-thumb" style="background-image: url('{{ url_for('static', filename='header-categories/camisa.webp') }}')"></div>
-                            <span class="category-label">CAMISAS</span>
-                        </a>
-                        <a href="{{ url_for('index', categoria='POLOS') }}" class="category-item" aria-label="Polos">
-                            <div class="category-thumb" style="background-image: url('{{ url_for('static', filename='header-categories/polo.webp') }}')"></div>
-                            <span class="category-label">POLOS</span>
-                        </a>
-                        <a href="{{ url_for('index', categoria='CALÇAS') }}" class="category-item" aria-label="Calças">
-                            <div class="category-thumb" style="background-image: url('{{ url_for('static', filename='header-categories/calca.webp') }}')"></div>
-                            <span class="category-label">CALÇAS</span>
-                        </a>
-                        <a href="{{ url_for('index', categoria='BERMUDAS') }}" class="category-item" aria-label="Bermudas">
-                            <div class="category-thumb" style="background-image: url('{{ url_for('static', filename='header-categories/bermuda.webp') }}')"></div>
-                            <span class="category-label">BERMUDAS</span>
-                        </a>
-                        <a href="{{ url_for('index', categoria='CASACOS') }}" class="category-item" aria-label="Casacos">
-                            <div class="category-thumb" style="background-image: url('{{ url_for('static', filename='header-categories/cuecas.webp') }}')"></div>
-                            <span class="category-label">CUECAS</span>
-                        </a>
-                        <a href="{{ url_for('index', categoria='ACESSÓRIOS') }}" class="category-item" aria-label="Acessórios">
-                            <div class="category-thumb" style="background-image: url('{{ url_for('static', filename='header-categories/acessorio.webp') }}')"></div>
-                            <span class="category-label">ACESSÓRIOS</span>
-                        </a>
-                    </nav>
-                </div>
-            </div>
+ 
             
- <div class="hero-image">
-        <a href="{{ url_for('index', categoria='ACESSÓRIOS') }}" class="hero-accessories-link">
-            <img src="{{ url_for('static', filename='banner/acessorios.webp') }}" alt="Acessórios" class="hero-accessories-img">
-        </a>
-    </div>
-    <!-- Categoria MODE TEXAS (dois cards estilizados: Cowgirl e Cowboy) -->
-    <div class="hero-texas-container" style="max-width:1400px; margin:18px auto 40px; padding:0 20px;">
-        <div class="hero-texas-grid">
-            <a href="{{ url_for('index', categoria='COWGIRL') }}" class="hero-card" style="background-image: url('{{ url_for('static', filename='img categoria/cowgirl.webp') }}')">
-            </a>
 
-            <a href="{{ url_for('index', categoria='COWBOY') }}" class="hero-card" style="background-image: url('{{ url_for('static', filename='img categoria/cowboy.webp') }}')">
-            </a>
-        </div>
-    </div>
+    <!-- Categoria MODE TEXAS (dois cards estilizados: Cowgirl e Cowboy) -->
+   
 <script>
 // Modern Image Fallback System
 if (!window.imgFallback) {
@@ -131,6 +89,104 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <!-- Filter Section -->
+<style>
+/* Tela limpa overlay */
+#clean-screen-overlay{
+    position:fixed;
+    inset:0;
+    background:#fff;
+    z-index:99999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+#clean-screen-overlay .clean-close{
+    position:absolute;
+    top:16px;
+    right:16px;
+    background:rgba(0,0,0,0.6);
+    color:#fff;
+    border:none;
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    font-size:22px;
+    cursor:pointer;
+}
+</style>
+
+<script>
+function openCleanScreen(event){
+    try{
+        if(event && event.preventDefault) event.preventDefault();
+        if(document.getElementById('clean-screen-overlay')) return;
+        const overlay = document.createElement('div');
+        overlay.id = 'clean-screen-overlay';
+        overlay.setAttribute('role','dialog');
+        overlay.setAttribute('aria-modal','true');
+        overlay.innerHTML = '<button class="clean-close" aria-label="Fechar tela limpa">\u00d7</button>';
+        document.body.appendChild(overlay);
+
+        const btn = overlay.querySelector('.clean-close');
+        btn.addEventListener('click', closeCleanScreen);
+
+        // Fecha ao clicar no fundo
+        overlay.addEventListener('click', function(e){ if(e.target === overlay) closeCleanScreen(); });
+
+        // Fecha com ESC
+        document.addEventListener('keydown', escHandler);
+    }catch(err){ console.error('openCleanScreen error', err); }
+}
+
+function closeCleanScreen(){
+    const o = document.getElementById('clean-screen-overlay');
+    if(o) o.remove();
+    document.removeEventListener('keydown', escHandler);
+}
+
+function escHandler(e){ if(e.key === 'Escape') closeCleanScreen(); }
+
+// Listener para imagens de produto (qualquer elemento .product-image)
+document.addEventListener('click', function(e){
+    try{
+        const productImage = e.target.closest && e.target.closest('.product-image');
+        if(productImage){
+            // evitar interferir com botões dentro do card
+            if(e.target.closest('button') || e.target.closest('a')) return;
+            openCleanScreen(e);
+        }
+    }catch(err){ /* ignore */ }
+});
+
+// Mostrar apenas produtos de uma categoria (chamado pelos hero-cards)
+function showCategory(category){
+    try{
+        // Garantir que os produtos já foram carregados
+        if(!allProducts || allProducts.length === 0){
+            // tenta carregar produtos se ainda não carregados
+            loadProducts();
+        }
+
+        // Atualiza filtros de categoria (client-side)
+        activeFilters.categories = [category];
+
+        // Atualiza checkboxes no painel de filtros (se existirem)
+        document.querySelectorAll('.filter-options input[type="checkbox"]').forEach(cb => {
+            if(cb.value === ''){
+                cb.checked = false; // desmarca 'Todas as categorias'
+            } else {
+                cb.checked = (cb.value === category);
+            }
+        });
+
+        filterProducts();
+
+        // Rolar para a área de produtos
+        const productsSection = document.querySelector('.products-container');
+        if(productsSection){ productsSection.scrollIntoView({behavior: 'smooth'}); }
+    }catch(e){ console.error('showCategory error', e); }
+}
+</script>
 <section class="filter-section">
     <div class="filter-left">
         <button class="filter-toggle" onclick="toggleFilters()">
@@ -2473,7 +2529,7 @@ function iniciarBannerAutomatico() {
     clearInterval(bannerInterval);
     bannerInterval = setInterval(() => {
         mudarBanner(1);
-    }, 5000); // Muda a cada 5 segundos
+    }, 4000); // Muda a cada 4 segundos
 }
 
 // Inicializar banner quando o DOM estiver pronto
@@ -2536,7 +2592,7 @@ document.addEventListener('DOMContentLoaded', function() {
         clearInterval(bannerInternoInterval);
         bannerInternoInterval = setInterval(() => {
             mudarBannerInterno();
-        }, 3000); // Muda a cada 3 segundos
+        }, 5000); // Muda a cada 5 segundos
     }
     
     // Iniciar banner interno

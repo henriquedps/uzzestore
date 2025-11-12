@@ -308,7 +308,7 @@ body {
         <p>Altere as informações do produto</p>
     </div>
     
-    <form method="POST" class="admin-form">
+    <form method="POST" class="admin-form" enctype="multipart/form-data">
         <div class="form-group">
             <label for="nome">Nome do Produto:</label>
             <input type="text" id="nome" name="nome" value="{{ produto.nome }}" required>
@@ -418,18 +418,26 @@ body {
                     <label style="font-weight: 600; color: #333; font-size: 13px; display: block; margin-bottom: 8px;">
                         🌟 Imagem Principal *
                     </label>
-                    <input type="url" name="imagem" class="imagem-url-input" data-index="0"
-                           value="{{ produto.imagem or '' }}" placeholder="https://exemplo.com/imagem1.jpg"
-                           style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 8px;"
-                           onchange="previewImagem(this, 0)" required>
-                    <div class="preview-container" style="{% if produto.imagem %}display: block;{% else %}display: none;{% endif %}">
-                        {% if produto.imagem and produto.imagem.startswith('http') or (produto.imagem and produto.imagem.startswith('/')) %}
-                            <img class="preview-imagem" src="{{ produto.imagem }}" alt="Preview" style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 2px solid #007bff;">
-                        {% elif produto.imagem %}
-                            <img class="preview-imagem" src="{{ url_for('static', filename=produto.imagem) }}" alt="Preview" style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 2px solid #007bff;">
-                        {% else %}
-                            <img class="preview-imagem" src="" alt="Preview" style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 2px solid #007bff;">
-                        {% endif %}
+                    <div style="display:flex; gap:12px; align-items:center;">
+                        <div style="flex:0 0 120px;">
+                            <div id="picker-0" class="file-picker" onclick="document.getElementById('imagem_file').click()" style="cursor:pointer; width:120px; height:120px; display:flex; align-items:center; justify-content:center; border-radius:8px; background:#fff; border:2px dashed #ddd;">
+                                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 15V7a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2v10" stroke="#6b7280" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="12" width="18" height="8" rx="2" stroke="#6b7280" stroke-width="1.2"/></svg>
+                            </div>
+                        </div>
+                        <div style="flex:1;">
+                <input type="file" id="imagem_file" name="imagem_file" accept="image/*" style="display:none;" onchange="previewFileEdit(this, 0)">
+                <input type="text" name="imagem" class="imagem-url-input" data-index="0"
+                    value="{{ produto.imagem or '' }}" placeholder="Cole uma URL (opcional)"
+                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 8px;"
+                    onchange="previewImagem(this, 0)">
+                            <div class="preview-container" style="{% if produto.imagem %}display: block;{% else %}display: none;{% endif %}">
+                                {% if produto.imagem and (produto.imagem.startswith('http') or produto.imagem.startswith('/')) %}
+                                    <img class="preview-imagem" src="{{ produto.imagem if produto.imagem.startswith('http') else url_for('static', filename=produto.imagem) }}" alt="Preview" style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 2px solid #007bff;">
+                                {% else %}
+                                    <img class="preview-imagem" src="{{ url_for('static', filename=produto.imagem) if produto.imagem else '' }}" alt="Preview" style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 2px solid #007bff;">
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -448,16 +456,24 @@ body {
                                     🗑️ Remover
                                 </button>
                             </div>
-                            <input type="url" name="imagem_adicional_{{ loop.index }}" class="imagem-url-input" data-index="{{ loop.index }}"
-                                   value="{{ imagem_adicional.strip() }}" placeholder="https://exemplo.com/imagem{{ loop.index + 1 }}.jpg"
-                                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 8px;"
-                                   onchange="previewImagem(this, {{ loop.index }})">
-                                <div class="preview-container" style="display: block;">
-                                {% if imagem_adicional.strip().startswith('http') or imagem_adicional.strip().startswith('/') %}
-                                    <img class="preview-imagem" src="{{ imagem_adicional.strip() }}" alt="Preview" style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 2px solid #17a2b8;">
-                                {% else %}
-                                    <img class="preview-imagem" src="{{ url_for('static', filename=imagem_adicional.strip()) }}" alt="Preview" style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 2px solid #17a2b8;">
-                                {% endif %}
+                            <input type="file" id="imagem_adicional_file_{{ loop.index }}" name="imagem_adicional_file_{{ loop.index }}" accept="image/*" style="display:none;" onchange="previewFileEdit(this, {{ loop.index }})">
+                            <div style="display:flex; gap:12px; align-items:center;">
+                                <div style="flex:0 0 80px;">
+                                    <button type="button" onclick="document.getElementById('imagem_adicional_file_{{ loop.index }}').click()" style="width:80px;height:80px;border-radius:6px;border:2px dashed #ddd;background:#fff;cursor:pointer;">Escolher</button>
+                                </div>
+                                <div style="flex:1;">
+                     <input type="text" name="imagem_adicional_{{ loop.index }}" class="imagem-url-input" data-index="{{ loop.index }}"
+                         value="{{ imagem_adicional.strip() }}" placeholder="Cole uma URL (opcional)"
+                         style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 8px;"
+                         onchange="previewImagem(this, {{ loop.index }})">
+                                    <div class="preview-container" style="display: block;">
+                                    {% if imagem_adicional.strip().startswith('http') or imagem_adicional.strip().startswith('/') %}
+                                        <img class="preview-imagem" src="{{ imagem_adicional.strip() }}" alt="Preview" style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 2px solid #17a2b8;">
+                                    {% else %}
+                                        <img class="preview-imagem" src="{{ url_for('static', filename=imagem_adicional.strip()) }}" alt="Preview" style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 2px solid #17a2b8;">
+                                    {% endif %}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         {% endif %}
@@ -508,6 +524,22 @@ function previewImagem(input, index) {
     }
 }
 
+function previewFileEdit(input, index) {
+    const file = input.files && input.files[0];
+    const imagemItem = input.closest('.imagem-item');
+    const preview = imagemItem ? imagemItem.querySelector('.preview-imagem') : null;
+    const container = imagemItem ? imagemItem.querySelector('.preview-container') : null;
+
+    if (file && preview && container) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            container.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
 function adicionarImagem() {
     if (contadorImagens >= maxImagens - 1) { // -1 porque já temos a imagem principal
         alert(`Você pode adicionar no máximo ${maxImagens} imagens por produto.`);
@@ -530,13 +562,21 @@ function adicionarImagem() {
                 🗑️ Remover
             </button>
         </div>
-        <input type="url" name="imagem_adicional_${contadorImagens}" class="imagem-url-input" data-index="${contadorImagens}"
-               placeholder="https://exemplo.com/imagem${contadorImagens + 1}.jpg"
-               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 8px;"
-               onchange="previewImagem(this, ${contadorImagens})">
-        <div class="preview-container" style="display: none;">
-            <img class="preview-imagem" src="" alt="Preview" 
-                 style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 2px solid #17a2b8;">
+        <input type="file" id="imagem_adicional_file_${contadorImagens}" name="imagem_adicional_file_${contadorImagens}" accept="image/*" style="display:none;" onchange="previewFileEdit(this, ${contadorImagens})">
+        <div style="display:flex; gap:12px; align-items:center;">
+            <div style="flex:0 0 80px;">
+                <button type="button" onclick="document.getElementById('imagem_adicional_file_${contadorImagens}').click()" style="width:80px;height:80px;border-radius:6px;border:2px dashed #ddd;background:#fff;cursor:pointer;">Escolher</button>
+            </div>
+            <div style="flex:1;">
+                <input type="url" name="imagem_adicional_${contadorImagens}" class="imagem-url-input" data-index="${contadorImagens}"
+                       placeholder="https://exemplo.com/imagem${contadorImagens + 1}.jpg"
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 8px;"
+                       onchange="previewImagem(this, ${contadorImagens})">
+                <div class="preview-container" style="display: none;">
+                    <img class="preview-imagem" src="" alt="Preview" 
+                         style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 2px solid #17a2b8;">
+                </div>
+            </div>
         </div>
     `;
     
